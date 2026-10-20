@@ -33,8 +33,10 @@ jobs:
         with:
           msystem: UCRT64
           update: true
+          # zip is an MSYS package, not a UCRT64 one
+          install: zip
           pacboy: >-
-            toolchain:p cmake:p ninja:p pkgconf:p zip:p
+            toolchain:p cmake:p ninja:p pkgconf:p
             qt5-base:p qt5-tools:p qt5-svg:p qt5-winextras:p qt5-translations:p
             boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
             cfitsio:p libraw:p fftw:p lcms2:p eigen3:p
