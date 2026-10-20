@@ -424,9 +424,9 @@ ELSEIF(WIN32)
         set (PROJECT_VERSION_PATCH ${LHDR_VERSION_PATCH})
 
         find_program(ALIGN_IMAGE_STACK align_image_stack.exe HINTS "${HUGIN_BASE_PATH}" ENV Path ENV ProgramFiles ENV ProgramFiles(x86) PATH_SUFFIXES Hugin/bin bin)
-        # Fail if align_image_stack.exe can't be found
+        # Hugin is only bundled by the installer; the build itself works without it
         if (ALIGN_IMAGE_STACK STREQUAL ALIGN_IMAGE_STACK-NOTFOUND)
-            message(FATAL_ERROR "align_image_stack.exe command not found! Please install Hugin from https://sourceforge.net/projects/hugin/. For non standard base install directory, please define -DHUGIN_BASE_PATH:PATH=xxx in the cmake command line")
+            message(WARNING "align_image_stack.exe not found: the installer will not bundle Hugin alignment. Install Hugin from https://sourceforge.net/projects/hugin/ or pass -DHUGIN_BASE_PATH:PATH=xxx")
         else ()
             message(STATUS "align_image_stack.exe command from Hugin install found: ${ALIGN_IMAGE_STACK}")
         endif ()
