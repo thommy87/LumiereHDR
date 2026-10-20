@@ -55,7 +55,7 @@ jobs:
           -DENABLE_UNIT_TEST=ON
           -DLHDR_SANITIZE="${{ matrix.sanitize }}"
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel -- -k 0
       - name: Test
         env:
           ASAN_OPTIONS: detect_leaks=0
@@ -113,7 +113,7 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
           -DENABLE_UNIT_TEST=ON
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel -- -k 0
       - name: Test
         env:
           QT_QPA_PLATFORM: offscreen
