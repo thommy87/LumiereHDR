@@ -37,6 +37,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build_files/Modu
 include(build_files/Modules/Version.cmake)
 include(build_files/Modules/GlobalSettings.cmake)
 include(build_files/Modules/CompilerSettings.cmake)
+include(build_files/Modules/Hardening.cmake)
 include(build_files/Modules/Internationalization.cmake)
 
 IF(TIMER_PROFILING)
