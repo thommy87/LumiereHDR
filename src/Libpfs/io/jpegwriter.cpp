@@ -28,6 +28,12 @@
     #define TRUE  1
 #endif
 
+// jpeglib.h comes first: on MinGW it pulls in the Windows RPC headers,
+// whose 'byte' is ambiguous with std::byte once project headers have
+// brought namespace std into scope
+#include <cstdio>
+#include <jpeglib.h>
+
 #include <Libpfs/io/jpegwriter.h>
 
 #include <algorithm>
@@ -36,7 +42,6 @@
 #include <stdexcept>
 #include <vector>
 
-#include <jpeglib.h>
 #include <lcms2.h>
 #include <stdio.h>
 
