@@ -25,9 +25,8 @@
 #ifndef PFS_UTILS_SSE_H
 #define PFS_UTILS_SSE_H
 
-namespace pfs {
-namespace utils {
-
+// system headers must be included at global scope: inside the namespace
+// they declared pfs::utils::__m128, breaking every later intrinsics header
 #ifdef __SSE__
 
 //#if __ppc__ || __ppc7400__ || __ppc64__ || __ppc970__
@@ -44,6 +43,9 @@ namespace utils {
 #endif
 
 #endif  // __SSE__
+
+namespace pfs {
+namespace utils {
 
 #ifdef LUMINANCE_USE_SSE
 typedef __v4sf v4sf;
