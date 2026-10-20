@@ -101,6 +101,9 @@ IF(WIN32)
 
     # to not define min/max macros, which cause troubles with STL and boost
     ADD_DEFINITIONS(-DNOMINMAX)
+    # skip the RPC/OLE headers: their "byte" clashes with std::byte under
+    # C++17 wherever namespace std is pulled in
+    ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
     IF(MINGW)
         find_package(PkgConfig)
         pkg_check_modules(FFTW3F REQUIRED fftw3f)
