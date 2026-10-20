@@ -62,7 +62,7 @@ jobs:
           find build -name 'lang_*.qm' -exec cp {} "$dist/i18n/" \;
           cp LICENSE README.md PRIVACY.md CODE_SIGNING_POLICY.md "$dist/"
           deploy=$(command -v windeployqt-qt5 || command -v windeployqt)
-          "$deploy" --release --no-translations --no-compiler-runtime "$dist/luminance-hdr.exe"
+          "$deploy" --release --no-translations --no-compiler-runtime --no-angle --no-opengl-sw "$dist/luminance-hdr.exe"
           # copy every MSYS2 DLL the binaries and Qt plugins depend on
           for pass in 1 2 3; do
             find "$dist" -name '*.exe' -o -name '*.dll' | while read -r f; do
