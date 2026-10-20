@@ -37,6 +37,10 @@ using namespace std;
 namespace pfs {
 namespace io {
 
+// upper bounds for untrusted headers: 64k per side, 256 megapixels in total
+static const int RGBE_MAX_DIMENSION = 1 << 16;
+static const long long RGBE_MAX_PIXELS = 1LL << 28;
+
 void rgbe2rgb(const Trgbe_pixel &rgbe, float exposure, float &r, float &g,
               float &b) {
     if (rgbe.e != 0)  // a non-zero pixel
@@ -61,6 +65,7 @@ void readRadianceHeader(FILE *file, int &width, int &height, float &exposure,
     float fval;
     int format = 0;
     exposure = 1.0f;
+    colorspace = RGB;
 
     while (!feof(file)) {
         if (fgets(head, 200, file) == nullptr) {
@@ -115,8 +120,13 @@ void readRadianceHeader(FILE *file, int &width, int &height, float &exposure,
         throw pfs::Exception("RGBE: unknown image size");
     }
 
-    assert(height > 0);
-    assert(width > 0);
+    // validate the size before anything is allocated: assert() is compiled
+    // out of release builds, so it cannot guard untrusted input
+    if (height <= 0 || width <= 0 || height > RGBE_MAX_DIMENSION ||
+        width > RGBE_MAX_DIMENSION ||
+        static_cast<long long>(width) * height > RGBE_MAX_PIXELS) {
+        throw pfs::io::InvalidHeader("RGBE: invalid image size");
+    }
 
     /*
     if( ybuf[1]=='x' || ybuf[1]=='X' ) {
@@ -132,29 +142,36 @@ void RLERead(FILE *file, Trgbe *scanline, int size) {
     int peek = 0;
     while (peek < size) {
         Trgbe p[2];
-        if (fread(p, sizeof(p), 1, file) == 0) {
+        if (fread(p, sizeof(p), 1, file) != 1) {
             throw pfs::io::ReadException("RGBE: Invalid data size");
         }
         if (p[0] > 128) {
             // a run
             int run_len = p[0] - 128;
+            if (run_len > size - peek) {
+                throw pfs::io::ReadException("RGBE: RLE run overflows scanline");
+            }
 
             while (run_len > 0) {
                 scanline[peek++] = p[1];
                 run_len--;
             }
         } else {
-            // a non-run
+            // a non-run of p[0] literal values, the first one already read
+            int nonrun_len = p[0];
+            if (nonrun_len == 0 || nonrun_len > size - peek) {
+                throw pfs::io::ReadException(
+                    "RGBE: RLE literal overflows scanline");
+            }
             scanline[peek++] = p[1];
+            --nonrun_len;
 
-            int nonrun_len = p[0] - 1;
             if (nonrun_len > 0) {
                 if (fread(scanline + peek, sizeof(*scanline), nonrun_len,
-                          file) == 0) {
+                          file) != static_cast<size_t>(nonrun_len)) {
                     throw pfs::io::ReadException("RGBE: Invalid data size");
-                } else {
-                    peek += nonrun_len;
                 }
+                peek += nonrun_len;
             }
         }
     }
@@ -168,12 +185,12 @@ void readRadiance(FILE *file, int width, int height, float exposure,
                   pfs::Array2Df &X, pfs::Array2Df &Y, pfs::Array2Df &Z) {
     // read image
     // depending on format read either rle or normal (note: only rle supported)
-    std::vector<Trgbe> scanline(width * 4);
+    std::vector<Trgbe> scanline(static_cast<size_t>(width) * 4);
 
     for (int y = 0; y < height; ++y) {
         // read rle header
         Trgbe header[4];
-        if (fread(header, sizeof(header), 1, file) == sizeof(header)) {
+        if (fread(header, sizeof(header), 1, file) != 1) {
             throw pfs::io::ReadException("RGBE: invalid data size");
         }
         if (header[0] != 2 || header[1] != 2 ||
