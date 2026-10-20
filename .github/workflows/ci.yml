@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [master, "phase-*/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APT_PACKAGES: >-
+    ninja-build qtbase5-dev qttools5-dev qttools5-dev-tools libqt5svg5-dev
+    libboost-program-options-dev libboost-thread-dev libboost-chrono-dev
+    libboost-system-dev libboost-date-time-dev libboost-atomic-dev
+    libexiv2-dev libtiff-dev libpng-dev libopenexr-dev libgsl-dev libjpeg-dev
+    libcfitsio-dev libraw-dev libfftw3-dev liblcms2-dev libeigen3-dev
+    libgtest-dev
+
+jobs:
+  linux:
+    name: Linux (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gcc release
+            cc: gcc
+            cxx: g++
+            build_type: Release
+            sanitize: ""
+          - name: clang asan+ubsan
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            sanitize: "address;undefined"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends $APT_PACKAGES clang libomp-dev
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_C_COMPILER=${{ matrix.cc }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          -DENABLE_UNIT_TEST=ON
+          -DLHDR_SANITIZE="${{ matrix.sanitize }}"
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure
+
+  fuzz:
+    name: Fuzz Radiance reader
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends $APT_PACKAGES clang libomp-dev
+      - name: Build fuzzer
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+            -DLHDR_BUILD_FUZZERS=ON
+          cmake --build build --target fuzz_rgbe
+      - name: Seed corpus
+        run: |
+          mkdir -p corpus
+          printf '#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1 +X 8\n\x02\x02\x00\x08\x88\x64\x88\x64\x88\x64\x88\x80' > corpus/rle.hdr
+          printf '#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1 +X 2\n\x64\x64\x64\x80\x64\x64\x64\x80' > corpus/flat.hdr
+      - name: Run for 2 minutes
+        run: ./build/test/fuzz/fuzz_rgbe corpus -max_total_time=120 -max_len=4096
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fuzz-crash
+          path: crash-*
+
+  windows:
+    name: Windows (MSYS2 UCRT64)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          pacboy: >-
+            toolchain:p cmake:p ninja:p pkgconf:p
+            qt5-base:p qt5-tools:p qt5-svg:p qt5-winextras:p qt5-translations:p
+            boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
+            cfitsio:p libraw:p fftw:p lcms2:p eigen3:p gtest:p
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DENABLE_UNIT_TEST=ON
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure
+      - name: Check exploit mitigations
+        shell: pwsh
+        run: python build_files/check_pe_hardening.py build/luminance-hdr.exe build/luminance-hdr-cli.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lumiere-windows-build
+          path: |
+            build/*.exe

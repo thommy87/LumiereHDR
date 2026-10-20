@@ -193,4 +193,12 @@ TARGET_LINK_LIBRARIES(TestPoissonSolver hdrwizard pfs pfstmo common
     ${LIBS})
 ADD_TEST(TestPoissonSolver TestPoissonSolver)
 
+# Radiance reader: malformed RLE data must not overflow
+ADD_EXECUTABLE(TestRGBEReader TestRGBEReader.cpp)
+TARGET_LINK_LIBRARIES(TestRGBEReader pfs
+    ${GTEST_BOTH_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${LIBS})
+ADD_TEST(TestRGBEReader TestRGBEReader)
+
 ENDIF(GTEST_FOUND)

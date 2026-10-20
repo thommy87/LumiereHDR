@@ -251,6 +251,11 @@ IF(ENABLE_UNIT_TEST)
     ADD_SUBDIRECTORY(test)
 ENDIF(ENABLE_UNIT_TEST)
 
+option(LHDR_BUILD_FUZZERS "Build libFuzzer targets for the image readers" OFF)
+IF(LHDR_BUILD_FUZZERS)
+    ADD_SUBDIRECTORY(test/fuzz)
+ENDIF()
+
 # translations
 FILE(GLOB LUMINANCE_TS i18n/lang_*.ts)
 
