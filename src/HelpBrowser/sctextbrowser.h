@@ -44,31 +44,38 @@ for which a new license (GPL+exception) is in place.
 #ifndef SCTEXTBROWSER_H
 #define SCTEXTBROWSER_H
 
+#include <QTextBrowser>
 #include <QUrl>
 
-#ifdef USE_DEPRECATED_QTWEBKIT
-#include <QWebView>
-#else
-#include <QWebEngineView>
-#endif
-
-#ifdef USE_DEPRECATED_QTWEBKIT
-class ScTextBrowser : public QWebView {
-#else
-class ScTextBrowser : public QWebEngineView {
-#endif
+// Shows the bundled manual. Built on QTextBrowser so that no browser engine
+// (QtWebKit, QtWebEngine) has to ship with the application. Local pages are
+// shown in place; web links are handed to the system browser.
+class ScTextBrowser : public QTextBrowser {
     Q_OBJECT
     QUrl m_home;
+    qreal m_basePointSize;
 
    public:
-    explicit ScTextBrowser(QWidget *parent = 0);
+    explicit ScTextBrowser(QWidget *parent = nullptr);
     void setHome(const QUrl &h) { m_home = h; }
+
+    void load(const QUrl &url);
+    QUrl url() const { return source(); }
+    QString title() const { return documentTitle(); }
+    bool findText(const QString &text, bool backward = false);
+    void setZoomFactor(qreal factor);
 
    signals:
     void overLink(const QString &link);
+    void loadStarted();
+    void loadFinished(bool ok);
 
    public slots:
     void home();
+    void back() { backward(); }
+
+   private slots:
+    void openLink(const QUrl &url);
 };
 
 #endif

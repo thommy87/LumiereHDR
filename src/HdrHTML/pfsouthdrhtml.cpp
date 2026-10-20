@@ -51,20 +51,17 @@ void generate_hdrhtml(pfs::Frame *frame, string page_name, string out_dir,
                       string html_output, int quality, bool verbose
                       ) {
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    const int MAX_LINE_LENGTH = 2048;
-    QString p_t = HDRHTMLDIR;
-    p_t.append("/hdrhtml_default_templ/hdrhtml_page_templ.html");
-    QString i_t = HDRHTMLDIR;
-    i_t.append("/hdrhtml_default_templ/hdrhtml_image_templ.html");
+    // HDRHTMLDIR is a runtime QString here; keep the paths in std::string
+    // instead of copying them into fixed-size buffers
+    const std::string p_t =
+        (QString(HDRHTMLDIR) + "/hdrhtml_default_templ/hdrhtml_page_templ.html")
+            .toStdString();
+    const std::string i_t =
+        (QString(HDRHTMLDIR) + "/hdrhtml_default_templ/hdrhtml_image_templ.html")
+            .toStdString();
 
-    char p_t_temp[MAX_LINE_LENGTH];
-    strcpy(p_t_temp, p_t.toStdString().c_str());
-
-    char i_t_temp[MAX_LINE_LENGTH];
-    strcpy(i_t_temp, i_t.toStdString().c_str());
-
-    const char *page_template = p_t_temp;
-    const char *image_template = i_t_temp;
+    const char *page_template = p_t.c_str();
+    const char *image_template = i_t.c_str();
 #else
     const char *page_template =
         HDRHTMLDIR "/hdrhtml_default_templ/hdrhtml_page_templ.html";

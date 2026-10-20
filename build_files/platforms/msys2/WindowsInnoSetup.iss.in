@@ -117,11 +117,9 @@ Source: "{#MySourceLibsDir}\qt5gui.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5network.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5printsupport.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5sql.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MySourceLibsDir}\qt5webkitwidgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5winextras.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5xml.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MySourceLibsDir}\qt5webkit.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5multimedia.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5multimediawidgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceLibsDir}\qt5xml.dll"; DestDir: "{app}"; Flags: ignoreversion

@@ -119,13 +119,14 @@ float transformToRn(float currG, float detailFactor){
     return mult * lookup_table(LOOKUP_W_TO_R, W_table, R_table, currG);
 }
 
-// transform gradient R to G
-float transformToGn(float currR, float detailFactor){
+// transform gradient R to G; gFactor is 1 / (ln(10) * detailFactor), the
+// inverse of the scale used in transformToRn
+float transformToGn(float currR, float gFactor){
     const float mult = copysign(1.f, currR);
     // RESP to W
     currR = lookup_table(LOOKUP_W_TO_R, R_table, W_table, mult * currR);
     // W to G
-    return mult * std::log1p(currR) * detailFactor;
+    return mult * std::log1p(currR) * gFactor;
 }
 
 static const float detectT = 0.001f;
@@ -255,6 +256,9 @@ void PyramidT::transformToR(float detailFactor) {
 }
 
 void PyramidT::transformToG(float detailFactor) {
+    // a 2018 speed-up passed detailFactor here directly, which silently
+    // changed Mantiuk06's detail setting; restore the original scaling
+    const float gFactor = 1.f / (LOG10FACTOR * detailFactor);
     PyramidContainer::iterator itCurr = m_pyramid.begin();
     PyramidContainer::iterator itEnd = m_pyramid.end();
 
@@ -265,8 +269,8 @@ void PyramidT::transformToG(float detailFactor) {
             PyramidS::iterator endGxy = itCurr->row_end(i);
 
             while (currGxy != endGxy) {
-                currGxy->gX() = transformToGn(currGxy->gX(), detailFactor);
-                currGxy->gY() = transformToGn(currGxy->gY(), detailFactor);
+                currGxy->gX() = transformToGn(currGxy->gX(), gFactor);
+                currGxy->gY() = transformToGn(currGxy->gY(), gFactor);
                 ++currGxy;
             }
         }

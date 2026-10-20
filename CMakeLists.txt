@@ -37,6 +37,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/build_files/Modu
 include(build_files/Modules/Version.cmake)
 include(build_files/Modules/GlobalSettings.cmake)
 include(build_files/Modules/CompilerSettings.cmake)
+include(build_files/Modules/Hardening.cmake)
 include(build_files/Modules/Internationalization.cmake)
 
 IF(TIMER_PROFILING)
@@ -65,18 +66,6 @@ find_package(Qt5Core             REQUIRED)
 find_package(Qt5Concurrent       REQUIRED)
 find_package(Qt5Widgets          REQUIRED)
 find_package(Qt5Gui              REQUIRED)
-# QtWebEngine is preferred web engine because QtWebKit is deprecated since Qt 5.5:
-# https://wiki.qt.io/New-Features-in-Qt-5.5#Deprecated_Functionality. Unfortunately,
-# some Qt distributions still provide QtWebKit instead of QtWebEngine. So first we
-# try to find QtWebEngine and if not found, we fall back to QtWebKit.
-find_package(Qt5WebEngineCore    QUIET)
-if(Qt5WebEngineCore_FOUND)
-    find_package(Qt5WebEngineWidgets REQUIRED)
-else()
-    find_package(Qt5WebKit           REQUIRED)
-    find_package(Qt5WebKitWidgets    REQUIRED)
-    add_definitions(-DUSE_DEPRECATED_QTWEBKIT)
-endif()
 find_package(Qt5Xml              REQUIRED)
 find_package(Qt5Sql              REQUIRED)
 find_package(Qt5Svg              REQUIRED)
@@ -96,13 +85,6 @@ set(LIBS ${LIBS}
     ${QT_QTCORE_LIBRARIES}  ${QT_QTGUI_LIBRARIES}  ${QT_QTNETWORK_LIBRARIES}
     ${QT_QTXML_LIBRARIES}   ${QT_QTSQL_LIBRARIES})
 
-if(Qt5WebEngineCore_FOUND)
-    message(STATUS "Building with QtWebEngine")
-    set(LIBS ${LIBS} ${QT_QTWEBENGINE_LIBRARIES})
-else()
-    message(STATUS "Building with QtWebKit")
-    set(LIBS ${LIBS} ${QT_QTWEBKIT_LIBRARIES})
-endif()
 
 FIND_PACKAGE(Git)
 IF(GIT_FOUND)
@@ -119,10 +101,14 @@ IF(WIN32)
 
     # to not define min/max macros, which cause troubles with STL and boost
     ADD_DEFINITIONS(-DNOMINMAX)
+    # skip the RPC/OLE headers: their "byte" clashes with std::byte under
+    # C++17 wherever namespace std is pulled in
+    ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
     IF(MINGW)
         find_package(PkgConfig)
         pkg_check_modules(FFTW3F REQUIRED fftw3f)
-        SET(FFTWF_LIBRARIES "libfftw3f.a")
+        # init_fftw.cpp uses the threaded FFTW API
+        SET(FFTWF_LIBRARIES fftw3f_threads fftw3f)
         pkg_check_modules(LCMS REQUIRED lcms2>=2.6)
         pkg_check_modules(LIBRAW REQUIRED libraw)
         ADD_DEFINITIONS("-DDEMOSAICING_GPL2")
@@ -132,6 +118,10 @@ IF(WIN32)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -Werror=unknown-pragmas")
         ENDIF()
         FIND_PACKAGE(Eigen3 REQUIRED)
+        # newer Eigen package configs only export the Eigen3::Eigen target
+        IF(NOT EIGEN3_INCLUDE_DIR AND TARGET Eigen3::Eigen)
+            GET_TARGET_PROPERTY(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+        ENDIF()
         INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
     ELSE()
         SET(LIBRAW_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/../DEPs/include/libraw")
@@ -222,6 +212,10 @@ SET(LIBS ${LIBS} ${LCMS2_LIBRARIES})
 SET(LIBS ${LIBS} ${PNG_LIBRARIES})
 SET(LIBS ${LIBS} ${Boost_LIBRARIES})
 ##SET(LIBS ${LIBS} ${RTPROCESS_LIBRARIES})
+IF(MINGW)
+    # some pkg-config files list librt, which does not exist on Windows
+    LIST(REMOVE_ITEM LIBS rt -lrt)
+ENDIF()
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src/")
 INCLUDE_DIRECTORIES("${CMAKE_BINARY_DIR}/src/")
@@ -249,6 +243,11 @@ IF(ENABLE_UNIT_TEST)
     ENABLE_TESTING()
     ADD_SUBDIRECTORY(test)
 ENDIF(ENABLE_UNIT_TEST)
+
+option(LHDR_BUILD_FUZZERS "Build libFuzzer targets for the image readers" OFF)
+IF(LHDR_BUILD_FUZZERS)
+    ADD_SUBDIRECTORY(test/fuzz)
+ENDIF()
 
 # translations
 FILE(GLOB LUMINANCE_TS i18n/lang_*.ts)
@@ -437,9 +436,9 @@ ELSEIF(WIN32)
         set (PROJECT_VERSION_PATCH ${LHDR_VERSION_PATCH})
 
         find_program(ALIGN_IMAGE_STACK align_image_stack.exe HINTS "${HUGIN_BASE_PATH}" ENV Path ENV ProgramFiles ENV ProgramFiles(x86) PATH_SUFFIXES Hugin/bin bin)
-        # Fail if align_image_stack.exe can't be found
+        # Hugin is only bundled by the installer; the build itself works without it
         if (ALIGN_IMAGE_STACK STREQUAL ALIGN_IMAGE_STACK-NOTFOUND)
-            message(FATAL_ERROR "align_image_stack.exe command not found! Please install Hugin from https://sourceforge.net/projects/hugin/. For non standard base install directory, please define -DHUGIN_BASE_PATH:PATH=xxx in the cmake command line")
+            message(WARNING "align_image_stack.exe not found: the installer will not bundle Hugin alignment. Install Hugin from https://sourceforge.net/projects/hugin/ or pass -DHUGIN_BASE_PATH:PATH=xxx")
         else ()
             message(STATUS "align_image_stack.exe command from Hugin install found: ${ALIGN_IMAGE_STACK}")
         endif ()

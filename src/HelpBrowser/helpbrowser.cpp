@@ -173,27 +173,15 @@ HelpBrowser::HelpBrowser(QWidget *parent, const QString & /*caption*/,
     // m_Ui->htmlPage->page()->setLinkDelegationPolicy(QWebPage::DelegateExternalLinks);
     // connect(m_Ui->htmlPage, SIGNAL(linkClicked(const QUrl &)), this,
     // SLOT(handleExternalLink(const QUrl &)));
-#ifdef USE_DEPRECATED_QTWEBKIT
-    connect(m_Ui->htmlPage, &QWebView::loadStarted, this,
+    connect(m_Ui->htmlPage, &ScTextBrowser::loadStarted, this,
             &HelpBrowser::loadStarted);
-    connect(m_Ui->htmlPage, &QWebView::loadFinished, this,
+    connect(m_Ui->htmlPage, &ScTextBrowser::loadFinished, this,
             &HelpBrowser::loadFinished);
-#else
-    connect(m_Ui->htmlPage, &QWebEngineView::loadStarted, this,
-            &HelpBrowser::loadStarted);
-    connect(m_Ui->htmlPage, &QWebEngineView::loadFinished, this,
-            &HelpBrowser::loadFinished);
-#endif
     // connect(m_Ui->htmlPage->page(), SIGNAL(linkHovered(const QString &, const
     // QString &, const QString & )), this, SLOT(linkHovered(const QString &,
     // const QString &, const QString & )));
-#ifdef USE_DEPRECATED_QTWEBKIT
-    connect(m_Ui->htmlPage->page(), &QWebPage::linkHovered, this,
+    connect(m_Ui->htmlPage, &ScTextBrowser::overLink, this,
             &HelpBrowser::linkHovered);
-#else
-    connect(m_Ui->htmlPage->page(), &QWebEnginePage::linkHovered, this,
-            &HelpBrowser::linkHovered);
-#endif
     language =
         guiLanguage.isEmpty() ? QStringLiteral("en") : guiLanguage.left(2);
     finalBaseDir = LuminancePaths::HelpDir();
@@ -307,17 +295,10 @@ void HelpBrowser::setupLocalUI() {
             &HelpBrowser::deleteAllBookmarkButton_clicked);
     connect(m_Ui->goHome, &QAction::triggered, m_Ui->htmlPage,
             &ScTextBrowser::home);
-#ifdef USE_DEPRECATED_QTWEBKIT
     connect(m_Ui->goBack, &QAction::triggered, m_Ui->htmlPage,
-            &QWebView::back);
+            &ScTextBrowser::back);
     connect(m_Ui->goFwd, &QAction::triggered, m_Ui->htmlPage,
-            &QWebView::forward);
-#else
-    connect(m_Ui->goBack, &QAction::triggered, m_Ui->htmlPage,
-            &QWebEngineView::back);
-    connect(m_Ui->goFwd, &QAction::triggered, m_Ui->htmlPage,
-            &QWebEngineView::forward);
-#endif
+            &QTextBrowser::forward);
     connect(m_Ui->zoomIn, &QAction::triggered, this,
             &HelpBrowser::zoomIn_clicked);
     connect(m_Ui->zoomOriginal, &QAction::triggered, this,
@@ -392,11 +373,7 @@ void HelpBrowser::print() {
             this->printAvailable();
             });
     */
-#ifdef USE_DEPRECATED_QTWEBKIT
     m_textBrowser->setSource(m_Ui->htmlPage->url());
-#else
-    m_textBrowser->setSource(m_Ui->htmlPage->page()->url());
-#endif
     this->printAvailable();
 }
 
@@ -418,11 +395,7 @@ void HelpBrowser::printPreview() {
             this->printPreviewAvailable();
             });
     */
-#ifdef USE_DEPRECATED_QTWEBKIT
     m_textBrowser->setSource(m_Ui->htmlPage->url());
-#else
-    m_textBrowser->setSource(m_Ui->htmlPage->page()->url());
-#endif
     this->printPreviewAvailable();
 }
 
@@ -498,7 +471,7 @@ void HelpBrowser::findNext() {
         return;
     }
     // find it. finally
-    m_Ui->htmlPage->findText(findText, 0);
+    m_Ui->htmlPage->findText(findText);
 }
 
 void HelpBrowser::findPrevious() {
@@ -507,7 +480,7 @@ void HelpBrowser::findPrevious() {
         return;
     }
     // find it. finally
-    m_Ui->htmlPage->findText(findText);
+    m_Ui->htmlPage->findText(findText, true);
 }
 
 void HelpBrowser::bookmarkButton_clicked() {
@@ -775,7 +748,8 @@ void HelpBrowser::zoomOut_clicked() {
 void HelpBrowser::handleExternalLink(const QUrl &url) {
     if ((url.scheme() == QLatin1String("http")) ||
         url.scheme() == QLatin1String("https")) {
-        m_Ui->htmlPage->load(url);
+        // web pages open in the system browser, never inside the app
+        QDesktopServices::openUrl(url);
     } else {
         QApplication::restoreOverrideCursor();
         if (QMessageBox::warning(

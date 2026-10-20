@@ -451,7 +451,7 @@ std::unique_ptr<datmoConditionalDensity> datmo_compute_conditional_density(
 // For debug purposes only
 #ifdef DEBUG
         char fname[20];
-        sprintf(fname, "l_%d.pfs", f + 1);
+        snprintf(fname, sizeof(fname), "l_%d.pfs", f + 1);
         dumpPFS(fname, width, height, LP_low, "Y");
 #endif
 

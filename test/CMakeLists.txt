@@ -72,7 +72,7 @@ ELSE()
         ContrastDomain pfs pfstmo common
         ${GTEST_BOTH_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${LIBS} -lrt)
+        ${LIBS} $<$<PLATFORM_ID:Linux>:rt>)
 ENDIF()
 TARGET_LINK_LIBRARIES(TestMantiuk06Basic Qt5::Core)
 
@@ -92,7 +92,7 @@ ELSE()
         ContrastDomain pfs pfstmo common
         ${GTEST_BOTH_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${LIBS} -lrt)
+        ${LIBS} $<$<PLATFORM_ID:Linux>:rt>)
 ENDIF()
 TARGET_LINK_LIBRARIES(TestMantiuk06Pyramid Qt5::Core)
 ADD_TEST(TestMantiuk06Pyramid TestMantiuk06Pyramid)
@@ -167,7 +167,7 @@ ADD_EXECUTABLE(TestHdrCreationWizard TestHdrCreationWizard.cpp)
 IF(APPLE OR MSVC)
     TARGET_LINK_LIBRARIES(TestHdrCreationWizard
     ${LUMINANCE_MODULES_GUI} ${LIBS})
-ELSEIF(UNIX)
+ELSE()
     TARGET_LINK_LIBRARIES(TestHdrCreationWizard
     -Xlinker --start-group ${LUMINANCE_MODULES_GUI} -Xlinker --end-group
     ${LIBS})
@@ -192,5 +192,13 @@ TARGET_LINK_LIBRARIES(TestPoissonSolver hdrwizard pfs pfstmo common
     ${CMAKE_THREAD_LIBS_INIT}
     ${LIBS})
 ADD_TEST(TestPoissonSolver TestPoissonSolver)
+
+# Radiance reader: malformed RLE data must not overflow
+ADD_EXECUTABLE(TestRGBEReader TestRGBEReader.cpp)
+TARGET_LINK_LIBRARIES(TestRGBEReader pfs
+    ${GTEST_BOTH_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${LIBS})
+ADD_TEST(TestRGBEReader TestRGBEReader)
 
 ENDIF(GTEST_FOUND)

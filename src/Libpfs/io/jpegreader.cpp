@@ -20,6 +20,12 @@
  * ----------------------------------------------------------------------
  */
 
+// jpeglib.h comes first: on MinGW it pulls in the Windows RPC headers,
+// whose 'byte' is ambiguous with std::byte once project headers have
+// brought namespace std into scope
+#include <cstdio>
+#include <jpeglib.h>
+
 #include <Libpfs/io/jpegreader.h>
 
 #include <Libpfs/colorspace/cmyk.h>
@@ -32,7 +38,6 @@
 #include <Libpfs/utils/resourcehandlerstdio.h>
 #include <Libpfs/utils/transform.h>
 
-#include <jpeglib.h>
 #include <cassert>
 #include <iostream>
 
