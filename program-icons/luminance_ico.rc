@@ -1,6 +1,6 @@
 #include "Common/config.h"
 
-#define PRODUCTNAME_STR "Luminance HDR"
+#define PRODUCTNAME_STR "LumiereHDR"
 IDI_ICON1               ICON    DISCARDABLE     "luminance.ico"
 //See for more information MSDN: http://msdn.microsoft.com/en-us/library/aa381049(VS.85).aspx
 1 VERSIONINFO
@@ -17,10 +17,10 @@ BEGIN
             VALUE "ProductName",      PRODUCTNAME_STR
             VALUE "FileVersion",      LUMINANCEVERSION
             VALUE "FileDescription",  "Open Source HDR Imaging Workflow tool"
-            VALUE "CompanyName",      "http://qtpfsgui.sourceforge.net"
+            VALUE "CompanyName",      "LumiereHDR project, https://github.com/thommy87/LumiereHDR"
             VALUE "InternalName",     PRODUCTNAME_STR
             VALUE "ProductVersion",   LUMINANCEVERSION
-            VALUE "LegalCopyright",   "GPL v2.0"
+            VALUE "LegalCopyright",   "GPL v2.0, based on Luminance HDR"
             VALUE "Comments",         "For the full text version of the GPL please read http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt"
             //VALUE "OriginalFilename", "luminance-hdr.exe"
             //VALUE "LegalTrademarks",  VER_LEGALTRADEMARKS1_STR

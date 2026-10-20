@@ -1,11 +1,18 @@
 ![Logo](images/luminance.svg)
-# Luminance HDR
+# LumièreHDR
 ---------------
-[![Release](https://img.shields.io/github/release/LuminanceHDR/LuminanceHDR.svg)](https://github.com/LuminanceHDR/LuminanceHDR/releases/tag/v.2.6.0)
-[![License](https://img.shields.io/github/license/LuminanceHDR/LuminanceHDR.svg)](https://github.com/LuminanceHDR/LuminanceHDR/blob/master/LICENSE)
-[![Issue Stats](https://img.shields.io/github/issues/LuminanceHDR/LuminanceHDR.svg)](https://github.com/LuminanceHDR/LuminanceHDR/issues)
-[![Pull Request Stats](https://img.shields.io/github/issues-pr/LuminanceHDR/LuminanceHDR.svg)](https://github.com/LuminanceHDR/LuminanceHDR/pulls)
-[![Packaging status](https://repology.org/badge/tiny-repos/luminance-hdr.svg)](https://repology.org/project/luminance-hdr/badges)
+[![CI](https://github.com/thommy87/LumiereHDR/actions/workflows/ci.yml/badge.svg)](https://github.com/thommy87/LumiereHDR/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/thommy87/LumiereHDR.svg)](LICENSE)
+
+LumièreHDR is a modernized fork of [Luminance HDR](https://github.com/LuminanceHDR/LuminanceHDR)
+2.6, focused on security, a new user interface and current platforms.
+It stays free software under the GNU GPL v2.
+
+- Releases: https://github.com/thommy87/LumiereHDR/releases
+- [Code signing policy](CODE_SIGNING_POLICY.md): free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org)
+- [Privacy policy](PRIVACY.md)
+
+Luminance HDR, the project this fork is based on:
 
 Copyright (C) 2010-2019
 

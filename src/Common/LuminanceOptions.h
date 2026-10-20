@@ -60,6 +60,8 @@ class LuminanceOptions : public QObject {
     void setPortableMode(bool isPortable);
 
     bool checkForUpdate();
+    bool isUpdateCheckEnabled();
+    void setUpdateCheckEnabled(bool);
     void setUpdateChecked();
 
    public Q_SLOTS:

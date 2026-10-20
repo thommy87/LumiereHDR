@@ -135,8 +135,18 @@ void LuminanceOptions::setPortableMode(bool isPortable) {
 }
 
 bool LuminanceOptions::checkForUpdate() {
+    if (!isUpdateCheckEnabled()) return false;
     QDate date = value(KEY_UPDATE_CHECKED_ON, QDate(1, 1, 1)).toDate();
     return date < QDate::currentDate();
+}
+
+// off by default: the app contacts the network only when the user opts in
+bool LuminanceOptions::isUpdateCheckEnabled() {
+    return value(KEY_UPDATE_CHECK_ENABLED, false).toBool();
+}
+
+void LuminanceOptions::setUpdateCheckEnabled(bool enabled) {
+    setValue(KEY_UPDATE_CHECK_ENABLED, enabled);
 }
 
 void LuminanceOptions::setUpdateChecked() {

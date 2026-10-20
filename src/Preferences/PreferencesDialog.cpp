@@ -184,6 +184,8 @@ void PreferencesDialog::on_okButton_clicked() {
     luminance_options.setPreviewWidth(m_Ui->previewsWidthSpinBox->value());
     luminance_options.setPreviewPanelActive(
         m_Ui->checkBoxTMOWindowsPreviewPanel->isChecked());
+    luminance_options.setUpdateCheckEnabled(
+        m_Ui->chkCheckForUpdates->isChecked());
 
     if (m_Ui->chkPortableMode->isChecked() !=
         LuminanceOptions::isCurrentPortableMode) {
@@ -549,6 +551,8 @@ void PreferencesDialog::from_options_to_gui() {
 
     m_Ui->checkBoxTMOWindowsPreviewPanel->setChecked(
         luminance_options.isPreviewPanelActive());
+    m_Ui->chkCheckForUpdates->setChecked(
+        luminance_options.isUpdateCheckEnabled());
 
     m_Ui->chkPortableMode->setChecked(LuminanceOptions::isCurrentPortableMode);
 
