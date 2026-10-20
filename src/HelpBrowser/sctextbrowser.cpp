@@ -43,24 +43,49 @@ a copyright and/or license notice that predates the release of Scribus 1.3.2
 for which a new license (GPL+exception) is in place.
 */
 
-#include <QApplication>
-#include <QCursor>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QMessageBox>
-#include <QProcess>
+#include <QDesktopServices>
 #include <QString>
-#include <QStringList>
-#include <QToolTip>
+#include <QTextDocument>
 #include <QUrl>
 
 #include "sctextbrowser.h"
 
-#ifdef USE_DEPRECATED_QTWEBKIT
-ScTextBrowser::ScTextBrowser(QWidget *parent) : QWebView(parent) {}
-#else
-ScTextBrowser::ScTextBrowser(QWidget *parent) : QWebEngineView (parent) {}
-#endif
+ScTextBrowser::ScTextBrowser(QWidget *parent)
+    : QTextBrowser(parent), m_basePointSize(font().pointSizeF()) {
+    // links are routed through openLink() so web pages never load in-app
+    setOpenLinks(false);
+    connect(this, &QTextBrowser::anchorClicked, this, &ScTextBrowser::openLink);
+    connect(this, QOverload<const QString &>::of(&QTextBrowser::highlighted),
+            this, &ScTextBrowser::overLink);
+}
+
 void ScTextBrowser::home() {
     if (m_home.isValid()) load(m_home);
+}
+
+void ScTextBrowser::load(const QUrl &url) {
+    if (!url.isLocalFile() && !url.isRelative()) {
+        QDesktopServices::openUrl(url);
+        return;
+    }
+    emit loadStarted();
+    setSource(url);
+    emit loadFinished(!document()->isEmpty());
+}
+
+void ScTextBrowser::openLink(const QUrl &url) {
+    // in-page anchors and relative links resolve against the current page
+    load(url.isRelative() ? source().resolved(url) : url);
+}
+
+bool ScTextBrowser::findText(const QString &text, bool backward) {
+    return find(text, backward ? QTextDocument::FindBackward
+                               : QTextDocument::FindFlags());
+}
+
+void ScTextBrowser::setZoomFactor(qreal factor) {
+    if (m_basePointSize <= 0) return;
+    QFont f = font();
+    f.setPointSizeF(m_basePointSize * factor);
+    setFont(f);
 }

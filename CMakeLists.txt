@@ -66,18 +66,6 @@ find_package(Qt5Core             REQUIRED)
 find_package(Qt5Concurrent       REQUIRED)
 find_package(Qt5Widgets          REQUIRED)
 find_package(Qt5Gui              REQUIRED)
-# QtWebEngine is preferred web engine because QtWebKit is deprecated since Qt 5.5:
-# https://wiki.qt.io/New-Features-in-Qt-5.5#Deprecated_Functionality. Unfortunately,
-# some Qt distributions still provide QtWebKit instead of QtWebEngine. So first we
-# try to find QtWebEngine and if not found, we fall back to QtWebKit.
-find_package(Qt5WebEngineCore    QUIET)
-if(Qt5WebEngineCore_FOUND)
-    find_package(Qt5WebEngineWidgets REQUIRED)
-else()
-    find_package(Qt5WebKit           REQUIRED)
-    find_package(Qt5WebKitWidgets    REQUIRED)
-    add_definitions(-DUSE_DEPRECATED_QTWEBKIT)
-endif()
 find_package(Qt5Xml              REQUIRED)
 find_package(Qt5Sql              REQUIRED)
 find_package(Qt5Svg              REQUIRED)
@@ -97,13 +85,6 @@ set(LIBS ${LIBS}
     ${QT_QTCORE_LIBRARIES}  ${QT_QTGUI_LIBRARIES}  ${QT_QTNETWORK_LIBRARIES}
     ${QT_QTXML_LIBRARIES}   ${QT_QTSQL_LIBRARIES})
 
-if(Qt5WebEngineCore_FOUND)
-    message(STATUS "Building with QtWebEngine")
-    set(LIBS ${LIBS} ${QT_QTWEBENGINE_LIBRARIES})
-else()
-    message(STATUS "Building with QtWebKit")
-    set(LIBS ${LIBS} ${QT_QTWEBKIT_LIBRARIES})
-endif()
 
 FIND_PACKAGE(Git)
 IF(GIT_FOUND)

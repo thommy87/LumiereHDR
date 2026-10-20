@@ -258,7 +258,7 @@
  <customwidgets>
   <customwidget>
    <class>ScTextBrowser</class>
-   <extends>QWidget</extends>
+   <extends>QTextBrowser</extends>
    <header>HelpBrowser/sctextbrowser.h</header>
   </customwidget>
  </customwidgets>
