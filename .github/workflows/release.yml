@@ -1,0 +1,110 @@
+name: Release
+
+# Builds the Windows package from a version tag (e.g. v2.7.0), signs it
+# through SignPath when the project is set up there, and drafts a GitHub
+# release. Signing needs the SIGNPATH_API_TOKEN secret and the
+# SIGNPATH_ORGANIZATION_ID repository variable; without them the package
+# is published unsigned. See CODE_SIGNING_POLICY.md.
+
+on:
+  push:
+    tags: ["v*"]
+  # dry run of the packaging whenever the release workflow itself changes
+  pull_request:
+    paths: [".github/workflows/release.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  windows:
+    name: Windows package
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          pacboy: >-
+            toolchain:p cmake:p ninja:p pkgconf:p zip:p
+            qt5-base:p qt5-tools:p qt5-svg:p qt5-winextras:p qt5-translations:p
+            boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
+            cfitsio:p libraw:p fftw:p lcms2:p eigen3:p
+
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+
+      - name: Check exploit mitigations
+        shell: pwsh
+        run: python build_files/check_pe_hardening.py build/luminance-hdr.exe build/luminance-hdr-cli.exe
+
+      - name: Assemble package
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          [ "$GITHUB_REF_TYPE" = tag ] || version="0.0.0-${GITHUB_SHA::7}"
+          dist="LumiereHDR-${version}-windows-x64"
+          echo "DIST=$dist" >> "$GITHUB_ENV"
+          mkdir -p "$dist/i18n"
+          cp build/luminance-hdr.exe build/luminance-hdr-cli.exe "$dist/"
+          cp -r help hdrhtml "$dist/"
+          find build -name 'lang_*.qm' -exec cp {} "$dist/i18n/" \;
+          cp LICENSE README.md PRIVACY.md CODE_SIGNING_POLICY.md "$dist/"
+          deploy=$(command -v windeployqt-qt5 || command -v windeployqt)
+          "$deploy" --release --no-translations --no-compiler-runtime "$dist/luminance-hdr.exe"
+          # copy every MSYS2 DLL the binaries and Qt plugins depend on
+          for pass in 1 2 3; do
+            find "$dist" -name '*.exe' -o -name '*.dll' | while read -r f; do
+              ldd "$f" | awk '/\/ucrt64\// {print $3}'
+            done | sort -u | while read -r dll; do
+              cp -n "$dll" "$dist/" 2>/dev/null || true
+            done
+          done
+          zip -qr "$dist.zip" "$dist"
+
+      - name: Upload unsigned package
+        id: upload-unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DIST }}-unsigned
+          path: ${{ env.DIST }}.zip
+
+      - name: Sign with SignPath
+        if: vars.SIGNPATH_ORGANIZATION_ID != '' && github.event_name != 'pull_request'
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: LumiereHDR
+          signing-policy-slug: ${{ github.ref_type == 'tag' && 'release-signing' || 'test-signing' }}
+          artifact-configuration-slug: windows-zip
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          # an approver must approve each release in SignPath first
+          wait-for-completion-timeout-in-seconds: 18000
+          output-artifact-directory: signed
+
+      - name: Pick package for release
+        shell: bash
+        run: |
+          if [ -d signed ]; then cp signed/*.zip "release-$DIST.zip"; else cp "$DIST.zip" "release-$DIST.zip"; fi
+          mv "release-$DIST.zip" "$DIST.zip"
+
+      - name: Draft GitHub release
+        if: github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$DIST.zip" --draft \
+            --title "LumièreHDR ${GITHUB_REF_NAME#v}" \
+            --notes "Windows x64 portable package. Code signing policy: see CODE_SIGNING_POLICY.md."

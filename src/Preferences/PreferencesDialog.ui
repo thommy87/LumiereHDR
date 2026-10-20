@@ -583,6 +583,16 @@
             </property>
            </widget>
           </item>
+          <item row="7" column="1">
+           <widget class="QCheckBox" name="chkCheckForUpdates">
+            <property name="toolTip">
+             <string>Once a day, ask GitHub whether a newer LumiereHDR release exists</string>
+            </property>
+            <property name="text">
+             <string>Check for updates online</string>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_21">
             <item>
@@ -2672,6 +2682,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>previewsWidthSpinBox</tabstop>
   <tabstop>checkBoxTMOWindowsPreviewPanel</tabstop>
   <tabstop>chkPortableMode</tabstop>
+  <tabstop>chkCheckForUpdates</tabstop>
   <tabstop>exportDirectoryEdit</tabstop>
   <tabstop>exportFileButton</tabstop>
   <tabstop>exportFormatCombo</tabstop>
