@@ -23,14 +23,22 @@
 #include <QtGlobal>
 #include <QDebug>
 #include <QDesktopServices>
-#include <QDomDocument>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkRequest>
+#include <QVersionNumber>
 
 #include "Common/LuminanceOptions.h"
 #include "Common/config.h"
 #include "Common/global.h"
 #include "UI/UMessageBox.h"
 #include "UpdateChecker.h"
+
+// releases are published on GitHub; only pages under this prefix are opened
+static const char RELEASES_API[] =
+    "https://api.github.com/repos/thommy87/LumiereHDR/releases/latest";
+static const char RELEASES_PAGE_PREFIX[] =
+    "https://github.com/thommy87/LumiereHDR/releases/";
 
 UpdateChecker::UpdateChecker(
     QWidget *parent)  //, QNetworkAccessManager* networkManager)
@@ -48,14 +56,9 @@ UpdateChecker::UpdateChecker(
         connect(m_tray, &QSystemTrayIcon::activated, this,
                 &UpdateChecker::trayMessageClicked);
 
-        QNetworkRequest request = QNetworkRequest(
-            QUrl(QStringLiteral(
-                     "http://qtpfsgui.sourceforge.net/updater/get.php?c=%1")
-                     .arg(LUMINANCEVERSION_NUM)));
-        request.setRawHeader("User-Agent",
-                             "Mozilla/5.0 (Windows NT 6.2; Win64; x64) "
-                             "AppleWebKit/537.36 (KHTML, like Gecko) "
-                             "Chrome/32.0.1667.0 Safari/537.36");
+        QNetworkRequest request{QUrl(QLatin1String(RELEASES_API))};
+        request.setRawHeader("Accept", "application/vnd.github+json");
+        request.setRawHeader("User-Agent", "LumiereHDR/" LUMINANCEVERSION);
         m_networkManager->get(request);
     }
 }
@@ -67,73 +70,72 @@ UpdateChecker::~UpdateChecker() {
 }
 
 void UpdateChecker::trayMessageClicked() const {
-    QDesktopServices::openUrl(QUrl(m_latestUrl));
+    // the URL comes from the network: open it only if it is our release page
+    if (m_latestUrl.startsWith(QLatin1String(RELEASES_PAGE_PREFIX))) {
+        QDesktopServices::openUrl(QUrl(m_latestUrl));
+    }
     m_tray->hide();
 }
 
 void UpdateChecker::requestFinished(QNetworkReply *reply) {
+    reply->deleteLater();
     if (reply->error() == QNetworkReply::NoError) {
         LuminanceOptions options;
         options.setUpdateChecked();
 
-        QDomDocument document;
-        document.setContent(reply);
+        // GitHub "latest release" JSON: {"tag_name": "v2.7.0",
+        // "html_url": "https://github.com/thommy87/LumiereHDR/releases/tag/v2.7.0"}
+        const QJsonObject release =
+            QJsonDocument::fromJson(reply->readAll()).object();
+        QString tag = release.value(QStringLiteral("tag_name")).toString();
+        const QString url = release.value(QStringLiteral("html_url")).toString();
+        if (tag.startsWith(QLatin1Char('v'))) tag.remove(0, 1);
 
-        //<?xml version="1.0"?>
-        //<root>
-        //<version>2.3.1</version>
-        //<url>http://qtpfsgui.sourceforge.net/?p=251</url>
-        //</root>
+        const QVersionNumber latest = QVersionNumber::fromString(tag);
+        if (!latest.isNull() &&
+            url.startsWith(QLatin1String(RELEASES_PAGE_PREFIX))) {
+            m_version = tag;
+            m_latestUrl = url;
 
-        QDomNode nodeRoot = document.documentElement();
-        if (!nodeRoot.isNull()) {
-            QDomNode nodeVersion =
-                nodeRoot.firstChildElement(QStringLiteral("version"));
-            QDomNode nodeUrl =
-                nodeRoot.firstChildElement(QStringLiteral("url"));
-            if (!nodeVersion.isNull() && !nodeUrl.isNull()) {
-                m_version = nodeVersion.toElement().text();
-                m_latestUrl = nodeUrl.toElement().text();
+            // only announce releases newer than the running one
+            if (latest <= QVersionNumber::fromString(
+                              QLatin1String(LUMINANCEVERSION)))
+                return;
 
-                if (m_version == LUMINANCEVERSION) return;
+            QString msgTitle =
+                QStringLiteral("LumiereHDR %1").arg(m_version);
+            QString msgContent = tr("A new release is ready for download!");
+            QWidget *widgetP = (QWidget *)parent();
 
-                qDebug() << m_version;
-
-                QString msgTitle =
-                    QStringLiteral("Luminance HDR %1").arg(m_version);
-                QString msgContent = tr("A new release is ready for download!");
-                QWidget *widgetP = (QWidget *)parent();
-
-                emit updateAvailable();
+            emit updateAvailable();
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_X11)
+            if (UMessageBox::question(
+                    msgTitle,
+                    msgContent + "\n\n" + tr("Do you want to open the "
+                                             "webpage for download now?"),
+                    widgetP) == QMessageBox::Yes) {
+                trayMessageClicked();
+            }
+#else
+            if (QSystemTrayIcon::supportsMessages()) {
+                m_tray->setToolTip(widgetP->windowTitle());
+                m_tray->show();
+                m_tray->showMessage(
+                    msgTitle,
+                    msgContent + "\n" +
+                        tr("Click to download, or select Help->Update!"));
+            } else {
                 if (UMessageBox::question(
                         msgTitle,
-                        msgContent + "\n\n" + tr("Do you want to open the "
-                                                 "webpage for download now?"),
+                        msgContent + "\n\n" +
+                            tr("Do you want to open the webpage for "
+                               "download now?"),
                         widgetP) == QMessageBox::Yes) {
                     trayMessageClicked();
                 }
-#else
-                if (QSystemTrayIcon::supportsMessages()) {
-                    m_tray->setToolTip(widgetP->windowTitle());
-                    m_tray->show();
-                    m_tray->showMessage(
-                        msgTitle,
-                        msgContent + "\n" +
-                            tr("Click to download, or select Help->Update!"));
-                } else {
-                    if (UMessageBox::question(
-                            msgTitle,
-                            msgContent + "\n\n" +
-                                tr("Do you want to open the webpage for "
-                                   "download now?"),
-                            widgetP) == QMessageBox::Yes) {
-                        trayMessageClicked();
-                    }
-                }
-#endif
             }
+#endif
         }
     }
 }
