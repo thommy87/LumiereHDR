@@ -581,11 +581,26 @@ void BatchTMDialog::from_database() {
                              .value(QStringLiteral("operator"))
                              .toString();
 
+            // table names cannot be bound as parameters: accept only the
+            // known operator tables, and bind the user-typed comment
+            static const QStringList operatorTables = {
+                QStringLiteral("ashikhmin"),  QStringLiteral("drago"),
+                QStringLiteral("durand"),     QStringLiteral("fattal"),
+                QStringLiteral("ferradans"),  QStringLiteral("ferwerda"),
+                QStringLiteral("kimkautz"),   QStringLiteral("lischinski"),
+                QStringLiteral("mantiuk06"),  QStringLiteral("mantiuk08"),
+                QStringLiteral("pattanaik"),  QStringLiteral("reinhard02"),
+                QStringLiteral("reinhard05"), QStringLiteral("vanhateren")};
+            if (!operatorTables.contains(tmOperator)) continue;
+
             QSqlTableModel *temp_model = new QSqlTableModel(nullptr, m_db);
             temp_model->setTable(tmOperator);
             temp_model->select();
-            QSqlQuery query("SELECT * from " + tmOperator +
-                            " WHERE comment = '" + comment + "'", m_db);
+            QSqlQuery query(m_db);
+            query.prepare("SELECT * from " + tmOperator +
+                          " WHERE comment = :comment");
+            query.bindValue(QStringLiteral(":comment"), comment);
+            query.exec();
 
             TonemappingOptions *tm_opt = new TonemappingOptions;
             if (tmOperator == QLatin1String("ashikhmin")) {

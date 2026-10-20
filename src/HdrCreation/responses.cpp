@@ -175,7 +175,7 @@ void dump_gnuplot(const char *filename, const float *array, int M) {
 void dump_gnuplot(const char *filename, const float *array, int M,
                   int counter) {
     char fn[2048];
-    sprintf(fn, filename, counter);
+    snprintf(fn, sizeof(fn), filename, counter);
     dump_gnuplot(fn, array, M);
 }
 
