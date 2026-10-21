@@ -85,7 +85,7 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure
       - name: Golden-image check of all tone mappers
-        if: matrix.name == 'gcc release'
+        if: matrix.name == 'gcc release' || matrix.name == 'gcc qt6'
         run: |
           sudo apt-get install -y --no-install-recommends python3-pil
           python3 test/golden/run_golden.py build/luminance-hdr-cli
