@@ -81,6 +81,7 @@
 #include <QtPrintSupport/QPrinter>
 
 #include "Common/LuminanceOptions.h"
+#include "Common/config.h"
 #include "Common/global.h"
 #include "HelpBrowser/LuminancePaths.h"
 #include "HelpBrowser/schelptreemodel.h"
