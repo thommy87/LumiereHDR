@@ -77,6 +77,10 @@ jobs:
             echo '```'
             grep -E "error:|undefined reference|FAILED:" build.log | sed 's#.*/LumiereHDR/LumiereHDR/##' | sort -u | head -300
             echo '```'
+            echo "#### First failed command"
+            echo '```'
+            grep -m1 -A1 "^FAILED:" build.log | tail -1 | cut -c1-4000
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Test
         env:
@@ -150,6 +154,10 @@ jobs:
             echo "### Build errors (Windows)"
             echo '```'
             grep -E "error:|undefined reference|FAILED:" build.log | sed 's#.*/LumiereHDR/LumiereHDR/##' | sort -u | head -300
+            echo '```'
+            echo "#### First failed command"
+            echo '```'
+            grep -m1 -A1 "^FAILED:" build.log | tail -1 | cut -c1-4000
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Test
