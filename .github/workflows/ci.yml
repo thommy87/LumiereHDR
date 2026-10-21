@@ -84,6 +84,11 @@ jobs:
           UBSAN_OPTIONS: print_stacktrace=1
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure
+      - name: Golden-image check of all tone mappers
+        if: matrix.name == 'gcc release'
+        run: |
+          sudo apt-get install -y --no-install-recommends python3-pil
+          python3 test/golden/run_golden.py build/luminance-hdr-cli
 
   fuzz:
     name: Fuzz Radiance reader
