@@ -11,7 +11,7 @@ on:
     tags: ["v*"]
   # dry run of the packaging whenever the release workflow itself changes
   pull_request:
-    paths: [".github/workflows/release.yml"]
+    paths: [".github/workflows/release.yml", "build_files/windows/**"]
   workflow_dispatch:
 
 permissions:
@@ -98,8 +98,48 @@ jobs:
       - name: Pick package for release
         shell: bash
         run: |
-          if [ -d signed ]; then cp signed/*.zip "release-$DIST.zip"; else cp "$DIST.zip" "release-$DIST.zip"; fi
-          mv "release-$DIST.zip" "$DIST.zip"
+          # with signing, rebuild the folder from the signed zip so the
+          # installer contains the signed programs
+          if [ -d signed ]; then
+            cp signed/*.zip "$DIST.zip"
+            rm -rf "$DIST" && unzip -q "$DIST.zip"
+          fi
+          version="${GITHUB_REF_NAME#v}"
+          [ "$GITHUB_REF_TYPE" = tag ] || version="0.0.0"
+          echo "VERSION_NUMERIC=${version%%-*}" >> "$GITHUB_ENV"
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y; }
+          & $iscc /Q "/DAppVersion=$($env:DIST -replace '^LumiereHDR-(.*)-windows-x64$','$1')" `
+            "/DAppVersionNumeric=$env:VERSION_NUMERIC" `
+            "/DSourceDir=$PWD\$env:DIST" "/DOutputDir=$PWD\installer" `
+            build_files\windows\LumiereHDR.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-ChildItem installer
+
+      - name: Upload unsigned installer
+        id: upload-installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DIST }}-setup-unsigned
+          path: installer/*.exe
+
+      - name: Sign installer with SignPath
+        if: vars.SIGNPATH_ORGANIZATION_ID != '' && github.event_name != 'pull_request'
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: LumiereHDR
+          signing-policy-slug: ${{ github.ref_type == 'tag' && 'release-signing' || 'test-signing' }}
+          artifact-configuration-slug: windows-installer
+          github-artifact-id: ${{ steps.upload-installer.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 18000
+          output-artifact-directory: installer-signed
 
       - name: Draft GitHub release
         if: github.ref_type == 'tag'
@@ -107,6 +147,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "$DIST.zip" --draft \
-            --title "LumièreHDR ${GITHUB_REF_NAME#v}" \
-            --notes "Windows x64 portable package. Code signing policy: see CODE_SIGNING_POLICY.md."
+          setup=$(ls installer-signed/*.exe 2>/dev/null || ls installer/*.exe)
+          gh release create "$GITHUB_REF_NAME" "$DIST.zip" $setup --draft             --title "LumièreHDR ${GITHUB_REF_NAME#v}"             --notes "Windows x64: installer (setup.exe) or portable zip. Code signing policy: see CODE_SIGNING_POLICY.md."
