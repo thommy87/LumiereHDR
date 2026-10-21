@@ -101,7 +101,7 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context,
     QFile outFile("debuglog.txt");
     if (outFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
         QTextStream ts(&outFile);
-        ts << txt << endl;
+        ts << txt << Qt::endl;
     }
 }
 #endif
