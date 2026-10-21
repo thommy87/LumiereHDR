@@ -37,7 +37,7 @@ jobs:
           install: zip
           pacboy: >-
             toolchain:p cmake:p ninja:p pkgconf:p
-            qt5-base:p qt5-tools:p qt5-svg:p qt5-winextras:p qt5-translations:p
+            qt6-base:p qt6-tools:p qt6-svg:p qt6-5compat:p qt6-translations:p
             boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
             cfitsio:p libraw:p fftw:p lcms2:p eigen3:p
 
@@ -61,8 +61,8 @@ jobs:
           cp -r help hdrhtml "$dist/"
           find build -name 'lang_*.qm' -exec cp {} "$dist/i18n/" \;
           cp LICENSE README.md PRIVACY.md CODE_SIGNING_POLICY.md "$dist/"
-          deploy=$(command -v windeployqt-qt5 || command -v windeployqt)
-          "$deploy" --release --no-translations --no-compiler-runtime --no-angle --no-opengl-sw "$dist/luminance-hdr.exe"
+          deploy=$(command -v windeployqt6 || command -v windeployqt-qt6 || command -v windeployqt)
+          "$deploy" --release --no-translations --no-compiler-runtime --no-opengl-sw "$dist/luminance-hdr.exe"
           # copy every MSYS2 DLL the binaries and Qt plugins depend on
           for pass in 1 2 3; do
             find "$dist" -name '*.exe' -o -name '*.dll' | while read -r f; do

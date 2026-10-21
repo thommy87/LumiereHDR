@@ -40,21 +40,19 @@ OsIntegration::OsIntegration()
     : QObject(),
       m_progressMin(0),
       m_progressMax(100)
-#ifdef Q_OS_WIN
+#ifdef LHDR_WIN_TASKBAR
       ,
       m_winProgressbar(0)
 #endif
 {
-#ifdef Q_OS_WIN
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
-        m_winProgressbar = new EcWin7();
+#ifdef LHDR_WIN_TASKBAR
+    m_winProgressbar = new EcWin7();
 #endif
 }
 
 OsIntegration::~OsIntegration() {
-#ifdef Q_OS_WIN
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
-        delete m_winProgressbar;
+#ifdef LHDR_WIN_TASKBAR
+    delete m_winProgressbar;
 #endif
 }
 
@@ -73,7 +71,7 @@ OsIntegration *OsIntegration::getInstancePtr() {
 }
 
 void OsIntegration::init(QWidget *mainWindow) {
-#ifdef Q_OS_WIN
+#ifdef LHDR_WIN_TASKBAR
     if (m_winProgressbar) {
         m_winProgressbar->init(mainWindow);
     }
@@ -81,7 +79,7 @@ void OsIntegration::init(QWidget *mainWindow) {
 }
 
 void OsIntegration::setProgress(int value, int max) {
-#ifdef Q_OS_WIN
+#ifdef LHDR_WIN_TASKBAR
     if (m_winProgressbar) {
         m_winProgressbar->setProgressValue(value, max);
     }
@@ -89,7 +87,7 @@ void OsIntegration::setProgress(int value, int max) {
 }
 
 void OsIntegration::setProgressValue(int value) {
-#ifdef Q_OS_WIN
+#ifdef LHDR_WIN_TASKBAR
     if (m_winProgressbar) {
         m_winProgressbar->setProgressValue(value,
                                            m_progressMax - m_progressMin);
@@ -103,7 +101,7 @@ void OsIntegration::setProgressRange(int min, int max) {
 }
 
 void OsIntegration::addRecentFile(const QString &filename) {
-#ifdef Q_OS_WIN
+#ifdef LHDR_WIN_TASKBAR
     if (m_winProgressbar) {
         m_winProgressbar->addRecentFile(filename);
     }

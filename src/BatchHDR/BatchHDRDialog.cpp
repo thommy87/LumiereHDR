@@ -24,6 +24,7 @@
 */
 
 #include <BatchHDR/BatchHDRDialog.h>
+#include <QRegularExpression>
 #include <BatchHDR/ui_BatchHDRDialog.h>
 #include <Common/CommonFunctions.h>
 
@@ -233,7 +234,7 @@ BatchHDRDialog::BatchHDRDialog(QWidget *p, QSqlDatabase db)
     chosenInputDir.setNameFilters(filters);
     m_bracketed = chosenInputDir.entryList();
     // hack to prepend to this list the path as prefix.
-    m_bracketed.replaceInStrings(QRegExp("(.+)"),
+    m_bracketed.replaceInStrings(QRegularExpression(QStringLiteral("(.+)")),
                                  chosenInputDir.path() + "/\\1");
 
     check_start_button();
@@ -454,13 +455,13 @@ void BatchHDRDialog::create_hdr(int) {
             &HdrCreationManager::doAntiGhosting, m_hdrCreationManager,
             m_patches, h0, false, &m_ph));  // false means auto anti-ghosting
 
-        m_futureWatcher.setFuture(m_future);
+        m_futureWatcher.setFuture(QFuture<void>(m_future));
 
     } else {
         m_future = QtConcurrent::run(
             std::bind(&HdrCreationManager::createHdr, m_hdrCreationManager));
 
-        m_futureWatcher.setFuture(m_future);
+        m_futureWatcher.setFuture(QFuture<void>(m_future));
     }
 }
 

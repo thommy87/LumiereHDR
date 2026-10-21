@@ -25,6 +25,7 @@
  * $Id: hdrhtml.cpp,v 1.8 2014/06/16 21:50:08 rafm Exp $
  */
 
+#include <QObject>
 #include <QtGlobal>
 #include "hdrhtml.h"
 

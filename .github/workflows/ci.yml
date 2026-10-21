@@ -14,9 +14,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  QT5_PACKAGES: qtbase5-dev qttools5-dev qttools5-dev-tools libqt5svg5-dev
+  QT6_PACKAGES: >-
+    qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools
+    libqt6svg6-dev qt6-5compat-dev libgl-dev
   APT_PACKAGES: >-
-    ninja-build qtbase5-dev qttools5-dev qttools5-dev-tools libqt5svg5-dev
-    libboost-program-options-dev libboost-thread-dev libboost-chrono-dev
+    ninja-build libboost-program-options-dev libboost-thread-dev libboost-chrono-dev
     libboost-system-dev libboost-date-time-dev libboost-atomic-dev
     libexiv2-dev libtiff-dev libpng-dev libopenexr-dev libgsl-dev libjpeg-dev
     libcfitsio-dev libraw-dev libfftw3-dev liblcms2-dev libeigen3-dev
@@ -35,17 +38,25 @@ jobs:
             cxx: g++
             build_type: Release
             sanitize: ""
+            qt: QT5_PACKAGES
+          - name: gcc qt6
+            cc: gcc
+            cxx: g++
+            build_type: Release
+            sanitize: ""
+            qt: QT6_PACKAGES
           - name: clang asan+ubsan
             cc: clang
             cxx: clang++
             build_type: Debug
             sanitize: "address;undefined"
+            qt: QT5_PACKAGES
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends $APT_PACKAGES clang libomp-dev
+          sudo apt-get install -y --no-install-recommends $APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev
       - name: Configure
         run: >
           cmake -S . -B build -G Ninja
@@ -55,7 +66,18 @@ jobs:
           -DENABLE_UNIT_TEST=ON
           -DLHDR_SANITIZE="${{ matrix.sanitize }}"
       - name: Build
-        run: cmake --build build --parallel -- -k 0
+        run: |
+          set -o pipefail
+          cmake --build build --parallel -- -k 0 2>&1 | tee build.log
+      - name: Summarize build errors
+        if: failure()
+        run: |
+          {
+            echo "### Build errors (${{ matrix.name }})"
+            echo '```'
+            grep -E "error:|undefined reference|FAILED:" build.log | sed 's#.*/LumiereHDR/LumiereHDR/##' | sort -u | head -300
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Test
         env:
           ASAN_OPTIONS: detect_leaks=0
@@ -63,7 +85,7 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure
       - name: Golden-image check of all tone mappers
-        if: matrix.name == 'gcc release'
+        if: matrix.name == 'gcc release' || matrix.name == 'gcc qt6'
         run: |
           sudo apt-get install -y --no-install-recommends python3-pil
           python3 test/golden/run_golden.py build/luminance-hdr-cli
@@ -76,7 +98,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends $APT_PACKAGES clang libomp-dev
+          sudo apt-get install -y --no-install-recommends $APT_PACKAGES $QT5_PACKAGES clang libomp-dev
       - name: Build fuzzer
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
@@ -110,7 +132,7 @@ jobs:
           update: true
           pacboy: >-
             toolchain:p cmake:p ninja:p pkgconf:p
-            qt5-base:p qt5-tools:p qt5-svg:p qt5-winextras:p qt5-translations:p
+            qt6-base:p qt6-tools:p qt6-svg:p qt6-5compat:p qt6-translations:p
             boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
             cfitsio:p libraw:p fftw:p lcms2:p eigen3:p gtest:p
       - name: Configure
@@ -118,7 +140,18 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
           -DENABLE_UNIT_TEST=ON
       - name: Build
-        run: cmake --build build --parallel -- -k 0
+        run: |
+          set -o pipefail
+          cmake --build build --parallel -- -k 0 2>&1 | tee build.log
+      - name: Summarize build errors
+        if: failure()
+        run: |
+          {
+            echo "### Build errors (Windows)"
+            echo '```'
+            grep -E "error:|undefined reference|FAILED:" build.log | sed 's#.*/LumiereHDR/LumiereHDR/##' | sort -u | head -300
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Test
         env:
           QT_QPA_PLATFORM: offscreen

@@ -28,6 +28,7 @@
  */
 
 #include <cassert>
+#include <QRegularExpression>
 #include <climits>
 
 #include <QFileDialog>
@@ -182,7 +183,7 @@ void BatchTMDialog::add_dir_HDRs() {
         chosendir.setNameFilters(filters);
         QStringList onlyhdrs = chosendir.entryList();
         // hack to prepend to this list the path as prefix.
-        onlyhdrs.replaceInStrings(QRegExp("(.+)"), chosendir.path() + "/\\1");
+        onlyhdrs.replaceInStrings(QRegularExpression(QStringLiteral("(.+)")), chosendir.path() + "/\\1");
         add_view_model_HDRs(onlyhdrs);
     }
 }
@@ -220,7 +221,7 @@ void BatchTMDialog::add_dir_TMopts() {
         chosendir.setNameFilters(filters);
         QStringList onlytxts = chosendir.entryList();
         // hack to prepend to this list the path as prefix.
-        onlytxts.replaceInStrings(QRegExp("(.+)"), chosendir.path() + "/\\1");
+        onlytxts.replaceInStrings(QRegularExpression(QStringLiteral("(.+)")), chosendir.path() + "/\\1");
         add_view_model_TM_OPTs(onlytxts);
     }
 }
@@ -364,8 +365,8 @@ void BatchTMDialog::filterChanged(const QString &newtext) {
     if (no_text) {
         filterComboBoxActivated(m_Ui->filterComboBox->currentIndex());
     } else {
-        log_filter->setFilterRegExp(
-            QRegExp(newtext, Qt::CaseInsensitive, QRegExp::RegExp));
+        log_filter->setFilterRegularExpression(
+            QRegularExpression(newtext, QRegularExpression::CaseInsensitiveOption));
     }
 }
 
@@ -382,8 +383,8 @@ void BatchTMDialog::filterComboBoxActivated(int index) {
             regexp = QStringLiteral("successful");
             break;
     }
-    log_filter->setFilterRegExp(
-        QRegExp(regexp, Qt::CaseInsensitive, QRegExp::RegExp));
+    log_filter->setFilterRegularExpression(
+        QRegularExpression(regexp, QRegularExpression::CaseInsensitiveOption));
 }
 
 // Davide Anastasia <davideanastasia@users.sourceforge.net>

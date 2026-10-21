@@ -35,6 +35,7 @@
 #ifdef QT_DEBUG
 #include <QDebug>
 #endif
+#include <QActionGroup>
 
 #include <QDesktopServices>
 #include <QDir>
@@ -509,9 +510,9 @@ void MainWindow::createStatusBar() {
 
 void MainWindow::createConnections() {
     windowMapper = new QSignalMapper(this);
-    connect(windowMapper, static_cast<void (QSignalMapper::*)(QWidget *)>(
-                              &QSignalMapper::mapped),
-            this, &MainWindow::setActiveMainWindow);
+    // Qt 6 dropped QSignalMapper's QWidget overloads: map QObject pointers
+    connect(windowMapper, &QSignalMapper::mappedObject, this,
+            [this](QObject *o) { setActiveMainWindow(qobject_cast<QWidget *>(o)); });
     connect(&m_futureWatcher, &QFutureWatcherBase::finished, this,
             &MainWindow::whiteBalanceDone);
 }
@@ -1350,7 +1351,7 @@ void MainWindow::updateWindowMenu() {
             action->setChecked(MW == this);
             // connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
             connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
-            windowMapper->setMapping(action, MW);
+            windowMapper->setMapping(action, static_cast<QObject *>(MW));
 
             openMainWindows.push_back(action);
         }

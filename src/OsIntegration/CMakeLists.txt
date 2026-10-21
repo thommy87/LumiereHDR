@@ -10,7 +10,9 @@ SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/osintegration.cpp
 )
     
-IF(WIN32)
+# taskbar progress and jump lists need QtWinExtras, which Qt 6 dropped
+IF(WIN32 AND TARGET Qt5::WinExtras)
+    ADD_DEFINITIONS(-DLHDR_WIN_TASKBAR)
     SET(FILES_H
         ${FILES_H}
         ${CMAKE_CURRENT_SOURCE_DIR}/ecwin7.h
@@ -23,12 +25,12 @@ ENDIF()
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
-QT5_WRAP_CPP(FILES_MOC ${FILES_H})
-# QT5_WRAP_UI(FILES_UI_H ${FILES_UI})
+qt_wrap_cpp(FILES_MOC ${FILES_H})
+# qt_wrap_ui(FILES_UI_H ${FILES_UI})
 
 ADD_LIBRARY(osintegration STATIC ${FILES_H} ${FILES_CPP} ${FILES_MOC} ${FILES_HXX}) # ${FILES_UI_H}
-TARGET_LINK_LIBRARIES(osintegration Qt5::Core Qt5::Gui Qt5::Widgets)
-IF(WIN32)
+TARGET_LINK_LIBRARIES(osintegration Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
+IF(WIN32 AND TARGET Qt5::WinExtras)
 TARGET_LINK_LIBRARIES(osintegration Qt5::WinExtras)
 ENDIF()
 

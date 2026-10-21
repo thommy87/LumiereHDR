@@ -85,7 +85,7 @@ void UMessageBox::about(QWidget *parent) {
     ui.label_version->setText(ui.label_version->text()
                                   .append(QStringLiteral(LUMINANCEVERSION))
                                   .append(" [Build ")
-                                  .append(QString(g_GIT_SHA1).leftRef(6))
+                                  .append(QString(g_GIT_SHA1).left(6))
                                   .append("]"));
 
     bool license_file_not_found = true;

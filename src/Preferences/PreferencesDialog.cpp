@@ -130,7 +130,7 @@ PreferencesDialog::PreferencesDialog(QWidget *p, int tab)
     from_options_to_gui();  // update the gui in order to show the options
 
     toolButtonMapper = new QSignalMapper(this);
-    connect(toolButtonMapper, SIGNAL(mapped(int)), this,
+    connect(toolButtonMapper, SIGNAL(mappedInt(int)), this,
             SLOT(toolButton_clicked(int)));
 
     QObject *tabEntries[] = {
@@ -199,7 +199,7 @@ void PreferencesDialog::on_okButton_clicked() {
     // --- Other Parameters
 
     QStringList ais_options = m_Ui->aisParamsLineEdit->text().split(
-        QStringLiteral(" "), QString::SkipEmptyParts);
+        QStringLiteral(" "), Qt::SkipEmptyParts);
     luminance_options.setAlignImageStackOptions(ais_options, true);
 
     // --- RAW parameters

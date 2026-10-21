@@ -78,7 +78,7 @@ static QString buildEVString(float newEV) {
     QString EVdisplay;
     QTextStream ts(&EVdisplay);
     ts.setRealNumberPrecision(2);
-    ts << right << forcesign << fixed << newEV << " EV";
+    ts << Qt::right << Qt::forcesign << Qt::fixed << newEV << " EV";
 
     return EVdisplay;
 }
@@ -707,7 +707,7 @@ void HdrWizard::startComputation() {
                     Qt::DirectConnection);
         }
         m_Ui->progressBar->show();
-        m_futureWatcher.setFuture(m_future);
+        m_futureWatcher.setFuture(QFuture<void>(m_future));
     } else if (m_doManualAntighosting) {
         m_future = QtConcurrent::run(
             std::bind(&HdrCreationManager::doAntiGhosting,
@@ -720,7 +720,7 @@ void HdrWizard::startComputation() {
                     Qt::DirectConnection);
         }
         m_Ui->progressBar->show();
-        m_futureWatcher.setFuture(m_future);
+        m_futureWatcher.setFuture(QFuture<void>(m_future));
     } else {
         createHdr();
     }
@@ -737,7 +737,7 @@ void HdrWizard::createHdr() {
         connect(&m_futureWatcher, &QFutureWatcherBase::finished, this,
                 &HdrWizard::createHdrFinished, Qt::DirectConnection);
     }
-    m_futureWatcher.setFuture(m_future);
+    m_futureWatcher.setFuture(QFuture<void>(m_future));
 }
 
 void HdrWizard::createHdrFinished() {

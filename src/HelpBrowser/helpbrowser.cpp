@@ -216,7 +216,9 @@ void HelpBrowser::closeEvent(QCloseEvent *event) {
     {
         QByteArray ba;
         QTextStream stream(&ba);
-        stream.setCodec("UTF-8");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        stream.setCodec("UTF-8");  // Qt 6 streams are UTF-8 already
+#endif
         stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         stream << "<bookmarks>\n";
         QTreeWidgetItemIterator it(helpSideBar->m_Ui->bookmarksView);
@@ -240,7 +242,9 @@ void HelpBrowser::closeEvent(QCloseEvent *event) {
     {
         QByteArray ba;
         QTextStream stream(&ba);
-        stream.setCodec("UTF-8");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        stream.setCodec("UTF-8");  // Qt 6 streams are UTF-8 already
+#endif
         stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         stream << "<history>\n";
         for (QMap<QAction *, histd2>::Iterator it = mHistory.begin();
@@ -261,7 +265,9 @@ void HelpBrowser::closeEvent(QCloseEvent *event) {
 
 void HelpBrowser::setupLocalUI() {
     helpSideBar = new HelpSideBar(tr("Help SideBar"), this);
-    helpSideBar->setFeatures(QDockWidget::AllDockWidgetFeatures);
+    helpSideBar->setFeatures(QDockWidget::DockWidgetClosable |
+                              QDockWidget::DockWidgetMovable |
+                              QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::LeftDockWidgetArea, helpSideBar);
 
     histMenu = new QMenu(this);

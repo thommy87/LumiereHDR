@@ -24,12 +24,12 @@ ${CMAKE_CURRENT_SOURCE_DIR}/treemodel.cpp)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
-QT5_WRAP_CPP(FILES_MOC ${FILES_H})
-QT5_WRAP_UI(FILES_UI_H ${FILES_UI})
+qt_wrap_cpp(FILES_MOC ${FILES_H})
+qt_wrap_ui(FILES_UI_H ${FILES_UI})
 
 ADD_LIBRARY(helpbrowser STATIC ${FILES_H} ${FILES_CPP} ${FILES_MOC} ${FILES_UI_H} ${FILES_HXX})
 # the manual is shown with QTextBrowser: no browser engine is bundled
-TARGET_LINK_LIBRARIES(helpbrowser Qt5::Core Qt5::Concurrent Qt5::Gui Qt5::Widgets Qt5::Xml Qt5::PrintSupport)
+TARGET_LINK_LIBRARIES(helpbrowser Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Concurrent Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets Qt${QT_MAJOR}::Xml Qt${QT_MAJOR}::PrintSupport)
 
 SET(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${FILES_CPP} ${FILES_H} ${FILES_UI} ${FILES_HXX} PARENT_SCOPE)
 SET(LUMINANCE_MODULES_GUI ${LUMINANCE_MODULES_GUI} helpbrowser PARENT_SCOPE)

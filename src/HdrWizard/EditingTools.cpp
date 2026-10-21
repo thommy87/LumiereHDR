@@ -134,7 +134,7 @@ EditingTools::EditingTools(HdrCreationManager *hcm, bool autoAg,
         QStringLiteral("%1").arg(lassocolor.blue()) + ")");
     assert(m_originalImagesList.size() == m_fileList.size());
     QVBoxLayout *qvl = new QVBoxLayout;
-    qvl->setMargin(0);
+    qvl->setContentsMargins(0, 0, 0, 0);
     qvl->setSpacing(0);
 
     m_previewWidget = new PreviewWidget(this, m_originalImagesList[1],
