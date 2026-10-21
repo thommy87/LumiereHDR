@@ -106,3 +106,12 @@ TEST(TestRGBEReader, TruncatedFileIsRejected) {
     EXPECT_THROW(readFile(path), pfs::Exception);
     std::remove(path.c_str());
 }
+
+TEST(TestRGBEReader, HugeImageInTinyFileIsRejected) {
+    // 30000 x 8000 pixels (240 MP, within the size limits) but only a few
+    // bytes of data: must fail before allocating ~2.9 GB of channels
+    const std::string path =
+        writeFile("huge", header("-Y 8000 +X 30000") + scanlineMarker());
+    EXPECT_THROW(readFile(path), pfs::io::ReadException);
+    std::remove(path.c_str());
+}

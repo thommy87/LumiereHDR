@@ -279,6 +279,23 @@ void RGBEReader::close() {
 void RGBEReader::read(Frame &frame, const Params & /*params*/) {
     if (!isOpen()) open();
 
+    // Before allocating width x height x 3 floats, check the file can hold
+    // that many scanlines: even fully run-length encoded, each one needs a
+    // 4-byte marker and 2 bytes per run of up to 127 pixels in 4 channels.
+    // Without this, a tiny file could make the reader allocate gigabytes.
+    FILE *file = m_file.data();
+    const long dataStart = ftell(file);
+    if (dataStart >= 0 && fseek(file, 0, SEEK_END) == 0) {
+        const long fileEnd = ftell(file);
+        fseek(file, dataStart, SEEK_SET);
+        const long long runs = (static_cast<long long>(width()) + 126) / 127;
+        const long long minBytes =
+            static_cast<long long>(height()) * (4 + 4 * 2 * runs);
+        if (fileEnd >= 0 && fileEnd - dataStart < minBytes) {
+            throw ReadException("RGBE: file too short for its image size");
+        }
+    }
+
     Frame tempFrame(width(), height());
 
     pfs::Channel *X, *Y, *Z;
