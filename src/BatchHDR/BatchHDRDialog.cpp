@@ -455,13 +455,13 @@ void BatchHDRDialog::create_hdr(int) {
             &HdrCreationManager::doAntiGhosting, m_hdrCreationManager,
             m_patches, h0, false, &m_ph));  // false means auto anti-ghosting
 
-        m_futureWatcher.setFuture(m_future);
+        m_futureWatcher.setFuture(QFuture<void>(m_future));
 
     } else {
         m_future = QtConcurrent::run(
             std::bind(&HdrCreationManager::createHdr, m_hdrCreationManager));
 
-        m_futureWatcher.setFuture(m_future);
+        m_futureWatcher.setFuture(QFuture<void>(m_future));
     }
 }
 

@@ -98,7 +98,7 @@ class BatchHDRDialog : public QDialog {
     bool m_processing;
     QSqlDatabase m_db;
     QVector<FusionOperatorConfig> m_customConfig;
-    QFutureWatcher<pfs::Frame *> m_futureWatcher;
+    QFutureWatcher<void> m_futureWatcher;
     QFuture<pfs::Frame *> m_future;
     ProgressHelper m_ph;
     bool m_patches[agGridSize][agGridSize];
