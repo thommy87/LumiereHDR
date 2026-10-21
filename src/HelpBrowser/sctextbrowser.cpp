@@ -55,8 +55,8 @@ ScTextBrowser::ScTextBrowser(QWidget *parent)
     // links are routed through openLink() so web pages never load in-app
     setOpenLinks(false);
     connect(this, &QTextBrowser::anchorClicked, this, &ScTextBrowser::openLink);
-    connect(this, QOverload<const QString &>::of(&QTextBrowser::highlighted),
-            this, &ScTextBrowser::overLink);
+    connect(this, QOverload<const QUrl &>::of(&QTextBrowser::highlighted),
+            this, [this](const QUrl &url) { emit overLink(url.toString()); });
 }
 
 void ScTextBrowser::home() {

@@ -24,6 +24,7 @@
 */
 
 #include <BatchHDR/BatchHDRDialog.h>
+#include <QRegularExpression>
 #include <BatchHDR/ui_BatchHDRDialog.h>
 #include <Common/CommonFunctions.h>
 
@@ -233,7 +234,7 @@ BatchHDRDialog::BatchHDRDialog(QWidget *p, QSqlDatabase db)
     chosenInputDir.setNameFilters(filters);
     m_bracketed = chosenInputDir.entryList();
     // hack to prepend to this list the path as prefix.
-    m_bracketed.replaceInStrings(QRegExp("(.+)"),
+    m_bracketed.replaceInStrings(QRegularExpression(QStringLiteral("(.+)")),
                                  chosenInputDir.path() + "/\\1");
 
     check_start_button();

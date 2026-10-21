@@ -22,6 +22,7 @@
  */
 
 #include <QApplication>
+#include <QRegularExpression>
 #include <QDebug>
 #include <QUuid>
 #include <QtConcurrentFilter>
@@ -52,7 +53,8 @@ void Align::align_with_ais(bool ais_crop_flag) {
     QStringList env = QProcess::systemEnvironment();
     QString separator(QStringLiteral(":"));
     env.replaceInStrings(
-        QRegExp("^PATH=(.*)", Qt::CaseInsensitive),
+        QRegularExpression(QStringLiteral("^PATH=(.*)"),
+                           QRegularExpression::CaseInsensitiveOption),
         "PATH=\\1" + separator + QCoreApplication::applicationDirPath());
     m_ais->setEnvironment(env);
 #endif

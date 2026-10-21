@@ -34,6 +34,7 @@
 
 #ifdef QT_DEBUG
 #include <QDebug>
+#include <QActionGroup>
 #endif
 
 #include <QDesktopServices>
@@ -509,8 +510,7 @@ void MainWindow::createStatusBar() {
 
 void MainWindow::createConnections() {
     windowMapper = new QSignalMapper(this);
-    connect(windowMapper, static_cast<void (QSignalMapper::*)(QWidget *)>(
-                              &QSignalMapper::mapped),
+    connect(windowMapper, &QSignalMapper::mappedWidget,
             this, &MainWindow::setActiveMainWindow);
     connect(&m_futureWatcher, &QFutureWatcherBase::finished, this,
             &MainWindow::whiteBalanceDone);

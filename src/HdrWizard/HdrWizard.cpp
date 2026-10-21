@@ -78,7 +78,7 @@ static QString buildEVString(float newEV) {
     QString EVdisplay;
     QTextStream ts(&EVdisplay);
     ts.setRealNumberPrecision(2);
-    ts << right << forcesign << fixed << newEV << " EV";
+    ts << Qt::right << Qt::forcesign << Qt::fixed << newEV << " EV";
 
     return EVdisplay;
 }

@@ -48,7 +48,7 @@ class HdrWizard : public QDialog {
     QScopedPointer<Ui::HdrWizard> m_Ui;
     QScopedPointer<HdrCreationManager> m_hdrCreationManager;
 
-    QFutureWatcher<void> m_futureWatcher;
+    QFutureWatcher<pfs::Frame *> m_futureWatcher;
     QFuture<pfs::Frame *> m_future;
 
     LuminanceOptions luminance_options;

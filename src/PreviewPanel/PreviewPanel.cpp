@@ -22,6 +22,7 @@
  */
 
 #include <QDebug>
+#include "Common/QtCompat.h"
 #include <QSharedPointer>
 #include <QtConcurrentMap>
 
@@ -394,7 +395,7 @@ void PreviewPanel::tonemapPreview(TonemappingOptions *opts) {
 }
 
 QSize PreviewPanel::getLabelSize() {
-    return m_ListPreviewLabel.at(0)->pixmap()->size();
+    return labelPixmap(m_ListPreviewLabel.at(0)).size();
 }
 
 PreviewLabel *PreviewPanel::getLabel(int index) {
