@@ -29,6 +29,8 @@
 
 #include <assert.h>
 #include <math.h>
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 
 #include "Libpfs/array2d.h"
@@ -95,13 +97,16 @@ int tmo_ferwerda96(Array2Df *X, Array2Df *Y, Array2Df *Z, Array2Df *L,
     assert(Z != nullptr);
     assert(L != nullptr);
 
-    // Ferwerda et al. 1996, following Banterle's HDR Toolbox: pixel values
-    // times worldScale are world luminances in cd/m^2 (multiplier 1 maps
-    // 1.0 to 100 cd/m^2); the display adapts to mul2 * Ld_Max and the world
-    // to half its peak luminance.
+    // Ferwerda et al. 1996: pixel values times worldScale are world
+    // luminances in cd/m^2 (multiplier 1 maps 1.0 to 100 cd/m^2) and the
+    // display adapts to mul2 * Ld_Max. The world adaptation luminance is the
+    // log-average of the scene (as in Ward 1994); half the peak, as in some
+    // implementations, lets a single highlight make the whole image black.
     const float worldScale = 100.f * mul1;
     const float Ld_Max = 100.f;  // display peak luminance, cd/m^2
-    float L_wa = *max_element(L->begin(), L->end()) * 0.5f * worldScale;
+    double logSum = 0.0;
+    for (float l : *L) logSum += std::log(std::max(l, 1e-6f));
+    float L_wa = std::exp(logSum / (L->getCols() * L->getRows())) * worldScale;
 
     float L_da = mul2 * Ld_Max;
 
