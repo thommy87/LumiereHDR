@@ -29,6 +29,9 @@
 
 #define LUMINANCEORGANIZATION "@LHDR_VENDOR@"
 #define LUMINANCEAPPLICATION "@LHDR_NAME@"
+// name shown to users; LUMINANCEAPPLICATION only keys the settings
+#define LUMINANCEDISPLAYNAME "@LHDR_DISPLAY_NAME@"
+#define LUMINANCEWEBSITE "https://github.com/thommy87/LumiereHDR"
 
 #define LUMINANCEVERSION "@LHDR_VERSION@"
 

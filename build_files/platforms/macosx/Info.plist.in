@@ -15,9 +15,9 @@
         <key>CFBundleIdentifier</key>
         <string>@LHDR_DOMAIN_SECOND@.@LHDR_DOMAIN_FIRST@</string>
         <key>CFBundleDisplayName</key>
-        <string>@LHDR_NAME@</string>
+        <string>@LHDR_DISPLAY_NAME@</string>
         <key>CFBundleName</key>
-        <string>@LHDR_NAME@</string>
+        <string>@LHDR_DISPLAY_NAME@</string>
         <key>LSMinimumSystemVersion</key>
         <string>@CMAKE_OSX_DEPLOYMENT_TARGET@</string>
         <key>NSHighResolutionCapable</key>

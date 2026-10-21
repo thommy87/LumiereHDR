@@ -6,7 +6,7 @@ Free code signing provided by [SignPath.io](https://about.signpath.io), certific
 
 Only binaries built from this repository's source code by the project's
 GitHub Actions workflow (`.github/workflows/release.yml`) are signed:
-`luminance-hdr.exe`, `luminance-hdr-cli.exe` and the Windows installer.
+`lumierehdr.exe`, `lumierehdr-cli.exe` and the Windows installer.
 Third-party libraries shipped alongside them (Qt, Boost, LibRaw, OpenEXR
 and others) are included unsigned and keep their own licenses.
 

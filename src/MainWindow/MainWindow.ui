@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Luminance HDR</string>
+   <string>LumièreHDR</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../../icons.qrc">
@@ -55,7 +55,7 @@
     </property>
     <widget class="QMenu" name="menuLuminance_HDR_Online">
      <property name="title">
-      <string>Luminance &amp;HDR Online</string>
+      <string>LumièreHDR &amp;Online</string>
      </property>
      <addaction name="actionOnline_Documentation"/>
      <addaction name="actionDevelopers_Website"/>
@@ -287,10 +287,10 @@
     <string>&amp;Quit</string>
    </property>
    <property name="toolTip">
-    <string>Quit Luminance HDR</string>
+    <string>Quit LumièreHDR</string>
    </property>
    <property name="statusTip">
-    <string>Quit Luminance HDR</string>
+    <string>Quit LumièreHDR</string>
    </property>
    <property name="whatsThis">
     <string>Exit</string>
@@ -434,13 +434,13 @@
     <string>About...</string>
    </property>
    <property name="toolTip">
-    <string>Open user manual for Luminance HDR</string>
+    <string>Open user manual for LumièreHDR</string>
    </property>
    <property name="statusTip">
-    <string>Open user manual for Luminance HDR</string>
+    <string>Open user manual for LumièreHDR</string>
    </property>
    <property name="whatsThis">
-    <string>Open user manual for Luminance HDR</string>
+    <string>Open user manual for LumièreHDR</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -566,16 +566,16 @@
     <string>&amp;Preferences...</string>
    </property>
    <property name="iconText">
-    <string>Luminance Options</string>
+    <string>LumièreHDR Options</string>
    </property>
    <property name="toolTip">
-    <string>Set various options of Luminance</string>
+    <string>Set various options of LumièreHDR</string>
    </property>
    <property name="statusTip">
-    <string>Set various options of Luminance</string>
+    <string>Set various options of LumièreHDR</string>
    </property>
    <property name="whatsThis">
-    <string>Set various options of Luminance</string>
+    <string>Set various options of LumièreHDR</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -640,10 +640,10 @@
     <string>Show information about Qt</string>
    </property>
    <property name="statusTip">
-    <string>Show information about Qt library that is used by Luminance</string>
+    <string>Show information about Qt library that is used by LumièreHDR</string>
    </property>
    <property name="whatsThis">
-    <string>Show information about Qt library that is used by Luminance</string>
+    <string>Show information about Qt library that is used by LumièreHDR</string>
    </property>
   </action>
   <action name="actionText_Under_Icons">
@@ -726,16 +726,16 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>About &amp;Luminance HDR</string>
+    <string>About &amp;LumièreHDR</string>
    </property>
    <property name="toolTip">
-    <string>Show information about Luminance HDR</string>
+    <string>Show information about LumièreHDR</string>
    </property>
    <property name="statusTip">
-    <string>Show information about Luminance HDR, its authors and contributors</string>
+    <string>Show information about LumièreHDR, its authors and contributors</string>
    </property>
    <property name="whatsThis">
-    <string>Show information about Luminance HDR, its authors and contributors</string>
+    <string>Show information about LumièreHDR, its authors and contributors</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
@@ -1210,10 +1210,10 @@
   </action>
   <action name="actionLuminance_HDR_Website">
    <property name="text">
-    <string>&amp;Luminance HDR Web Site</string>
+    <string>&amp;LumièreHDR Web Site</string>
    </property>
    <property name="iconText">
-    <string>Luminance HDR Web Site</string>
+    <string>LumièreHDR Web Site</string>
    </property>
    <property name="toolTip">
     <string>Open Main Web Site with the System Browser</string>

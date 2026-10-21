@@ -202,9 +202,9 @@ void copyExifData(const std::string &from, const std::string &to,
                 std::clog << "EXIF comments: " << comment << "\n";
 #endif
                 destExifData["Exif.Image.ProcessingSoftware"] =
-                    "Luminance HDR " + std::string(LUMINANCEVERSION);
+                    "LumiereHDR " + std::string(LUMINANCEVERSION);
                 destExifData["Exif.Image.Software"] =
-                    "Luminance HDR " + std::string(LUMINANCEVERSION);
+                    "LumiereHDR " + std::string(LUMINANCEVERSION);
                 destExifData["Exif.Image.ImageDescription"] = comment;
                 destExifData["Exif.Photo.UserComment"] =
                     "charset=\"Ascii\" " + comment;

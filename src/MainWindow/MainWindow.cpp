@@ -307,7 +307,7 @@ void MainWindow::createUI() {
 
     setAcceptDrops(true);
     setWindowModified(false);
-    setWindowTitle(QString("Luminance HDR " LUMINANCEVERSION
+    setWindowTitle(QString(LUMINANCEDISPLAYNAME " " LUMINANCEVERSION
                            " [*]"));  // + "  " + g_GIT_SHA1);
 }
 
@@ -1063,7 +1063,7 @@ void MainWindow::on_normalSizeAct_triggered() {
 void MainWindow::on_documentationAction_triggered() {
     if (sm_helpBrowser == nullptr) {
         sm_helpBrowser =
-            new HelpBrowser(0, QStringLiteral("Luminance HDR Help"));
+            new HelpBrowser(0, QStringLiteral(LUMINANCEDISPLAYNAME " Help"));
         sm_helpBrowser->setAttribute(Qt::WA_DeleteOnClose);
         connect(sm_helpBrowser, &QObject::destroyed, sm_helpBrowser,
                 &QObject::deleteLater);
@@ -1435,7 +1435,7 @@ void MainWindow::disableCrop() {
 void MainWindow::changeEvent(QEvent *event) {
     if (event->type() == QEvent::LanguageChange) {
         m_Ui->retranslateUi(this);
-        setWindowTitle(QString("Luminance HDR " LUMINANCEVERSION " [*]"));
+        setWindowTitle(QString(LUMINANCEDISPLAYNAME " " LUMINANCEVERSION " [*]"));
     }
 
     QWidget::changeEvent(event);
@@ -1506,14 +1506,14 @@ bool MainWindow::event(QEvent *event) {
         m_firstWindow = 2;
         if (LuminanceOptions().doShowWindowsOnWindows64Message()) {
             QMessageBox::warning(
-                this, QStringLiteral("Luminance HDR 32-bit on 64-bit"),
+                this, QStringLiteral(LUMINANCEDISPLAYNAME " 32-bit on 64-bit"),
                 tr("It appears that you are running the 32-bit version "
-                   "<strong>Luminance HDR</strong> on a 64-bit system. <br>"
+                   "<strong>LumièreHDR</strong> on a 64-bit system. <br>"
                    "Please download the <strong>64-bit</strong> version from "
                    "<a "
                    "href=\"http://qtpfsgui.sourceforge.net\">http://"
                    "qtpfsgui.sourceforge.net</a> "
-                   "to get the best Luminance HDR experience!"),
+                   "to get the best LumièreHDR experience!"),
                 QMessageBox::Ok, QMessageBox::NoButton);
         }
     }
@@ -1810,7 +1810,7 @@ void MainWindow::addLdrFrame(pfs::Frame *frame,
 
 void MainWindow::tonemapFailed(const QString &error_msg) {
     if (error_msg != QLatin1String("Canceled")) {
-        QMessageBox::critical(this, tr("Luminance HDR"),
+        QMessageBox::critical(this, QStringLiteral(LUMINANCEDISPLAYNAME),
                               tr("Error: %1").arg(error_msg), QMessageBox::Ok,
                               QMessageBox::NoButton);
     }
@@ -2268,7 +2268,7 @@ void MainWindow::on_actionOnline_Documentation_triggered() {
 
 void MainWindow::on_actionDevelopers_Website_triggered() {
     QDesktopServices::openUrl(
-        QUrl(QStringLiteral("https://github.com/LuminanceHDR/")));
+        QUrl(QStringLiteral(LUMINANCEWEBSITE)));
 }
 
 void MainWindow::on_actionLuminance_HDR_Website_triggered() {
