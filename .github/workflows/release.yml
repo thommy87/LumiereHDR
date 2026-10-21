@@ -9,6 +9,10 @@ name: Release
 on:
   push:
     tags: ["v*"]
+    # dry run on work branches that change the packaging (paths are not
+    # checked for tag pushes)
+    branches: ["phase-*/**"]
+    paths: [".github/workflows/release.yml", "build_files/windows/**"]
   # dry run of the packaging whenever the release workflow itself changes
   pull_request:
     paths: [".github/workflows/release.yml", "build_files/windows/**"]
