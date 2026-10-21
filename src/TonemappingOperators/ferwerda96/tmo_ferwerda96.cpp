@@ -29,6 +29,8 @@
 
 #include <assert.h>
 #include <math.h>
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 
 #include "Libpfs/array2d.h"
@@ -95,11 +97,16 @@ int tmo_ferwerda96(Array2Df *X, Array2Df *Y, Array2Df *Z, Array2Df *L,
     assert(Z != nullptr);
     assert(L != nullptr);
 
-    mul1 *= 100.f;
-    mul2 /= 1000.f;
-
-    float Ld_Max = 100.f * mul1;
-    float L_wa = *max_element(L->begin(), L->end()) * 0.5f * mul1;
+    // Ferwerda et al. 1996: pixel values times worldScale are world
+    // luminances in cd/m^2 (multiplier 1 maps 1.0 to 100 cd/m^2) and the
+    // display adapts to mul2 * Ld_Max. The world adaptation luminance is the
+    // log-average of the scene (as in Ward 1994); half the peak, as in some
+    // implementations, lets a single highlight make the whole image black.
+    const float worldScale = 100.f * mul1;
+    const float Ld_Max = 100.f;  // display peak luminance, cd/m^2
+    double logSum = 0.0;
+    for (float l : *L) logSum += std::log(std::max(l, 1e-6f));
+    float L_wa = std::exp(logSum / (L->getCols() * L->getRows())) * worldScale;
 
     float L_da = mul2 * Ld_Max;
 
@@ -112,11 +119,10 @@ int tmo_ferwerda96(Array2Df *X, Array2Df *Y, Array2Df *Z, Array2Df *L,
     if (ph.canceled()) return 0;
 
     float vec[3] = {1.05f, 0.97f, 1.27f};
-    float maxX = *max_element(X->begin(), X->end());
-    float maxY = *max_element(Y->begin(), Y->end());
-    float maxZ = *max_element(Z->begin(), Z->end());
-    float maxC = max(maxX, max(maxY, maxZ));
-    float scale = 1.0f / maxC;
+    // map display luminance to [0, 1]. The old code divided by the scene's
+    // own peak instead, so bright scenes were scaled down twice and came out
+    // black.
+    const float scale = worldScale / Ld_Max;
 
     ph.setValue(10);
     if (ph.canceled()) return 0;

@@ -127,6 +127,17 @@ def main():
     for line in failures:
         print("CHANGED", line)
     print(f"{len(OPERATORS)} operators checked, {len(failures)} values changed")
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary and failures:
+        # make an intended change easy to review and to record
+        with open(summary, "a") as f:
+            fence = "```"
+            f.write(f"### Golden-image changes\n{fence}\n")
+            f.write("\n".join(failures))
+            f.write(f"\n{fence}\nCurrent values (paste into reference.json "
+                    f"if intended):\n{fence}json\n")
+            f.write(json.dumps(current, sort_keys=True))
+            f.write(f"\n{fence}\n")
     return 1 if failures else 0
 
 
