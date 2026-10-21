@@ -1,6 +1,17 @@
-Please refer to our web sites listed below for infos on development progress and for suggesting new
-features:
+LumièreHDR to-do list. Bugs and feature requests:
+https://github.com/thommy87/LumiereHDR/issues
 
+Open items
+----------
+
+- Windows taskbar progress bar under Qt 6. Qt 6 removed QtWinExtras, so
+  the taskbar progress and jump list (src/OsIntegration/ecwin7.cpp, built
+  only behind LHDR_WIN_TASKBAR with Qt 5) are gone in Qt 6 builds. Restore
+  them by calling ITaskbarList3 (and the jump list API) directly.
+- Replace the remaining QRegExp uses and the SAX XML parser in the help
+  browser, then drop the Qt6::Core5Compat dependency.
+
+Upstream Luminance HDR trackers (historical):
 https://github.com/LuminanceHDR/LuminanceHDR/issues
 http://sourceforge.net/p/qtpfsgui/bugs/
 http://sourceforge.net/p/qtpfsgui/feature-requests/
