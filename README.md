@@ -1,4 +1,4 @@
-![Logo](images/luminance.svg)
+![Logo]
 # LumièreHDR
 ---------------
 [![CI](https://github.com/thommy87/LumiereHDR/actions/workflows/ci.yml/badge.svg)](https://github.com/thommy87/LumiereHDR/actions/workflows/ci.yml)
