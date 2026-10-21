@@ -12,7 +12,10 @@ ADD_SUBDIRECTORY(colorspace)
 ADD_SUBDIRECTORY(io)
 
 ADD_LIBRARY(pfs STATIC ${LIBPFS_H} ${LIBPFS_HXX} ${LIBPFS_CPP})
-TARGET_LINK_LIBRARIES(pfs librtprocess Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
+# pfs uses Exiv2, OpenEXR, LibTIFF, libjpeg, LibRaw, LCMS, CFITSIO and the
+# other image libraries in LIBS: declare them so every program or test that
+# links pfs (in whatever order) also gets them
+TARGET_LINK_LIBRARIES(pfs librtprocess Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets ${LIBS})
 
 SET(LUMINANCE_MODULES_GUI ${LUMINANCE_MODULES_GUI} pfs PARENT_SCOPE)
 SET(LUMINANCE_MODULES_CLI ${LUMINANCE_MODULES_CLI} pfs PARENT_SCOPE)
