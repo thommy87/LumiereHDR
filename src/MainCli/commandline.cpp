@@ -475,7 +475,7 @@ reinhard02|\nreinhard05|mai|mantiuk06|mantiuk08|\nvanhateren|lischinski] (Defaul
             return 1;
         }
         if (vm.count("version")) {
-            cout << tr("Luminance HDR version ").toStdString() +
+            cout << QStringLiteral(LUMINANCEDISPLAYNAME " version ").toStdString() +
                         LUMINANCEVERSION + " [Build " +
                         QString(g_GIT_SHA1).left(6).toStdString() + "]"
                  << endl;

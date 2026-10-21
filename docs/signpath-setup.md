@@ -40,10 +40,10 @@ contains the release ZIP):
   <zip-file>
     <zip-file path="LumiereHDR-*-windows-x64.zip">
       <directory path="LumiereHDR-*-windows-x64">
-        <pe-file path="luminance-hdr.exe" product-name="LumiereHDR">
+        <pe-file path="lumierehdr.exe" product-name="LumiereHDR">
           <authenticode-sign />
         </pe-file>
-        <pe-file path="luminance-hdr-cli.exe" product-name="LumiereHDR">
+        <pe-file path="lumierehdr-cli.exe" product-name="LumiereHDR">
           <authenticode-sign />
         </pe-file>
       </directory>

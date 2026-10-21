@@ -289,7 +289,7 @@ IF(APPLE)
     set(MACOSX_BUNDLE_ICON                 "${CMAKE_SOURCE_DIR}/program-icons/luminance.icns")
     set(MACOSX_BUNDLE_RESOURCES            "${CMAKE_CURRENT_BINARY_DIR}/${LHDR_OSX_EXECUTABLE_NAME}.app/Contents/Resources")
     set(MACOSX_BUNDLE_GUI_IDENTIFIER       "${LHDR_DOMAIN_SECOND}.${LHDR_DOMAIN_FIRST}")
-    set(MACOSX_BUNDLE_BUNDLE_NAME          "${LHDR_NAME}")
+    set(MACOSX_BUNDLE_BUNDLE_NAME          "${LHDR_DISPLAY_NAME}")
 
     configure_file( ${CMAKE_SOURCE_DIR}/build_files/platforms/macosx/Info.plist.in
                     ${CMAKE_BINARY_DIR}/Info.plist )
@@ -303,6 +303,7 @@ IF(APPLE)
     SET( CMAKE_OSX_ARCHITECTURES x86_64 )  # Universal/Generic x86_64 build
     ADD_EXECUTABLE(${LHDR_OSX_EXECUTABLE_TARGET} MACOSX_BUNDLE ${LUMINANCE_FILES})
     ADD_EXECUTABLE(luminance-hdr-cli ${LUMINANCE_FILES} )
+    set_target_properties(luminance-hdr-cli PROPERTIES OUTPUT_NAME lumierehdr-cli)
     set_property(TARGET ${LHDR_OSX_EXECUTABLE_TARGET} PROPERTY OUTPUT_NAME ${LHDR_OSX_EXECUTABLE_NAME})
     set_property(TARGET   luminance-hdr-cli           PROPERTY RUNTIME_OUTPUT_DIRECTORY ${LHDR_OSX_EXECUTABLE_NAME}.app/Contents/MacOS)
 
@@ -399,6 +400,9 @@ ELSEIF(UNIX)
 
     ADD_EXECUTABLE(luminance-hdr ${LUMINANCE_FILES})
     ADD_EXECUTABLE(luminance-hdr-cli ${LUMINANCE_FILES})
+    # the programs are named after LumiereHDR; the CMake targets keep their names
+    set_target_properties(luminance-hdr PROPERTIES OUTPUT_NAME lumierehdr)
+    set_target_properties(luminance-hdr-cli PROPERTIES OUTPUT_NAME lumierehdr-cli)
 
     TARGET_LINK_LIBRARIES(luminance-hdr Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
     TARGET_LINK_LIBRARIES(luminance-hdr-cli Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
@@ -468,6 +472,7 @@ ELSEIF(WIN32)
 
         set(RELINFO_WITH_ARGS ${CMAKE_COMMAND}
             -DLHDR_NAME:STRING="${LHDR_NAME}"
+            -DLHDR_DISPLAY_NAME:STRING="${LHDR_DISPLAY_NAME}"
             -DLHDR_VERSION_MAJOR:STRING=${LHDR_VERSION_MAJOR}
             -DLHDR_VERSION_MINOR:STRING=${LHDR_VERSION_MINOR}
             -DLHDR_VERSION_PATCH:STRING=${LHDR_VERSION_PATCH}
@@ -490,6 +495,9 @@ ELSEIF(WIN32)
         # Subsystem console:
         ADD_EXECUTABLE(luminance-hdr WIN32 ${LUMINANCE_FILES})
         ADD_EXECUTABLE(luminance-hdr-cli ${LUMINANCE_FILES})
+        # the programs are named after LumiereHDR; the CMake targets keep their names
+        set_target_properties(luminance-hdr PROPERTIES OUTPUT_NAME lumierehdr)
+        set_target_properties(luminance-hdr-cli PROPERTIES OUTPUT_NAME lumierehdr-cli)
 
         TARGET_LINK_LIBRARIES(luminance-hdr Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets Qt${QT_MAJOR}::Svg)
         IF(TARGET Qt5::WinExtras)

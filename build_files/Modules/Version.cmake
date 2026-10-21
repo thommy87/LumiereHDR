@@ -1,7 +1,11 @@
 INCLUDE(build_files/Modules/GetGitRevisionDescription.cmake)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 STRING(SUBSTRING ${GIT_SHA1} 0 6 HEAD_HASH)
+# LHDR_NAME and LHDR_VENDOR name the settings storage; they stay as in
+# Luminance HDR so existing settings and presets keep working
 SET(LHDR_NAME "Luminance HDR")
+SET(LHDR_DISPLAY_NAME "LumièreHDR")
+SET(LHDR_PACKAGE_NAME "LumiereHDR")
 
 # Numeric version values
 SET(LHDR_VERSION_MAJOR "2")

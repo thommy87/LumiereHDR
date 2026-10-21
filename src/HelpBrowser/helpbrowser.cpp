@@ -348,7 +348,7 @@ void HelpBrowser::changeEvent(QEvent *e) {
 }
 
 void HelpBrowser::languageChange() {
-    setWindowTitle(tr("LuminanceHDR Online Help"));
+    setWindowTitle(tr("%1 Online Help").arg(QStringLiteral(LUMINANCEDISPLAYNAME)));
 
     m_Ui->fileMenu->setTitle(tr("&File"));
     m_Ui->editMenu->setTitle(tr("&Edit"));
@@ -691,7 +691,7 @@ void HelpBrowser::itemBookmarkSelected(QTreeWidgetItem *twi, int i) {
 void HelpBrowser::displayNoHelp() {
     QString noHelpMsg =
         tr("<h2><p>Sorry, no manual is installed!</p><p>Please contact your "
-           "package provider or LuminanceHDR team if you built the application "
+           "package provider or the LumièreHDR team if you built the application "
            "yourself</p></h2>",
            "HTML message for no documentation available to show");
 
@@ -759,7 +759,7 @@ void HelpBrowser::handleExternalLink(const QUrl &url) {
     } else {
         QApplication::restoreOverrideCursor();
         if (QMessageBox::warning(
-                this, tr("LuminanceHDR - Help Browser"),
+                this, tr("%1 - Help Browser").arg(QStringLiteral(LUMINANCEDISPLAYNAME)),
                 tr("This protocol is not handled by the help browser.\n"
                    "Do you want to open the link with the default application "
                    "\n"

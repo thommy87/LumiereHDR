@@ -774,7 +774,7 @@ TMOptionsOperations::TMOptionsOperations(const TonemappingOptions *opts)
 
 QString TMOptionsOperations::getExifComment() {
     QString exif_comment =
-        "Luminance HDR " LUMINANCEVERSION "\n\nTonemapping parameters:\n";
+        LUMINANCEDISPLAYNAME " " LUMINANCEVERSION "\n\nTonemapping parameters:\n";
     exif_comment += QLatin1String("Operator: ");
     switch (opts->tmoperator) {
         case mantiuk06: {

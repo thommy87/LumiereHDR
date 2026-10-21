@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Luminance HDR
+Name=LumièreHDR
 GenericName=HDR imaging tool
 GenericName[de]=Workflow für HDR-Bilder
 GenericName[it]=Workflow per immagini HDR
@@ -13,7 +13,7 @@ Comment[hu_HU]=Ez a program nagy megvilágítástartományú (HDR) képek előá
 Comment[it]=Luminance e' una interfaccia grafica usata per creare ed eseguire il tonemapping di immagini HDR
 Comment[ru]=Cоздание HDR-снимков и отображение тонов в LDR
 Comment[tr]=HDR resim dosyaları oluşturun ve ton haritalamalarını düzenleyin
-Exec=luminance-hdr %F
+Exec=lumierehdr %F
 Icon=luminance-hdr
 MimeType=image/x-dcraw;image/tiff;image/jpeg;image/png;image/x-exr;image/x-hdr;image/x-pfs;
 StartupNotify=true

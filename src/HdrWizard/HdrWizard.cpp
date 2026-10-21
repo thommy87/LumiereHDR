@@ -478,7 +478,7 @@ void HdrWizard::enableNextOrWarning(const QStringList &filesWithoutExif) {
     if (!filesWithoutExif.empty()) {
         QString warningMessage =
             tr("<font color=\"#FF0000\"><h3><b>WARNING:</b></h3></font> "
-               "Luminance HDR was not able to find the relevant <b>EXIF</b> "
+               "LumièreHDR was not able to find the relevant <b>EXIF</b> "
                "tags for the following images:"
                "<ul>");
 
@@ -489,7 +489,7 @@ void HdrWizard::enableNextOrWarning(const QStringList &filesWithoutExif) {
 
         warningMessage += tr(
             "</ul>"
-            "<hr>Luminance HDR has inserted those values for you, two stops "
+            "<hr>LumièreHDR has inserted those values for you, two stops "
             "apart.<br> "
             "If the guess is correct you can proceed creating the HDR, "
             "otherwise you have to <b>manually</b> correct the EVs (exposure "

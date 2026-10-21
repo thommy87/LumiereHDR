@@ -795,7 +795,7 @@ QStringList LuminanceOptions::sanitizeAISparams(QStringList temp_ais_options,
         QMessageBox::information(
             0, QObject::tr("Option -v -a..."),
             QObject::tr(
-                "LuminanceHDR requires align_image_stack to be executed "
+                "LumièreHDR requires align_image_stack to be executed "
                 "with the \"-v\" and without the \"-a\" options. Command "
                 "line options have been corrected."));
     }

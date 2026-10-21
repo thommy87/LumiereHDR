@@ -88,7 +88,7 @@ jobs:
         if: matrix.name == 'gcc release' || matrix.name == 'gcc qt6'
         run: |
           sudo apt-get install -y --no-install-recommends python3-pil
-          python3 test/golden/run_golden.py build/luminance-hdr-cli
+          python3 test/golden/run_golden.py build/lumierehdr-cli
 
   fuzz:
     name: Fuzz Radiance reader
@@ -158,7 +158,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Check exploit mitigations
         shell: pwsh
-        run: python build_files/check_pe_hardening.py build/luminance-hdr.exe build/luminance-hdr-cli.exe
+        run: python build_files/check_pe_hardening.py build/lumierehdr.exe build/lumierehdr-cli.exe
       - uses: actions/upload-artifact@v4
         with:
           name: lumiere-windows-build

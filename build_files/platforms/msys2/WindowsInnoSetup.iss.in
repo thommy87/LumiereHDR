@@ -9,21 +9,21 @@
 ; Note that all *.dll files will be added, so be careful which DLLs are present
 ; in the folder before running this script.
 ;
-; This script searches for and bundles all "luminance-hdr*.exe" files, allowing
+; This script searches for and bundles all "lumierehdr*.exe" files, allowing
 ; you to bundle GUI and CLI versions, a "release" as well as a "debug" version at the same time.
-; At least one "luminance-hdr.exe" file is required.
+; At least one "lumierehdr.exe" file is required.
 ;
 ; This script is configured to check that the operating system's bit depth is
 ; the same as that of the executable file.
 ;
 ; The IA-64 architecture is not supported.
 
-#define MyAppName "${LHDR_NAME}"
+#define MyAppName "${LHDR_DISPLAY_NAME}"
 #define MyAppVersion "${GIT_DESCRIBE}"
 #define MyAppVersionNumeric "${GIT_NUMERIC_VERSION_ONLY}"
 #define MyAppPublisher "${LHDR_VENDOR}"
 #define MyAppURL "http://qtpfsgui.sourceforge.net/"
-#define MyAppExeName "luminance-hdr.exe"
+#define MyAppExeName "lumierehdr.exe"
 #define MySourceBasePath "${PROJECT_SOURCE_DIR}"
 #define MyBitDepth "${BUILD_BIT_DEPTH}"
 #define MyTargetArchitecture "${ARCHITECTURE_ALLOWED}"
@@ -95,7 +95,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 ;Name: regBrowseFolder; Description: "Add ""Browse with RawTherapee"" option to context menu when right-clicking on a folder."; GroupDescription: File extensions:
 
 [Files]
-Source: "luminance-hdr*.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "lumierehdr*.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "hdrhtml\*"; DestDir: "{app}\hdrhtml\"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "help\*"; DestDir: "{app}\help\"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "i18n\*"; DestDir: "{app}\i18n\"; Flags: ignoreversion recursesubdirs createallsubdirs

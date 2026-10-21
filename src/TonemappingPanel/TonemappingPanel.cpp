@@ -1112,7 +1112,7 @@ void TonemappingPanel::on_loadsettingsbutton_clicked() {
     QString opened = QFileDialog::getOpenFileName(
         this, tr("Load a tonemapping settings text file..."),
         lum_options.getDefaultPathTmoSettings(),
-        tr("LuminanceHDR tonemapping settings text file (*.txt)"));
+        tr("LumièreHDR tonemapping settings text file (*.txt)"));
     if (!opened.isEmpty()) {
         QFileInfo qfi(opened);
         if (!qfi.isReadable()) {
@@ -1138,7 +1138,7 @@ void TonemappingPanel::on_savesettingsbutton_clicked() {
     QString fname = QFileDialog::getSaveFileName(
         this, tr("Save tonemapping settings text file to..."),
         lum_options.getDefaultPathTmoSettings(),
-        tr("LuminanceHDR tonemapping settings text file (*.txt)"));
+        tr("LumièreHDR tonemapping settings text file (*.txt)"));
     if (!fname.isEmpty()) {
         QFileInfo qfi(fname);
         if (qfi.suffix().toUpper() != QLatin1String("TXT")) {
@@ -1306,7 +1306,7 @@ void TonemappingPanel::fromTxt2Gui() {
                                       tr("Error: The tone mapping settings "
                                          "file format has changed. This "
                                          "(old) file cannot be used with this "
-                                         "version of LuminanceHDR. "
+                                         "version of LumièreHDR. "
                                          "Create a new one."),
                                       QMessageBox::Ok, QMessageBox::NoButton);
                 return;

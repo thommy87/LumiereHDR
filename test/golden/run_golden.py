@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Golden-image regression check for every tone-mapping operator.
 
-Renders one synthetic HDR scene with luminance-hdr-cli for each operator
+Renders one synthetic HDR scene with lumierehdr-cli for each operator
 and compares simple image statistics (per-channel mean, standard
 deviation and 5/50/95th percentiles, on a 0-255 scale) with the
 reference values in reference.json. Statistics rather than pixels keep

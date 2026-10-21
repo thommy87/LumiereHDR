@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 
         if (LuminanceOptions().isWarnNewDomosaicingAlgos()) {
             LuminanceOptions().setWarnNewDomosaicingAlgos(false);
-            QMessageBox::warning(NULL, "", QObject::tr("This version of Luminance HDR has been compiled with support for extra "\
+            QMessageBox::warning(NULL, "", QObject::tr("This version of LumièreHDR has been compiled with support for extra "\
                         "demosaicing algorithms.\n"\
                         "Please go to Tools->Preferences->Raw Conversion->Quality and select one of the new available methods."\
                         ), QMessageBox::Ok);
