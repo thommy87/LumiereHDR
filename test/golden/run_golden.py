@@ -131,18 +131,13 @@ def main():
     if summary and failures:
         # make an intended change easy to review and to record
         with open(summary, "a") as f:
-            f.write("### Golden-image changes
-```
-" + "
-".join(failures) + "
-```
-")
-            f.write("Current values (paste into reference.json if intended):
-```json
-"
-                    + json.dumps(current, sort_keys=True) + "
-```
-")
+            fence = "```"
+            f.write(f"### Golden-image changes\n{fence}\n")
+            f.write("\n".join(failures))
+            f.write(f"\n{fence}\nCurrent values (paste into reference.json "
+                    f"if intended):\n{fence}json\n")
+            f.write(json.dumps(current, sort_keys=True))
+            f.write(f"\n{fence}\n")
     return 1 if failures else 0
 
 
