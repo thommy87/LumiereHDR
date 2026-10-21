@@ -14,9 +14,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  QT5_PACKAGES: qtbase5-dev qttools5-dev qttools5-dev-tools libqt5svg5-dev
+  QT6_PACKAGES: >-
+    qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools
+    libqt6svg6-dev qt6-5compat-dev libgl-dev
   APT_PACKAGES: >-
-    ninja-build qtbase5-dev qttools5-dev qttools5-dev-tools libqt5svg5-dev
-    libboost-program-options-dev libboost-thread-dev libboost-chrono-dev
+    ninja-build libboost-program-options-dev libboost-thread-dev libboost-chrono-dev
     libboost-system-dev libboost-date-time-dev libboost-atomic-dev
     libexiv2-dev libtiff-dev libpng-dev libopenexr-dev libgsl-dev libjpeg-dev
     libcfitsio-dev libraw-dev libfftw3-dev liblcms2-dev libeigen3-dev
@@ -35,17 +38,25 @@ jobs:
             cxx: g++
             build_type: Release
             sanitize: ""
+            qt: QT5_PACKAGES
+          - name: gcc qt6
+            cc: gcc
+            cxx: g++
+            build_type: Release
+            sanitize: ""
+            qt: QT6_PACKAGES
           - name: clang asan+ubsan
             cc: clang
             cxx: clang++
             build_type: Debug
             sanitize: "address;undefined"
+            qt: QT5_PACKAGES
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends $APT_PACKAGES clang libomp-dev
+          sudo apt-get install -y --no-install-recommends $APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev
       - name: Configure
         run: >
           cmake -S . -B build -G Ninja
@@ -71,7 +82,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends $APT_PACKAGES clang libomp-dev
+          sudo apt-get install -y --no-install-recommends $APT_PACKAGES $QT5_PACKAGES clang libomp-dev
       - name: Build fuzzer
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \

@@ -1,9 +1,9 @@
 ADD_EXECUTABLE(ImageInspector
     ImageInspectorMain.cpp)
 
-QT5_WRAP_CPP(FILES_MOC ${FILES_H})
+qt_wrap_cpp(FILES_MOC ${FILES_H})
 
-TARGET_LINK_LIBRARIES(ImageInspector Qt5::Core Qt5::Gui Qt5::Widgets)
+TARGET_LINK_LIBRARIES(ImageInspector Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
 
 # Link sub modules
 IF(MSVC OR APPLE)

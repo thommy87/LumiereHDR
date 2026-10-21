@@ -29,7 +29,7 @@
 #include <QString>
 #include <QWidget>
 
-#ifdef Q_OS_WIN
+#ifdef LHDR_WIN_TASKBAR
 #include "ecwin7.h"
 #endif
 
@@ -62,7 +62,7 @@ class OsIntegration : public QObject {
     int m_progressMin;
     int m_progressMax;
 
-#ifdef Q_OS_WIN
+#ifdef LHDR_WIN_TASKBAR
     EcWin7 *m_winProgressbar;
 #endif
 };

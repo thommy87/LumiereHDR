@@ -60,25 +60,23 @@ else( HAS_BRANCH_PREDICTION )
     set( BRANCH_PREDICTION 0 )
 endif( HAS_BRANCH_PREDICTION )
 
-# find and setup Qt5 for this project
-
-find_package(Qt5Core             REQUIRED)
-find_package(Qt5Concurrent       REQUIRED)
-find_package(Qt5Widgets          REQUIRED)
-find_package(Qt5Gui              REQUIRED)
-find_package(Qt5Xml              REQUIRED)
-find_package(Qt5Sql              REQUIRED)
-find_package(Qt5Svg              REQUIRED)
-find_package(Qt5Network          REQUIRED)
-find_package(Qt5LinguistTools    REQUIRED)
-find_package(Qt5PrintSupport     REQUIRED)
-IF(WIN32)
+# find and setup Qt for this project: Qt 6 when available, else Qt 5
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+set(QT_MAJOR ${QT_VERSION_MAJOR})
+message(STATUS "Building with Qt ${QT_VERSION}")
+find_package(Qt${QT_MAJOR} REQUIRED COMPONENTS
+    Core Concurrent Widgets Gui Xml Sql Svg Network LinguistTools PrintSupport)
+IF(QT_MAJOR EQUAL 6)
+    # QRegExp and the SAX XML classes, until the code is moved off them
+    find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
+    link_libraries(Qt6::Core5Compat)
+ELSEIF(WIN32)
     find_package(Qt5WinExtras)
 ENDIF()
 
 # Include the qtmain lib if we are on the windows platform
 IF(WIN32)
-    SET(LIBS ${LIBS} ${Qt5Core_QTMAIN_LIBRARIES})
+    SET(LIBS ${LIBS} ${Qt${QT_MAJOR}Core_QTMAIN_LIBRARIES})
 ENDIF(WIN32)
 
 set(LIBS ${LIBS}
@@ -233,7 +231,7 @@ SET(LUMINANCE_HDR_H ${LUMINANCE_HDR_H}
 )
 
 SET(LUMINANCE_HDR_RCCS icons.qrc)
-QT5_ADD_RESOURCES(LUMINANCE_HDR_RCCS_SRCS ${LUMINANCE_HDR_RCCS})
+qt_add_resources(LUMINANCE_HDR_RCCS_SRCS ${LUMINANCE_HDR_RCCS})
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/librtprocess/src/include")
 ADD_SUBDIRECTORY(src)
@@ -255,9 +253,9 @@ FILE(GLOB LUMINANCE_TS i18n/lang_*.ts)
 IF(UPDATE_TRANSLATIONS)
     SET(LUMINANCE_TS ${LUMINANCE_TS} i18n/source.ts)
     IF(LUPDATE_NOOBSOLETE)
-        QT5_CREATE_TRANSLATION(LUMINANCE_QM ${FILES_TO_TRANSLATE} ${LUMINANCE_TS} OPTIONS -noobsolete)
+        qt_create_translation(LUMINANCE_QM ${FILES_TO_TRANSLATE} ${LUMINANCE_TS} OPTIONS -noobsolete)
     ELSE()
-        QT5_CREATE_TRANSLATION(LUMINANCE_QM ${FILES_TO_TRANSLATE} ${LUMINANCE_TS})
+        qt_create_translation(LUMINANCE_QM ${FILES_TO_TRANSLATE} ${LUMINANCE_TS})
     ENDIF()
     IF(UNIX)
         IF(NOT APPLE) # Sadly on Linux Qt5 add global include paths in list of translation files, let's get rid of them
@@ -266,7 +264,7 @@ IF(UPDATE_TRANSLATIONS)
         ENDIF(NOT APPLE)
     ENDIF(UNIX)
 ELSE(UPDATE_TRANSLATIONS)
-    QT5_ADD_TRANSLATION(LUMINANCE_QM ${LUMINANCE_TS})
+    qt_add_translation(LUMINANCE_QM ${LUMINANCE_TS})
 ENDIF(UPDATE_TRANSLATIONS)
 
 ADD_CUSTOM_TARGET(translations_target DEPENDS ${LUMINANCE_QM})
@@ -319,8 +317,8 @@ IF(APPLE)
     SET_SOURCE_FILES_PROPERTIES(${LUMINANCE_QT_QM} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/i18n)
 
     # QT magic
-    TARGET_LINK_LIBRARIES(${LHDR_OSX_EXECUTABLE_TARGET} Qt5::Core Qt5::Gui Qt5::Widgets)
-    TARGET_LINK_LIBRARIES(luminance-hdr-cli Qt5::Core Qt5::Gui Qt5::Widgets)
+    TARGET_LINK_LIBRARIES(${LHDR_OSX_EXECUTABLE_TARGET} Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
+    TARGET_LINK_LIBRARIES(luminance-hdr-cli Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
 
     # Link libraries
     TARGET_LINK_LIBRARIES(${LHDR_OSX_EXECUTABLE_TARGET} ${LUMINANCE_MODULES_GUI} ${LIBS})
@@ -402,8 +400,8 @@ ELSEIF(UNIX)
     ADD_EXECUTABLE(luminance-hdr ${LUMINANCE_FILES})
     ADD_EXECUTABLE(luminance-hdr-cli ${LUMINANCE_FILES})
 
-    TARGET_LINK_LIBRARIES(luminance-hdr Qt5::Core Qt5::Gui Qt5::Widgets)
-    TARGET_LINK_LIBRARIES(luminance-hdr-cli Qt5::Core Qt5::Gui Qt5::Widgets)
+    TARGET_LINK_LIBRARIES(luminance-hdr Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
+    TARGET_LINK_LIBRARIES(luminance-hdr-cli Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
 
     # link libraries
     TARGET_LINK_LIBRARIES(luminance-hdr -Xlinker --start-group ${LUMINANCE_MODULES_GUI} -Xlinker --end-group)
@@ -456,10 +454,10 @@ ELSEIF(WIN32)
 
         # ------------------------------------------------------------------------------------
 
-        get_target_property(QT_LOCATION Qt5::Core LOCATION)
+        get_target_property(QT_LOCATION Qt${QT_MAJOR}::Core LOCATION)
         get_filename_component(LIBS_SRC_DIR "${QT_LOCATION}" DIRECTORY)
         message(STATUS "> Base libs dir:    ${LIBS_SRC_DIR}")
-        get_filename_component(QT5_PLUGINS_SRC_DIR "${LIBS_SRC_DIR}/../share/qt5/plugins" ABSOLUTE)
+        get_filename_component(QT5_PLUGINS_SRC_DIR "${LIBS_SRC_DIR}/../share/qt${QT_MAJOR}/plugins" ABSOLUTE)
         message(STATUS "> Qt5 plugins libs: ${QT5_PLUGINS_SRC_DIR}")
 
         get_filename_component(PRGFILES_DIR "$ENV{ProgramFiles}" ABSOLUTE)
@@ -493,8 +491,11 @@ ELSEIF(WIN32)
         ADD_EXECUTABLE(luminance-hdr WIN32 ${LUMINANCE_FILES})
         ADD_EXECUTABLE(luminance-hdr-cli ${LUMINANCE_FILES})
 
-        TARGET_LINK_LIBRARIES(luminance-hdr Qt5::Core Qt5::Gui Qt5::Widgets Qt5::WinExtras Qt5::Svg)
-        TARGET_LINK_LIBRARIES(luminance-hdr-cli Qt5::Core Qt5::Gui Qt5::Widgets)
+        TARGET_LINK_LIBRARIES(luminance-hdr Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets Qt${QT_MAJOR}::Svg)
+        IF(TARGET Qt5::WinExtras)
+            TARGET_LINK_LIBRARIES(luminance-hdr Qt5::WinExtras)
+        ENDIF()
+        TARGET_LINK_LIBRARIES(luminance-hdr-cli Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
 
         # link libraries
         TARGET_LINK_LIBRARIES(luminance-hdr -Xlinker --start-group ${LUMINANCE_MODULES_GUI} -Xlinker --end-group)
