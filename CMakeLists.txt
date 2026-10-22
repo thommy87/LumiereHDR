@@ -230,7 +230,7 @@ SET(LUMINANCE_HDR_H ${LUMINANCE_HDR_H}
     src/arch/msvc/math.h
 )
 
-SET(LUMINANCE_HDR_RCCS icons.qrc)
+SET(LUMINANCE_HDR_RCCS icons.qrc presets.qrc)
 qt_add_resources(LUMINANCE_HDR_RCCS_SRCS ${LUMINANCE_HDR_RCCS})
 
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/librtprocess/src/include")

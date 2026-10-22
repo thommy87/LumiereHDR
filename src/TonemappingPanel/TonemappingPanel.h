@@ -38,6 +38,8 @@
 class Gang;
 class QtWaitingSpinner;
 
+class QMenu;
+
 namespace Ui {
 class TonemappingPanel;
 }
@@ -109,6 +111,7 @@ class TonemappingPanel : public QWidget {
     float m_autolevelThreshold;
     QScopedPointer<ThresholdWidget> m_thd;
     QScopedPointer<Ui::TonemappingPanel> m_Ui;
+    QMenu *m_presetMenu;
 
    protected Q_SLOTS:
     virtual void changeEvent(QEvent *event);
@@ -121,6 +124,9 @@ class TonemappingPanel : public QWidget {
     void on_redoButton_clicked();
     void on_savesettingsbutton_clicked();
     void on_loadsettingsbutton_clicked();
+    void fillPresetMenu();
+    void applyPreset(const QString &fileName);
+    void savePreset();
     void on_queueButton_clicked();
     void on_lblOpenQueue_linkActivated(const QString &link);
 
