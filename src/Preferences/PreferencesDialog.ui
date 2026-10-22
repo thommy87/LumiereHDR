@@ -599,9 +599,9 @@
              <widget class="QComboBox" name="themeComboBox"/>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkDarkMode">
-              <property name="text">
-               <string>Dark mode (beta)</string>
+             <widget class="QComboBox" name="colorSchemeComboBox">
+              <property name="toolTip">
+               <string>Light or dark colours; Follow system matches the operating system</string>
               </property>
              </widget>
             </item>
@@ -2678,7 +2678,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>toolButtonExtTool</tabstop>
   <tabstop>languageComboBox</tabstop>
   <tabstop>themeComboBox</tabstop>
-  <tabstop>chkDarkMode</tabstop>
+  <tabstop>colorSchemeComboBox</tabstop>
   <tabstop>previewsWidthSpinBox</tabstop>
   <tabstop>checkBoxTMOWindowsPreviewPanel</tabstop>
   <tabstop>chkPortableMode</tabstop>

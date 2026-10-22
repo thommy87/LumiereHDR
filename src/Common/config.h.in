@@ -52,6 +52,7 @@
 #define KEY_GUI_LANG "UserInterfaceLanguage"
 #define KEY_GUI_THEME "UiTheme"
 #define KEY_GUI_DARKMODE "UiDarkMode"
+#define KEY_GUI_COLORSCHEME "UiColorScheme"
 #define KEY_PREVIEW_PANEL_MODE "MainWindowPreviewPanelVisualizationMode"
 
 #define KEY_EXTERNAL_AIS_OPTIONS "External_Tools_Options/ExternalAlignImageStackOptions"
