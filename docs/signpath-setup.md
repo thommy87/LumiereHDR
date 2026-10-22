@@ -29,7 +29,7 @@ Create these in the SignPath organization you are given:
 | Project slug | `LumiereHDR` |
 | Signing policies | `release-signing` (manual approval by an approver), `test-signing` |
 | Trusted build system | GitHub.com, linked to this repository |
-| Artifact configuration slug | `windows-zip` |
+| Artifact configuration slugs | `windows-zip`, `windows-installer` |
 
 Artifact configuration `windows-zip` (the GitHub artifact is a ZIP that
 contains the release ZIP):
@@ -48,6 +48,20 @@ contains the release ZIP):
         </pe-file>
       </directory>
     </zip-file>
+  </zip-file>
+</artifact-configuration>
+```
+
+Artifact configuration `windows-installer` (the GitHub artifact is a ZIP
+that contains the setup program):
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <zip-file>
+    <pe-file path="LumiereHDR-*-windows-x64-setup.exe" product-name="LumièreHDR">
+      <authenticode-sign />
+    </pe-file>
   </zip-file>
 </artifact-configuration>
 ```
