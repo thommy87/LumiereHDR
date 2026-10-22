@@ -1,0 +1,12 @@
+[Icon Theme]
+Name=luminance-hdr-dark
+Comment=LumièreHDR icon theme (dark), based on KDE Breeze
+Inherits=luminance-hdr
+Directories=apps
+
+[apps]
+Size=22
+MinSize=8
+MaxSize=512
+Context=Applications
+Type=Scalable

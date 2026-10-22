@@ -1,12 +1,12 @@
 [Icon Theme]
 Name=luminance-hdr
-Comment=Luminance HDR Icon Theme
+Comment=LumièreHDR icon theme (light), based on KDE Breeze
 
-# Directory list
 Directories=apps
 
 [apps]
-Size=32
+Size=22
+MinSize=8
+MaxSize=512
 Context=Applications
-Type=Fixed
-
+Type=Scalable
