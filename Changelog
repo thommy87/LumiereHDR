@@ -1,3 +1,19 @@
+Changes LumièreHDR 2.8.0
+NEW: Renamed to LumièreHDR, with a new logo and icons
+NEW: Built with Qt 6 and C++20 (Windows builds use current libraries)
+NEW: Windows installer (per-user install without admin rights, Start menu,
+     optional "Open with" for .hdr/.exr/.pfs, uninstaller)
+FIX: Ferwerda96 no longer renders high-contrast images black
+FIX: a crafted .hdr file could make the app allocate several gigabytes
+* golden-image tests for all 15 tone mapping operators
+
+Changes LumièreHDR 2.7.0
+SECURITY: fixed heap overflow in the Radiance .hdr reader
+SECURITY: update check over HTTPS (now opt-in), checked release links
+SECURITY: Windows builds with ASLR and DEP; help viewer without QtWebKit
+FIX: Mantiuk06 detail factor restored to the published formula
+* CI with sanitizers and fuzzing
+
 Changes 2.6.0
 NEW: New tonemapping operator kimkautz08
 NEW: New tonemapping operator lischinski06
