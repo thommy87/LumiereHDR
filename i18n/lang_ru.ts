@@ -3945,7 +3945,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/MainWindow/MainWindow.ui" line="643"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="646"/>
         <source>Show information about Qt library that is used by Luminance</source>
-        <translation>Показать информацию о библиотеке Qt, используемой в Luminance HDR</translation>
+        <translation>Показать информацию о библиотеке Qt, используемой в LumièreHDR</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="654"/>
@@ -4486,7 +4486,7 @@ Do you want to continue?</source>
     <message>
         <location filename="../src/Preferences/PreferencesDialog.ui" line="26"/>
         <source>Preferences</source>
-        <translation>Параметры Luminance HDR</translation>
+        <translation>Параметры LumièreHDR</translation>
     </message>
     <message>
         <location filename="../src/Preferences/PreferencesDialog.ui" line="50"/>
