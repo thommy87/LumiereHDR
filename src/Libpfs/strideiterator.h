@@ -32,13 +32,10 @@ namespace pfs {
 //! \ref C++ Cookbook
 //! \ref http://zotu.blogspot.co.uk/2010/01/creating-random-access-iterator.html
 template <typename IterType>
-class StrideIterator
-    : public std::iterator<std::random_access_iterator_tag, IterType> {
+class StrideIterator {
    public:
     // public typedefs
     typedef StrideIterator<IterType> self;
-    typedef typename std::iterator<std::random_access_iterator_tag, IterType>
-        iterator_base;
     typedef typename std::random_access_iterator_tag iterator_category;
 
     typedef typename std::iterator_traits<IterType>::value_type value_type;
@@ -55,7 +52,11 @@ class StrideIterator
 
     // operators
     //! \brief Copy constructor
-    self &operator=(const self &rhs) { m_data(rhs.m_data); m_step(rhs.m_step); }
+    self &operator=(const self &rhs) {
+        m_data = rhs.m_data;
+        m_step = rhs.m_step;
+        return *this;
+    }
 
     //! \brief Prefix increment
     self &operator++() {

@@ -69,10 +69,11 @@ IF(MSVC OR APPLE)
         ${LIBS} )
 ELSE()
     TARGET_LINK_LIBRARIES(TestMantiuk06Basic
-        ContrastDomain pfs pfstmo common
+        -Xlinker --start-group ContrastDomain pfs pfstmo common ${LIBS}
+        -Xlinker --end-group
         ${GTEST_BOTH_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${LIBS} $<$<PLATFORM_ID:Linux>:rt>)
+        $<$<PLATFORM_ID:Linux>:rt>)
 ENDIF()
 TARGET_LINK_LIBRARIES(TestMantiuk06Basic Qt${QT_MAJOR}::Core)
 
@@ -89,10 +90,11 @@ IF(MSVC OR APPLE)
         ${LIBS} )
 ELSE()
     TARGET_LINK_LIBRARIES(TestMantiuk06Pyramid
-        ContrastDomain pfs pfstmo common
+        -Xlinker --start-group ContrastDomain pfs pfstmo common ${LIBS}
+        -Xlinker --end-group
         ${GTEST_BOTH_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
-        ${LIBS} $<$<PLATFORM_ID:Linux>:rt>)
+        $<$<PLATFORM_ID:Linux>:rt>)
 ENDIF()
 TARGET_LINK_LIBRARIES(TestMantiuk06Pyramid Qt${QT_MAJOR}::Core)
 ADD_TEST(TestMantiuk06Pyramid TestMantiuk06Pyramid)
@@ -187,10 +189,19 @@ ENDIF()
 TARGET_LINK_LIBRARIES(TestFusionOperator Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
 
 ADD_EXECUTABLE(TestPoissonSolver TestPoissonSolver.cpp)
+IF(MSVC OR APPLE)
 TARGET_LINK_LIBRARIES(TestPoissonSolver hdrwizard pfs pfstmo common
     ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${LIBS})
+ELSE()
+# the static libraries reference each other: let the linker revisit them
+TARGET_LINK_LIBRARIES(TestPoissonSolver
+    -Xlinker --start-group hdrwizard pfs pfstmo common ${LIBS}
+    -Xlinker --end-group
+    ${GTEST_BOTH_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT})
+ENDIF()
 ADD_TEST(TestPoissonSolver TestPoissonSolver)
 
 # Radiance reader: malformed RLE data must not overflow
