@@ -161,6 +161,11 @@ class LuminanceOptions : public QObject {
     void setGuiTheme(const QString &);
     bool isGuiDarkMode() const;
     void setGuiDarkMode(bool);
+    //! "system" (follow the operating system), "light" or "dark"
+    QString getGuiColorScheme() const;
+    void setGuiColorScheme(const QString &);
+    //! true when the operating system currently uses a dark theme
+    static bool isSystemDark();
     void applyTheme(bool init);
 
     // Language

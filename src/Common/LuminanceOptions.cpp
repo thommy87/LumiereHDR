@@ -38,7 +38,9 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QString>
+#include <QSettings>
 #include <QStyleFactory>
+#include <QStyleHints>
 
 #include "Common/LuminanceOptions.h"
 #include "Common/config.h"
@@ -233,45 +235,91 @@ void LuminanceOptions::setGuiDarkMode(bool b) {
     m_settingHolder->setValue(KEY_GUI_DARKMODE, b);
 }
 
-void LuminanceOptions::applyTheme(bool /*init*/) {
-    QString theme = LuminanceOptions().getGuiTheme();
-    if (theme.compare(QLatin1String("Macintosh")) != 0 && isGuiDarkMode()) {
-        // QPalette darkPalette;
-        QPalette darkPalette = QApplication::palette();
+QString LuminanceOptions::getGuiColorScheme() const {
+    const QString scheme = m_settingHolder->value(KEY_GUI_COLORSCHEME).toString();
+    if (scheme == QLatin1String("light") || scheme == QLatin1String("dark") ||
+        scheme == QLatin1String("system"))
+        return scheme;
+    // settings from before LumiereHDR 2.8 only had a dark mode switch
+    return isGuiDarkMode() ? QStringLiteral("dark") : QStringLiteral("system");
+}
 
-        darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
-        darkPalette.setColor(QPalette::WindowText, Qt::white);
-        darkPalette.setColor(QPalette::Disabled, QPalette::WindowText,
-                             Qt::lightGray);
-        darkPalette.setColor(QPalette::Base, QColor(25, 25, 25));
-        darkPalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-        darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
-        darkPalette.setColor(QPalette::ToolTipText, Qt::black);
-        darkPalette.setColor(QPalette::Text, Qt::white);
-        darkPalette.setColor(QPalette::Disabled, QPalette::Text, Qt::lightGray);
-        darkPalette.setColor(QPalette::Button, QColor(53, 53, 53));
-        darkPalette.setColor(QPalette::ButtonText, Qt::white);
-        darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText,
-                             Qt::lightGray);
-        darkPalette.setColor(QPalette::BrightText, Qt::red);
-        // darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
-        darkPalette.setColor(QPalette::Link, QColor(0, 120, 220));
+void LuminanceOptions::setGuiColorScheme(const QString &scheme) {
+    m_settingHolder->setValue(KEY_GUI_COLORSCHEME, scheme);
+    setGuiDarkMode(scheme == QLatin1String("dark"));
+}
 
-        // darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
-        darkPalette.setColor(QPalette::Highlight, QColor(0, 120, 220));
-        darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+bool LuminanceOptions::isSystemDark() {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    return QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
+#elif defined(Q_OS_WIN)
+    QSettings personalize(
+        QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\"
+                       "CurrentVersion\\Themes\\Personalize"),
+        QSettings::NativeFormat);
+    return personalize.value(QStringLiteral("AppsUseLightTheme"), 1).toInt() == 0;
+#else
+    return false;
+#endif
+}
 
-        QApplication::setPalette(darkPalette);
+namespace {
+// LumiereHDR accent, the light blue of the logo's star
+const QColor kAccent(61, 143, 209);
 
-        // QApplication::setStyleSheet("QToolTip { color: #ffffff;
-        // background-color:
-        // #2a82da; border: 1px solid white; }");
-    } else {
-        QApplication::setPalette(QApplication::palette());
+QPalette darkPalette() {
+    QPalette p;
+    const QColor window(38, 41, 46), base(28, 30, 34), text(232, 234, 237),
+        disabled(128, 132, 138);
+    p.setColor(QPalette::Window, window);
+    p.setColor(QPalette::WindowText, text);
+    p.setColor(QPalette::Base, base);
+    p.setColor(QPalette::AlternateBase, window);
+    p.setColor(QPalette::ToolTipBase, QColor(50, 54, 60));
+    p.setColor(QPalette::ToolTipText, text);
+    p.setColor(QPalette::PlaceholderText, disabled);
+    p.setColor(QPalette::Text, text);
+    p.setColor(QPalette::Button, QColor(48, 52, 58));
+    p.setColor(QPalette::ButtonText, text);
+    p.setColor(QPalette::BrightText, QColor(255, 107, 107));
+    p.setColor(QPalette::Light, QColor(62, 66, 73));
+    p.setColor(QPalette::Midlight, QColor(52, 56, 62));
+    p.setColor(QPalette::Mid, QColor(32, 34, 38));
+    p.setColor(QPalette::Dark, QColor(22, 24, 27));
+    p.setColor(QPalette::Shadow, QColor(0, 0, 0));
+    p.setColor(QPalette::Highlight, kAccent);
+    p.setColor(QPalette::HighlightedText, Qt::white);
+    p.setColor(QPalette::Link, kAccent.lighter(120));
+    p.setColor(QPalette::LinkVisited, kAccent.lighter(140));
+    for (QPalette::ColorRole role :
+         {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
+        p.setColor(QPalette::Disabled, role, disabled);
     }
+    p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(70, 74, 80));
+    return p;
+}
 
-    QApplication::setStyle(
-        QStyleFactory::create(LuminanceOptions().getGuiTheme()));
+QPalette lightPalette(const QStyle *style) {
+    QPalette p = style ? style->standardPalette() : QPalette();
+    p.setColor(QPalette::Highlight, kAccent);
+    p.setColor(QPalette::HighlightedText, Qt::white);
+    p.setColor(QPalette::Link, kAccent.darker(120));
+    return p;
+}
+}  // namespace
+
+void LuminanceOptions::applyTheme(bool /*init*/) {
+    const QString theme = getGuiTheme();
+    QApplication::setStyle(QStyleFactory::create(theme));
+
+    // the native macOS style draws its own colours
+    if (theme.compare(QLatin1String("Macintosh")) == 0) return;
+
+    const QString scheme = getGuiColorScheme();
+    const bool dark = scheme == QLatin1String("dark") ||
+                      (scheme == QLatin1String("system") && isSystemDark());
+    QApplication::setPalette(dark ? darkPalette()
+                                  : lightPalette(QApplication::style()));
 }
 
 // write system default language the first time around (discard "_country")

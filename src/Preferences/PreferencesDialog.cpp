@@ -76,6 +76,9 @@ PreferencesDialog::PreferencesDialog(QWidget *p, int tab)
         m_Ui->toolButtonInterface->setIcon(
             QIcon(":/program-icons/preferences-system-windows"));
 
+    m_Ui->colorSchemeComboBox->addItem(tr("Follow system"), QStringLiteral("system"));
+    m_Ui->colorSchemeComboBox->addItem(tr("Light"), QStringLiteral("light"));
+    m_Ui->colorSchemeComboBox->addItem(tr("Dark"), QStringLiteral("dark"));
     connect(m_Ui->themeComboBox, SIGNAL(currentIndexChanged(int)), this,
             SLOT(on_themeChanged()));
 
@@ -167,16 +170,13 @@ void PreferencesDialog::on_okButton_clicked() {
         TranslatorManager::setLanguage(luminance_options.getGuiLang());
     }
 
+    const QString scheme =
+        m_Ui->colorSchemeComboBox->currentData().toString();
     if (luminance_options.getGuiTheme() != m_Ui->themeComboBox->currentText() ||
-        luminance_options.isGuiDarkMode() != m_Ui->chkDarkMode->isChecked()) {
-        if (luminance_options.isGuiDarkMode() !=
-                m_Ui->chkDarkMode->isChecked() &&
-            !m_Ui->chkDarkMode->isChecked()) {
-            restartNeeded = true;
-        }
+        luminance_options.getGuiColorScheme() != scheme) {
         luminance_options.setGuiTheme(m_Ui->themeComboBox->currentText());
-        luminance_options.setGuiDarkMode(m_Ui->chkDarkMode->isChecked());
-        luminance_options.applyTheme(false);
+        luminance_options.setGuiColorScheme(scheme);
+        luminance_options.applyTheme(false);  // takes effect immediately
     }
 
     luminance_options.setTempDir(m_Ui->lineEditTempPath->text());
@@ -536,7 +536,9 @@ void PreferencesDialog::from_options_to_gui() {
     m_Ui->languageComboBox->setCurrentIndex(
         fromIso639ToGuiIndex.value(luminance_options.getGuiLang()));
     m_Ui->themeComboBox->setCurrentText(luminance_options.getGuiTheme());
-    m_Ui->chkDarkMode->setChecked(luminance_options.isGuiDarkMode());
+    m_Ui->colorSchemeComboBox->setCurrentIndex(qMax(
+        0, m_Ui->colorSchemeComboBox->findData(
+               luminance_options.getGuiColorScheme())));
 
     // Temp directory
     m_Ui->lineEditTempPath->setText(luminance_options.getTempDir());

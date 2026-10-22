@@ -24,6 +24,7 @@
  */
 
 #include <QApplication>
+#include <QStyleHints>
 #include <QDebug>
 #include <QFile>
 #include <QObject>
@@ -157,6 +158,15 @@ int main(int argc, char **argv) {
     TranslatorManager::setLanguage(LuminanceOptions().getGuiLang());
 
     LuminanceOptions().applyTheme(true);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    // follow the system when it switches between light and dark
+    QObject::connect(QGuiApplication::styleHints(),
+                     &QStyleHints::colorSchemeChanged, &application, [] {
+                         LuminanceOptions options;
+                         if (options.getGuiColorScheme() == QLatin1String("system"))
+                             options.applyTheme(false);
+                     });
+#endif
 
     QStringList arguments = application.arguments();
 
