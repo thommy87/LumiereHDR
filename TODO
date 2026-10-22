@@ -10,6 +10,16 @@ Open items
   them by calling ITaskbarList3 (and the jump list API) directly.
 - Replace the remaining QRegExp uses and the SAX XML parser in the help
   browser, then drop the Qt6::Core5Compat dependency.
+- UI clean-up pass (look and feel, after the functional Phase 2 work),
+  from Alex's feedback on 2.8.3:
+  - integrate the step bar into the window design instead of a plain
+    strip above the image area
+  - tidy the work area so it is clearer and more intuitive
+  - previews in the tone mapping panel default to a very low resolution;
+    pick a sensible default
+  - image tabs: squeezed in between, and very long file names make tabs
+    huge; elide names to a fixed length with "..." so all tabs have the
+    same width (full name in the tooltip)
 
 Upstream Luminance HDR trackers (historical):
 https://github.com/LuminanceHDR/LuminanceHDR/issues
