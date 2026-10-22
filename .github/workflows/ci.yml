@@ -53,13 +53,30 @@ jobs:
             qt: QT5_PACKAGES
     steps:
       - uses: actions/checkout@v4
+      - name: Cache downloaded packages
+        uses: actions/cache@v4
+        with:
+          path: ~/apt-cache
+          key: apt-${{ matrix.name }}-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: apt-${{ matrix.name }}-
       - name: Install dependencies
-        # a stuck package mirror once hung this step for over an hour;
-        # fail fast instead so the job can simply be re-run
-        timeout-minutes: 15
+        # the Azure Ubuntu mirror sometimes trickles at a few kB/s: cache
+        # the packages between runs, and if the download is that slow,
+        # switch to the main Ubuntu mirror and carry on from what arrived
+        timeout-minutes: 25
         run: |
+          mkdir -p ~/apt-cache/partial
+          echo "Dir::Cache::Archives \"$HOME/apt-cache\"; Acquire::Retries \"5\"; Acquire::http::Timeout \"30\";" | sudo tee /etc/apt/apt.conf.d/80-ci
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends $APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev
+          pkgs="$APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev"
+          if ! sudo timeout 480 apt-get install -y --no-install-recommends $pkgs; then
+            echo "::warning::slow package mirror, switching to archive.ubuntu.com"
+            sudo dpkg --configure -a || true
+            echo "http://archive.ubuntu.com/ubuntu/" | sudo tee /etc/apt/apt-mirrors.txt
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends $pkgs
+          fi
+          sudo chown -R "$USER" ~/apt-cache
       - name: Configure
         run: >
           cmake -S . -B build -G Ninja
@@ -102,13 +119,30 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Cache downloaded packages
+        uses: actions/cache@v4
+        with:
+          path: ~/apt-cache
+          key: apt-fuzz-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: apt-fuzz-
       - name: Install dependencies
-        # a stuck package mirror once hung this step for over an hour;
-        # fail fast instead so the job can simply be re-run
-        timeout-minutes: 15
+        # the Azure Ubuntu mirror sometimes trickles at a few kB/s: cache
+        # the packages between runs, and if the download is that slow,
+        # switch to the main Ubuntu mirror and carry on from what arrived
+        timeout-minutes: 25
         run: |
+          mkdir -p ~/apt-cache/partial
+          echo "Dir::Cache::Archives \"$HOME/apt-cache\"; Acquire::Retries \"5\"; Acquire::http::Timeout \"30\";" | sudo tee /etc/apt/apt.conf.d/80-ci
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends $APT_PACKAGES $QT5_PACKAGES clang libomp-dev
+          pkgs="$APT_PACKAGES $QT5_PACKAGES clang libomp-dev"
+          if ! sudo timeout 480 apt-get install -y --no-install-recommends $pkgs; then
+            echo "::warning::slow package mirror, switching to archive.ubuntu.com"
+            sudo dpkg --configure -a || true
+            echo "http://archive.ubuntu.com/ubuntu/" | sudo tee /etc/apt/apt-mirrors.txt
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends $pkgs
+          fi
+          sudo chown -R "$USER" ~/apt-cache
       - name: Build fuzzer
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
