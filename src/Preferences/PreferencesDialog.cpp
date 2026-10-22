@@ -697,10 +697,7 @@ void PreferencesDialog::on_exportFileButton_clicked() {
 }
 
 void PreferencesDialog::on_themeChanged() {
-    if (m_Ui->themeComboBox->currentText() == QLatin1String("Macintosh")) {
-        m_Ui->chkDarkMode->setCheckState(Qt::Unchecked);
-        m_Ui->chkDarkMode->setDisabled(true);
-    } else {
-        m_Ui->chkDarkMode->setEnabled(true);
-    }
+    // the native macOS style ignores the colour scheme
+    m_Ui->colorSchemeComboBox->setEnabled(
+        m_Ui->themeComboBox->currentText() != QLatin1String("Macintosh"));
 }

@@ -39,6 +39,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QSettings>
+#include <QStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
 
