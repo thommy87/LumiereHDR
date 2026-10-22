@@ -3877,14 +3877,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="569"/>
         <source>Luminance Options</source>
-        <translation>Opzioni di Luminance HDR</translation>
+        <translation>Opzioni di LumièreHDR</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="572"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="575"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="578"/>
         <source>Set various options of Luminance</source>
-        <translation>Setta varie opzioni di Luminance HDR</translation>
+        <translation>Setta varie opzioni di LumièreHDR</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="581"/>
@@ -3949,7 +3949,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/MainWindow/MainWindow.ui" line="643"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="646"/>
         <source>Show information about Qt library that is used by Luminance</source>
-        <translation>Mostra informazioni sulle librerie Qt usate da Luminance HDR</translation>
+        <translation>Mostra informazioni sulle librerie Qt usate da LumièreHDR</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="654"/>
