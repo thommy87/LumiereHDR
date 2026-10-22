@@ -1,3 +1,9 @@
+Changes LumièreHDR 2.8.4
+NEW: undo/redo (Ctrl+Z / Ctrl+Y) and a history panel for rotate, resize and
+     projective transformation; Remove selection is now Ctrl+Shift+A
+NEW: tone mapping presets: seven built-in looks and your own saved presets
+FIX: loading a Durand02 settings file set the wrong Range slider
+
 Changes LumièreHDR 2.8.3
 NEW: step bar above the image: Import / Merge, Tone map, Export
 NEW: sharp vector (Breeze-style) icons, with a light variant for the dark scheme
