@@ -35,6 +35,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QIcon>
 #include <QLocale>
 #include <QMessageBox>
 #include <QString>
@@ -330,6 +331,12 @@ void LuminanceOptions::applyTheme(bool /*init*/) {
         theme = QStringLiteral("Fusion");
 
     QApplication::setStyle(QStyleFactory::create(theme));
+
+    // the bundled icon theme (Windows, macOS) has a light and a dark variant;
+    // on Linux the desktop's icon theme is used and left alone
+    if (QIcon::themeName().startsWith(QLatin1String("luminance-hdr")))
+        QIcon::setThemeName(dark ? QStringLiteral("luminance-hdr-dark")
+                                 : QStringLiteral("luminance-hdr"));
 
     // the native macOS style draws its own colours
     if (theme.compare(QLatin1String("Macintosh")) == 0) return;
