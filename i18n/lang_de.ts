@@ -3409,6 +3409,34 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Resize</source>
+        <translation>Größe ändern</translation>
+    </message>
+    <message>
+        <source>Projective transformation</source>
+        <translation>Projektive Transformation</translation>
+    </message>
+    <message>
+        <source>&amp;Undo</source>
+        <translation>&amp;Rückgängig</translation>
+    </message>
+    <message>
+        <source>&amp;Redo</source>
+        <translation>&amp;Wiederholen</translation>
+    </message>
+    <message>
+        <source>History</source>
+        <translation>Verlauf</translation>
+    </message>
+    <message>
+        <source>&amp;History</source>
+        <translation>&amp;Verlauf</translation>
+    </message>
+    <message>
+        <source>Original image</source>
+        <translation>Originalbild</translation>
+    </message>
+    <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="14"/>
         <location filename="../src/MainWindow/MainWindow.cpp" line="1814"/>
         <source>Luminance HDR</source>
@@ -5791,6 +5819,190 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 <context>
     <name>TonemappingPanel</name>
     <message>
+        <source>Natural</source>
+        <translation>Natürlich</translation>
+    </message>
+    <message>
+        <source>Photographic</source>
+        <translation>Fotografisch</translation>
+    </message>
+    <message>
+        <source>Vivid</source>
+        <translation>Kräftig</translation>
+    </message>
+    <message>
+        <source>Soft</source>
+        <translation>Weich</translation>
+    </message>
+    <message>
+        <source>Strong detail</source>
+        <translation>Starke Details</translation>
+    </message>
+    <message>
+        <source>Dramatic</source>
+        <translation>Dramatisch</translation>
+    </message>
+    <message>
+        <source>Black and white</source>
+        <translation>Schwarzweiß</translation>
+    </message>
+    <message>
+        <source>Built-in</source>
+        <translation>Mitgeliefert</translation>
+    </message>
+    <message>
+        <source>My presets</source>
+        <translation>Meine Presets</translation>
+    </message>
+    <message>
+        <source>(none saved yet)</source>
+        <translation>(noch keine gespeichert)</translation>
+    </message>
+    <message>
+        <source>Save current settings as preset...</source>
+        <translation>Aktuelle Einstellungen als Preset speichern...</translation>
+    </message>
+    <message>
+        <source>Open presets folder</source>
+        <translation>Preset-Ordner öffnen</translation>
+    </message>
+    <message>
+        <source>Save preset</source>
+        <translation>Preset speichern</translation>
+    </message>
+    <message>
+        <source>Name of the preset:</source>
+        <translation>Name des Presets:</translation>
+    </message>
+    <message>
+        <source>A preset named &quot;%1&quot; already exists. Replace it?</source>
+        <translation>Ein Preset namens &quot;%1&quot; gibt es schon. Ersetzen?</translation>
+    </message>
+    <message>
+        <source>Presets</source>
+        <translation>Presets</translation>
+    </message>
+    <message>
+        <source>Apply a ready-made look or one of your saved presets</source>
+        <translation>Einen fertigen Look oder eines deiner gespeicherten Presets anwenden</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
+    </message>
+    <message>
+        <source>Natural contrast</source>
+        <translation>Natürlicher Kontrast</translation>
+    </message>
+    <message>
+        <source>Balanced, natural look that keeps local contrast. A good place to start.</source>
+        <translation>Ausgewogen und natürlich, erhält den lokalen Kontrast. Ein guter Startpunkt.</translation>
+    </message>
+    <message>
+        <source>Display adaptive</source>
+        <translation>Bildschirmangepasst</translation>
+    </message>
+    <message>
+        <source>Fits the contrast to what a screen can show. Clean and realistic.</source>
+        <translation>Passt den Kontrast an das an, was ein Bildschirm zeigen kann. Sauber und realistisch.</translation>
+    </message>
+    <message>
+        <source>Brings out fine detail and texture. Can look dramatic; raise Alpha for a calmer result.</source>
+        <translation>Holt feine Details und Strukturen heraus. Kann dramatisch wirken; mit höherem Alpha wird es ruhiger.</translation>
+    </message>
+    <message>
+        <source>Perceptual</source>
+        <translation>Wahrnehmungsnah</translation>
+    </message>
+    <message>
+        <source>Models how the eye adapts to light. Natural, with good local contrast.</source>
+        <translation>Bildet nach, wie sich das Auge an Licht anpasst. Natürlich, mit gutem lokalem Kontrast.</translation>
+    </message>
+    <message>
+        <source>Soft and bright</source>
+        <translation>Weich und hell</translation>
+    </message>
+    <message>
+        <source>Fast and smooth, with bright shadows and gentle contrast.</source>
+        <translation>Schnell und weich, mit hellen Schatten und sanftem Kontrast.</translation>
+    </message>
+    <message>
+        <source>Crisp detail</source>
+        <translation>Klare Details</translation>
+    </message>
+    <message>
+        <source>Compresses the overall brightness while keeping edges and detail sharp.</source>
+        <translation>Verdichtet die Gesamthelligkeit und hält Kanten und Details scharf.</translation>
+    </message>
+    <message>
+        <source>Classic film-like look. Quick and dependable.</source>
+        <translation>Klassischer Film-Look. Schnell und zuverlässig.</translation>
+    </message>
+    <message>
+        <source>Simple and natural</source>
+        <translation>Einfach und natürlich</translation>
+    </message>
+    <message>
+        <source>Fast global mapping with controls for brightness and colour adaptation.</source>
+        <translation>Schnelles globales Verfahren mit Reglern für Helligkeit und Farbanpassung.</translation>
+    </message>
+    <message>
+        <source>Local adaptation</source>
+        <translation>Lokale Anpassung</translation>
+    </message>
+    <message>
+        <source>Adapts to each area of the image, with gentle contrast.</source>
+        <translation>Passt sich jedem Bildbereich an, mit sanftem Kontrast.</translation>
+    </message>
+    <message>
+        <source>Human vision</source>
+        <translation>Menschliches Sehen</translation>
+    </message>
+    <message>
+        <source>Simulates how the cones and rods of the eye respond to light.</source>
+        <translation>Simuliert, wie Zapfen und Stäbchen im Auge auf Licht reagieren.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Automatisch</translation>
+    </message>
+    <message>
+        <source>Fully automatic, no settings to adjust.</source>
+        <translation>Vollautomatisch, keine Einstellungen nötig.</translation>
+    </message>
+    <message>
+        <source>Night vision</source>
+        <translation>Nachtsehen</translation>
+    </message>
+    <message>
+        <source>Simulates how colour and detail fade in dim light.</source>
+        <translation>Simuliert, wie Farben und Details bei wenig Licht verblassen.</translation>
+    </message>
+    <message>
+        <source>Consistent</source>
+        <translation>Gleichbleibend</translation>
+    </message>
+    <message>
+        <source>Keeps the look consistent from image to image; suits series and time-lapses.</source>
+        <translation>Hält den Look von Bild zu Bild gleich; gut für Serien und Zeitraffer.</translation>
+    </message>
+    <message>
+        <source>Retina model</source>
+        <translation>Netzhautmodell</translation>
+    </message>
+    <message>
+        <source>Models the response of the retina. Soft and natural.</source>
+        <translation>Bildet die Reaktion der Netzhaut nach. Weich und natürlich.</translation>
+    </message>
+    <message>
+        <source>Even exposure</source>
+        <translation>Gleichmäßige Belichtung</translation>
+    </message>
+    <message>
+        <source>Evens out bright and dark zones automatically.</source>
+        <translation>Gleicht helle und dunkle Bereiche automatisch aus.</translation>
+    </message>
+    <message>
         <location filename="../src/TonemappingPanel/TonemappingPanel.ui" line="46"/>
         <source>Tonemap</source>
         <translation>Dynamikkompression</translation>
@@ -6612,6 +6824,33 @@ Error: %1</source>
         <location filename="../src/MainWindow/UpdateChecker.cpp" line="124"/>
         <source>Click to download, or select Help-&gt;Update!</source>
         <translation>Klicken zum Herunterladen oder Hilfe -&gt; Aktualisierung wählen!</translation>
+    </message>
+</context>
+<context>
+    <name>StepBar</name>
+    <message>
+        <source>1  Import / Merge</source>
+        <translation>1  Import / Zusammenführen</translation>
+    </message>
+    <message>
+        <source>Create a new HDR image from bracketed exposures, or open an existing image</source>
+        <translation>Neues HDR-Bild aus einer Belichtungsreihe erstellen oder ein vorhandenes Bild öffnen</translation>
+    </message>
+    <message>
+        <source>2  Tone map</source>
+        <translation>2  Tonemapping</translation>
+    </message>
+    <message>
+        <source>Tone map the HDR image with the settings in the panel on the left</source>
+        <translation>HDR-Bild mit den Einstellungen im linken Bereich tonemappen</translation>
+    </message>
+    <message>
+        <source>3  Export</source>
+        <translation>3  Exportieren</translation>
+    </message>
+    <message>
+        <source>Save the current image</source>
+        <translation>Aktuelles Bild speichern</translation>
     </message>
 </context>
 </TS>
