@@ -310,15 +310,30 @@ QPalette lightPalette(const QStyle *style) {
 }  // namespace
 
 void LuminanceOptions::applyTheme(bool /*init*/) {
-    const QString theme = getGuiTheme();
+    QString theme = getGuiTheme();
+    const QString scheme = getGuiColorScheme();
+    const bool dark = scheme == QLatin1String("dark") ||
+                      (scheme == QLatin1String("system") && isSystemDark());
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    // tell styles that follow the OS colour scheme which one we want
+    QGuiApplication::styleHints()->setColorScheme(
+        scheme == QLatin1String("dark")    ? Qt::ColorScheme::Dark
+        : scheme == QLatin1String("light") ? Qt::ColorScheme::Light
+                                           : Qt::ColorScheme::Unknown);
+#endif
+
+    // the native Windows styles (windows11, windowsvista) paint toolbars and
+    // buttons themselves and ignore most of a custom palette, which left dark
+    // grey text on dark controls; dark mode therefore uses Fusion
+    if (dark && theme.startsWith(QLatin1String("windows"), Qt::CaseInsensitive))
+        theme = QStringLiteral("Fusion");
+
     QApplication::setStyle(QStyleFactory::create(theme));
 
     // the native macOS style draws its own colours
     if (theme.compare(QLatin1String("Macintosh")) == 0) return;
 
-    const QString scheme = getGuiColorScheme();
-    const bool dark = scheme == QLatin1String("dark") ||
-                      (scheme == QLatin1String("system") && isSystemDark());
     QApplication::setPalette(dark ? darkPalette()
                                   : lightPalette(QApplication::style()));
 }

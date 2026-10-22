@@ -62,7 +62,7 @@ jobs:
           echo "DIST=$dist" >> "$GITHUB_ENV"
           mkdir -p "$dist/i18n"
           cp build/lumierehdr.exe build/lumierehdr-cli.exe "$dist/"
-          cp -r help hdrhtml "$dist/"
+          cp -r help hdrhtml icons "$dist/"
           find build -name 'lang_*.qm' -exec cp {} "$dist/i18n/" \;
           cp LICENSE README.md PRIVACY.md CODE_SIGNING_POLICY.md "$dist/"
           deploy=$(command -v windeployqt6 || command -v windeployqt-qt6 || command -v windeployqt)
