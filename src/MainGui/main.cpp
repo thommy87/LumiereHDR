@@ -39,7 +39,6 @@
 #include "Common/TranslatorManager.h"
 #include "Common/config.h"
 #include "Common/global.h"
-#include "MainWindow/DonationDialog.h"
 #include "MainWindow/MainWindow.h"
 
 namespace {
@@ -194,8 +193,6 @@ int main(int argc, char **argv) {
                         "Please go to Tools->Preferences->Raw Conversion->Quality and select one of the new available methods."\
                         ), QMessageBox::Ok);
         }
-
-        DonationDialog::showDonationDialog();
 
         // TODO: create update checker...
         // TODO: pass update checker to MainWindow
