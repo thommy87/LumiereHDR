@@ -54,6 +54,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
+        # a stuck package mirror once hung this step for over an hour;
+        # fail fast instead so the job can simply be re-run
+        timeout-minutes: 15
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends $APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev
@@ -100,6 +103,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
+        # a stuck package mirror once hung this step for over an hour;
+        # fail fast instead so the job can simply be re-run
+        timeout-minutes: 15
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends $APT_PACKAGES $QT5_PACKAGES clang libomp-dev

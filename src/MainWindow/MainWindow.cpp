@@ -47,6 +47,7 @@
 #include <QString>
 #include <QTextStream>
 #include <QTimer>
+#include <QVBoxLayout>
 #include <QWhatsThis>
 #include <QtConcurrentRun>
 
@@ -86,6 +87,7 @@
 #include <UI/ExportToHtmlDialog.h>
 #include <UI/GammaAndLevels.h>
 #include <UI/ImageQualityDialog.h>
+#include <UI/StepBar.h>
 #include <UI/SupportedCamerasDialog.h>
 #include <UI/TiffModeDialog.h>
 #include <UI/UMessageBox.h>
@@ -317,13 +319,25 @@ void MainWindow::createCentralWidget() {
     m_bottom_splitter = new QSplitter;         //(this);
     m_bottom_splitter->setOrientation(Qt::Vertical);
 
-    setCentralWidget(m_centralwidget_splitter);
+    m_stepBar = new StepBar;
+    m_stepBar->setImportActions(m_Ui->fileNewAction, m_Ui->fileOpenAction);
+    m_stepBar->setExportAction(m_Ui->fileSaveAsAction);
+
+    QWidget *central = new QWidget;
+    QVBoxLayout *centralLayout = new QVBoxLayout(central);
+    centralLayout->setContentsMargins(0, 0, 0, 0);
+    centralLayout->setSpacing(0);
+    centralLayout->addWidget(m_stepBar);
+    centralLayout->addWidget(m_centralwidget_splitter, 1);
+    setCentralWidget(central);
 
     m_PreviewPanel = new PreviewPanel();
 
     // create tonemapping panel
     m_tonemapPanel = new TonemappingPanel(
         sm_NumMainWindows, m_PreviewPanel);  //(m_centralwidget_splitter);
+    connect(m_stepBar, &StepBar::toneRequested, m_tonemapPanel,
+            &TonemappingPanel::tonemap);
 
     connect(m_Ui->actionRealtimePreviews, &QAction::toggled, m_tonemapPanel,
             &TonemappingPanel::setRealtimePreviews);
@@ -867,6 +881,13 @@ void MainWindow::updateActions(int w) {
 
     m_Ui->actionLock->setEnabled(hasImage && curr_num_ldr_open >= 1);
     m_Ui->actionShow_Image_Full_Screen->setEnabled(hasImage);
+
+    // workflow bar: no image -> import, HDR -> tone map, LDR -> export
+    m_stepBar->setCurrentStep(isLdr ? StepBar::Export
+                              : isHdr ? StepBar::Tone
+                                      : StepBar::Import);
+    m_stepBar->setToneEnabled(tm_status.is_hdr_ready);
+    m_stepBar->setExportEnabled(hasImage);
 }
 
 void MainWindow::on_rotateccw_triggered() { dispatchrotate(false); }
@@ -1956,6 +1977,8 @@ void MainWindow::removeTab(int t) {
             tm_status.curr_tm_options = nullptr;
 
             m_tonemapPanel->setEnabled(false);
+            // the tab is gone before the HDR state was cleared
+            updateActions(m_tabwidget->currentIndex());
 
             m_inputFilesName.clear();
             m_inputExpoTimes.clear();
