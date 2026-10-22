@@ -32,6 +32,7 @@
 #include <QString>
 #include <QToolBar>
 #include <QToolButton>
+#include <QUndoStack>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -163,6 +164,10 @@ class GenericViewer : public QWidget {
     //! previous frame gets DELETED!
     void setFrame(pfs::Frame *new_frame, TonemappingOptions *tmopts = nullptr);
     void setFrameShared(std::shared_ptr<pfs::Frame> new_frame);
+    std::shared_ptr<pfs::Frame> getFrameShared() const { return mFrame; }
+
+    //! edits of this image that can be undone (created on first use)
+    QUndoStack *undoStack();
 
    protected Q_SLOTS:
     /*virtual*/ void slotPanIconSelectionMoved(QRect);
@@ -205,6 +210,7 @@ class GenericViewer : public QWidget {
 
     bool mNeedsSaving;
     std::shared_ptr<pfs::Frame> mFrame;
+    QUndoStack *mUndoStack = nullptr;
 
     QAction *m_actionClose;
 

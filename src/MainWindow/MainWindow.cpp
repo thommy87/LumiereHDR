@@ -46,10 +46,16 @@
 #include <QSignalMapper>
 #include <QString>
 #include <QTextStream>
+#include <QDockWidget>
 #include <QTimer>
+#include <QUndoGroup>
+#include <QUndoView>
 #include <QVBoxLayout>
 #include <QWhatsThis>
 #include <QtConcurrentRun>
+
+#include <functional>
+#include <memory>
 
 //#include <functional>
 #include <boost/bind/bind.hpp>
@@ -428,6 +434,30 @@ void MainWindow::createToolBar() {
     toolBarOptsGroup->addAction(m_Ui->actionText_Alongside_Icons);
     toolBarOptsGroup->addAction(m_Ui->actionText_Only);
     m_Ui->menuToolbars->addAction(m_Ui->toolBar->toggleViewAction());
+
+    // undo/redo of HDR edits for whichever image is shown
+    m_undoGroup = new QUndoGroup(this);
+    QAction *undo = m_undoGroup->createUndoAction(this, tr("&Undo"));
+    undo->setShortcut(QKeySequence::Undo);
+    undo->setIcon(QIcon::fromTheme(QStringLiteral("edit-undo")));
+    QAction *redo = m_undoGroup->createRedoAction(this, tr("&Redo"));
+    redo->setShortcuts(QKeySequence::Redo);
+    redo->setIcon(QIcon::fromTheme(QStringLiteral("edit-redo")));
+    QAction *first = m_Ui->menuEdit->actions().value(0);
+    m_Ui->menuEdit->insertAction(first, undo);
+    m_Ui->menuEdit->insertAction(first, redo);
+    m_Ui->menuEdit->insertSeparator(first);
+
+    QDockWidget *history = new QDockWidget(tr("History"), this);
+    history->setObjectName(QStringLiteral("HistoryDock"));
+    QUndoView *historyView = new QUndoView(m_undoGroup, history);
+    historyView->setEmptyLabel(tr("Original image"));
+    history->setWidget(historyView);
+    addDockWidget(Qt::RightDockWidgetArea, history);
+    history->hide();
+    QAction *showHistory = history->toggleViewAction();
+    showHistory->setText(tr("&History"));
+    m_Ui->menuView->addAction(showHistory);
 
     connect(m_Ui->actionText_Under_Icons, &QAction::triggered, this,
             &MainWindow::Text_Under_Icons);
@@ -882,12 +912,67 @@ void MainWindow::updateActions(int w) {
     m_Ui->actionLock->setEnabled(hasImage && curr_num_ldr_open >= 1);
     m_Ui->actionShow_Image_Full_Screen->setEnabled(hasImage);
 
+    // undo/redo follows the image that is shown
+    if (g_v && !m_undoGroup->stacks().contains(g_v->undoStack()))
+        m_undoGroup->addStack(g_v->undoStack());
+    m_undoGroup->setActiveStack(g_v ? g_v->undoStack() : nullptr);
+
     // workflow bar: no image -> import, HDR -> tone map, LDR -> export
     m_stepBar->setCurrentStep(isLdr ? StepBar::Export
                               : isHdr ? StepBar::Tone
                                       : StepBar::Import);
     m_stepBar->setToneEnabled(tm_status.is_hdr_ready);
     m_stepBar->setExportEnabled(hasImage);
+}
+
+namespace {
+//! replaces the frame of a viewer; undo puts the previous one back
+class FrameEditCommand : public QUndoCommand {
+   public:
+    FrameEditCommand(GenericViewer *viewer, pfs::Frame *edited,
+                     const QString &text, std::function<void()> changed)
+        : QUndoCommand(text),
+          m_viewer(viewer),
+          m_before(viewer->getFrameShared()),
+          m_after(edited),
+          m_changed(std::move(changed)) {}
+
+    void redo() override {
+        m_viewer->setFrameShared(m_after);
+        m_changed();
+    }
+    void undo() override {
+        m_viewer->setFrameShared(m_before);
+        m_changed();
+    }
+
+   private:
+    GenericViewer *m_viewer;  // owns the stack holding this command
+    std::shared_ptr<pfs::Frame> m_before;
+    std::shared_ptr<pfs::Frame> m_after;
+    std::function<void()> m_changed;
+};
+}  // namespace
+
+void MainWindow::markModified(GenericViewer *viewer) {
+    if (viewer->needsSaving()) return;
+    viewer->setNeedsSaving(true);
+
+    int index = m_tabwidget->indexOf(viewer);
+    QString text = m_tabwidget->tabText(index);
+    m_tabwidget->setTabText(index, text.prepend("(*) "));
+
+    setWindowModified(true);
+}
+
+void MainWindow::applyHdrEdit(GenericViewer *viewer, pfs::Frame *edited,
+                              const QString &text) {
+    // push() runs redo(), which shows the edited frame
+    viewer->undoStack()->push(
+        new FrameEditCommand(viewer, edited, text, [this, viewer]() {
+            markModified(viewer);
+            emit updatedHDR(viewer->getFrame());
+        }));
 }
 
 void MainWindow::on_rotateccw_triggered() { dispatchrotate(false); }
@@ -905,17 +990,9 @@ void MainWindow::dispatchrotate(bool clockwise) {
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     pfs::Frame *rotated = pfs::rotate(curr_g_v->getFrame(), clockwise);
 
-    curr_g_v->setFrame(rotated);
-    if (!curr_g_v->needsSaving()) {
-        curr_g_v->setNeedsSaving(true);
-
-        int index = m_tabwidget->indexOf(curr_g_v);
-        QString text = m_tabwidget->tabText(index);
-        m_tabwidget->setTabText(index, text.prepend("(*) "));
-
-        setWindowModified(true);
-    }
-    emit updatedHDR(curr_g_v->getFrame());
+    applyHdrEdit(curr_g_v, rotated,
+                 clockwise ? tr("Rotate clockwise")
+                           : tr("Rotate counter-clockwise"));
     QApplication::restoreOverrideCursor();
 
     m_Ui->rotateccw->setEnabled(true);
@@ -931,17 +1008,8 @@ void MainWindow::on_actionResizeHDR_triggered() {
     if (resizedialog->exec() == QDialog::Accepted) {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-        curr_g_v->setFrame(resizedialog->getResizedFrame());
-        if (!curr_g_v->needsSaving()) {
-            curr_g_v->setNeedsSaving(true);
-
-            int index = m_tabwidget->indexOf(curr_g_v);
-            QString text = m_tabwidget->tabText(index);
-            m_tabwidget->setTabText(index, text.prepend("(*) "));
-
-            setWindowModified(true);
-        }
-        emit updatedHDR(curr_g_v->getFrame());
+        applyHdrEdit(curr_g_v, resizedialog->getResizedFrame(),
+                     tr("Resize"));
         QApplication::restoreOverrideCursor();
     }
     delete resizedialog;
@@ -975,17 +1043,8 @@ void MainWindow::on_action_Projective_Transformation_triggered() {
     if (projTranfsDialog->exec() == QDialog::Accepted) {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-        curr_g_v->setFrame(projTranfsDialog->getTranformedFrame());
-        if (!curr_g_v->needsSaving()) {
-            curr_g_v->setNeedsSaving(true);
-
-            int index = m_tabwidget->indexOf(curr_g_v);
-            QString text = m_tabwidget->tabText(index);
-            m_tabwidget->setTabText(index, text.prepend("(*) "));
-
-            setWindowModified(true);
-        }
-        emit updatedHDR(curr_g_v->getFrame());
+        applyHdrEdit(curr_g_v, projTranfsDialog->getTranformedFrame(),
+                     tr("Projective transformation"));
         QApplication::restoreOverrideCursor();
     }
     delete projTranfsDialog;
