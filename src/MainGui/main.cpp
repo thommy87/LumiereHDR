@@ -180,7 +180,12 @@ int main(int argc, char **argv) {
         if (arg.startsWith("--batchtm")) isBatchTM = true;
     }
 
-    if (appname.contains("luminance-hdr") && (!isBatchHDR) && (!isBatchTM)) {
+    const bool batchTMByName = appname.contains("batch-tonemapping");
+    const bool batchHDRByName = appname.contains("batch-hdr");
+    // the main window opens unless a batch mode was requested; the program
+    // used to require "luminance-hdr" in its file name, which the rename to
+    // lumierehdr broke
+    if (!isBatchHDR && !isBatchTM && !batchTMByName && !batchHDRByName) {
 
         if (LuminanceOptions().isWarnNewDomosaicingAlgos()) {
             LuminanceOptions().setWarnNewDomosaicingAlgos(false);
@@ -200,13 +205,13 @@ int main(int argc, char **argv) {
         mainWindow->openFiles(getCliFiles(application.arguments()));
 
         return application.exec();
-    } else if (appname.contains("batch-tonemapping") || isBatchTM) {
+    } else if (batchTMByName || isBatchTM) {
         if (!check_db()) return EXIT_FAILURE;
 
         BatchTMDialog *tmdialog = new BatchTMDialog;
 
         tmdialog->exec();
-    } else if (appname.contains("batch-hdr") || isBatchHDR) {
+    } else if (batchHDRByName || isBatchHDR) {
         if (!check_db()) return EXIT_FAILURE;
 
         BatchHDRDialog *hdrdialog = new BatchHDRDialog;

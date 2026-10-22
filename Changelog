@@ -1,3 +1,7 @@
+Changes LumièreHDR 2.8.1
+FIX: the program did not start at all after the rename to lumierehdr.exe
+NEW: colour scheme setting: follow system, light or dark
+
 Changes LumièreHDR 2.8.0
 NEW: Renamed to LumièreHDR, with a new logo and icons
 NEW: Built with Qt 6 and C++20 (Windows builds use current libraries)
