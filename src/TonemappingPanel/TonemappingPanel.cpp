@@ -37,6 +37,10 @@
 #include <QProgressBar>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QToolButton>
+#include <QStandardPaths>
+#include <QMenu>
+#include <QRegularExpression>
 #include <QSqlRecord>
 #include <QSqlTableModel>
 #include <QStatusBar>
@@ -319,6 +323,22 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
     m_spinner->setVisible(false);
 
     createDatabase();
+
+    QToolButton *presetButton = new QToolButton(this);
+    presetButton->setText(tr("Presets"));
+    presetButton->setToolTip(
+        tr("Apply a ready-made look or one of your saved presets"));
+    presetButton->setIcon(QIcon::fromTheme(QStringLiteral("view-list-icons")));
+    presetButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    presetButton->setPopupMode(QToolButton::InstantPopup);
+    presetButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    m_presetMenu = new QMenu(presetButton);
+    presetButton->setMenu(m_presetMenu);
+    connect(m_presetMenu, &QMenu::aboutToShow, this,
+            &TonemappingPanel::fillPresetMenu);
+    m_Ui->gridLayout_25->removeItem(m_Ui->horizontalSpacer_6);
+    delete m_Ui->horizontalSpacer_6;
+    m_Ui->gridLayout_25->addWidget(presetButton, 0, 0);
 }
 
 void TonemappingPanel::setExportQueueSize(int size) {
@@ -1110,6 +1130,89 @@ void TonemappingPanel::on_lblOpenQueue_linkActivated(const QString &link) {
     QDesktopServices::openUrl(QUrl::fromLocalFile(options.getExportDir()));
 }
 
+namespace {
+struct BuiltinPreset {
+    const char *file;
+    const char *name;
+};
+const BuiltinPreset kBuiltinPresets[] = {
+    {"natural", QT_TRANSLATE_NOOP("TonemappingPanel", "Natural")},
+    {"photographic", QT_TRANSLATE_NOOP("TonemappingPanel", "Photographic")},
+    {"vivid", QT_TRANSLATE_NOOP("TonemappingPanel", "Vivid")},
+    {"soft", QT_TRANSLATE_NOOP("TonemappingPanel", "Soft")},
+    {"detail", QT_TRANSLATE_NOOP("TonemappingPanel", "Strong detail")},
+    {"dramatic", QT_TRANSLATE_NOOP("TonemappingPanel", "Dramatic")},
+    {"blackwhite", QT_TRANSLATE_NOOP("TonemappingPanel", "Black and white")},
+};
+
+QString userPresetDir() {
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
+           QStringLiteral("/presets");
+}
+}  // namespace
+
+void TonemappingPanel::fillPresetMenu() {
+    m_presetMenu->clear();
+    m_presetMenu->addSection(tr("Built-in"));
+    for (const BuiltinPreset &preset : kBuiltinPresets) {
+        const QString file =
+            QStringLiteral(":/presets/%1.txt").arg(QLatin1String(preset.file));
+        m_presetMenu->addAction(tr(preset.name), this,
+                                [this, file]() { applyPreset(file); });
+    }
+
+    const QFileInfoList own =
+        QDir(userPresetDir())
+            .entryInfoList({QStringLiteral("*.txt")}, QDir::Files, QDir::Name);
+    m_presetMenu->addSection(tr("My presets"));
+    for (const QFileInfo &fi : own) {
+        const QString file = fi.absoluteFilePath();
+        m_presetMenu->addAction(fi.completeBaseName(), this,
+                                [this, file]() { applyPreset(file); });
+    }
+    if (own.isEmpty())
+        m_presetMenu->addAction(tr("(none saved yet)"))->setEnabled(false);
+
+    m_presetMenu->addSeparator();
+    m_presetMenu->addAction(QIcon::fromTheme(QStringLiteral("document-save")),
+                            tr("Save current settings as preset..."), this,
+                            &TonemappingPanel::savePreset);
+    m_presetMenu->addAction(tr("Open presets folder"), this, []() {
+        QDir().mkpath(userPresetDir());
+        QDesktopServices::openUrl(QUrl::fromLocalFile(userPresetDir()));
+    });
+}
+
+void TonemappingPanel::applyPreset(const QString &fileName) {
+    tmoSettingsFilename = fileName;
+    fromTxt2Gui();
+    // show the result right away when an HDR image is loaded
+    tonemap();
+}
+
+void TonemappingPanel::savePreset() {
+    bool ok = false;
+    QString name = QInputDialog::getText(this, tr("Save preset"),
+                                         tr("Name of the preset:"),
+                                         QLineEdit::Normal, QString(), &ok)
+                       .trimmed();
+    if (!ok || name.isEmpty()) return;
+    // keep the name usable as a file name on every system
+    name.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")),
+                 QStringLiteral("_"));
+
+    QDir().mkpath(userPresetDir());
+    const QString file = userPresetDir() + QLatin1Char('/') + name +
+                         QStringLiteral(".txt");
+    if (QFileInfo::exists(file) &&
+        QMessageBox::question(
+            this, tr("Save preset"),
+            tr("A preset named \"%1\" already exists. Replace it?").arg(name)) !=
+            QMessageBox::Yes)
+        return;
+    fromGui2Txt(file);
+}
+
 void TonemappingPanel::on_loadsettingsbutton_clicked() {
     LuminanceOptions lum_options;
 
@@ -1294,13 +1397,12 @@ void TonemappingPanel::fromTxt2Gui() {
     }
     QTextStream in(&file);
     QString field, value;
+    QString tmo;  // Hack, same parameter "RANGE" in durand and reinhard02
 
     while (!in.atEnd()) {
         QString line = in.readLine();
         // skip comments
         if (line.startsWith('#')) continue;
-
-        QString tmo;  // Hack, same parameter "RANGE" in durand and reinhard02
 
         field = line.section('=', 0, 0);  // get the field
         value = line.section('=', 1, 1);  // get the value
