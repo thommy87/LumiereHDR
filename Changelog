@@ -1,3 +1,7 @@
+Changes LumièreHDR 2.8.3
+NEW: step bar above the image: Import / Merge, Tone map, Export
+NEW: sharp vector (Breeze-style) icons, with a light variant for the dark scheme
+
 Changes LumièreHDR 2.8.2
 FIX: dark colour scheme had unreadable dark grey text with the Windows styles
 FIX: the Windows package was missing the toolbar and menu icons
