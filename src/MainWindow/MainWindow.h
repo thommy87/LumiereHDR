@@ -71,6 +71,7 @@ class HelpBrowser;           // #include "HelpBrowser/helpbrowser.h"
 class TMOProgressIndicator;  // #include
                              // "TonemappingPanel/TMOProgressIndicator.h"
 class TonemappingPanel;      // #include "TonemappingPanel/TonemappingPanel.h"
+class StepBar;               // #include "UI/StepBar.h"
 class TonemappingOptions;    // #include "Core/TonemappingOptions.h"
 class TMWorker;
 
@@ -327,6 +328,8 @@ class MainWindow : public QMainWindow {
 
     // Tone Mapping Panel
     TonemappingPanel *m_tonemapPanel;
+    // Import -> Tone -> Export workflow bar
+    StepBar *m_stepBar;
 
     // I/O
     QThread *m_IOThread;

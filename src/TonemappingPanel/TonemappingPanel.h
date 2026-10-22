@@ -173,6 +173,8 @@ class TonemappingPanel : public QWidget {
     void updateTonemappingParams(TonemappingOptions *opts);
     void setRealtimePreviews(bool);
     void autoLevels(bool b);
+    //! Same as the Tonemap button; does nothing while the panel is disabled.
+    void tonemap();
 
    signals:
     void startTonemapping(TonemappingOptions *);

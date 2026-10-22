@@ -784,6 +784,10 @@ void TonemappingPanel::on_applyButton_clicked() {
     emit startTonemapping(m_toneMappingOptions);
 }
 
+void TonemappingPanel::tonemap() {
+    if (m_Ui->applyButton->isEnabled()) on_applyButton_clicked();
+}
+
 void TonemappingPanel::on_queueButton_clicked() {
     fillToneMappingOptions(true);
     // setupUndo();
