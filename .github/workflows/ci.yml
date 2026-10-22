@@ -54,10 +54,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        # a stuck package mirror once hung this step for over an hour;
-        # fail fast instead so the job can simply be re-run
+        # the Azure Ubuntu mirror sometimes stalls a download for good:
+        # drop a stalled connection after 30 s and retry it, and fail the
+        # step after 15 minutes instead of hanging the job
         timeout-minutes: 15
         run: |
+          echo 'Acquire::Retries "5"; Acquire::http::Timeout "30"; Acquire::https::Timeout "30";' | sudo tee /etc/apt/apt.conf.d/80-retries
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends $APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev
       - name: Configure
@@ -103,10 +105,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        # a stuck package mirror once hung this step for over an hour;
-        # fail fast instead so the job can simply be re-run
+        # the Azure Ubuntu mirror sometimes stalls a download for good:
+        # drop a stalled connection after 30 s and retry it, and fail the
+        # step after 15 minutes instead of hanging the job
         timeout-minutes: 15
         run: |
+          echo 'Acquire::Retries "5"; Acquire::http::Timeout "30"; Acquire::https::Timeout "30";' | sudo tee /etc/apt/apt.conf.d/80-retries
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends $APT_PACKAGES $QT5_PACKAGES clang libomp-dev
       - name: Build fuzzer
