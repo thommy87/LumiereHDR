@@ -385,6 +385,15 @@ void GenericViewer::setFrame(pfs::Frame *new_frame,
 
 pfs::Frame *GenericViewer::getFrame() const { return mFrame.get(); }
 
+QUndoStack *GenericViewer::undoStack() {
+    if (mUndoStack == nullptr) {
+        mUndoStack = new QUndoStack(this);
+        // every step keeps a full copy of the HDR image
+        mUndoStack->setUndoLimit(5);
+    }
+    return mUndoStack;
+}
+
 void GenericViewer::startDragging() {
     QDrag *drag = new QDrag(this);
     QMimeData *mimeData = new QMimeData;

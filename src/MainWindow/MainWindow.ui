@@ -833,7 +833,7 @@
     <string>Remove selection rectangle from image area</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Z</string>
+    <string>Ctrl+Shift+A</string>
    </property>
   </action>
   <action name="actionDonate">
