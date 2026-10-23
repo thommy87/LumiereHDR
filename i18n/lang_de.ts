@@ -3409,6 +3409,22 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>&amp;Compare images...</source>
+        <translation>Bilder &amp;vergleichen...</translation>
+    </message>
+    <message>
+        <source>Compare two open images, for example the HDR and a result</source>
+        <translation>Zwei offene Bilder vergleichen, zum Beispiel das HDR und ein Ergebnis</translation>
+    </message>
+    <message>
+        <source>Compare images</source>
+        <translation>Bilder vergleichen</translation>
+    </message>
+    <message>
+        <source>Open or create at least two images to compare them, for example an HDR image and a tone mapped result.</source>
+        <translation>Öffne oder erstelle mindestens zwei Bilder, um sie zu vergleichen, zum Beispiel ein HDR-Bild und ein Tonemapping-Ergebnis.</translation>
+    </message>
+    <message>
         <source>Resize</source>
         <translation>Größe ändern</translation>
     </message>
@@ -6851,6 +6867,29 @@ Error: %1</source>
     <message>
         <source>Save the current image</source>
         <translation>Aktuelles Bild speichern</translation>
+    </message>
+</context>
+<context>
+    <name>CompareDialog</name>
+    <message>
+        <source>Compare images</source>
+        <translation>Bilder vergleichen</translation>
+    </message>
+    <message>
+        <source>Swap</source>
+        <translation>Tauschen</translation>
+    </message>
+    <message>
+        <source>Left:</source>
+        <translation>Links:</translation>
+    </message>
+    <message>
+        <source>Right:</source>
+        <translation>Rechts:</translation>
+    </message>
+    <message>
+        <source>Drag the line to move between the two images.</source>
+        <translation>Ziehe die Linie, um zwischen den beiden Bildern zu wechseln.</translation>
     </message>
 </context>
 </TS>
