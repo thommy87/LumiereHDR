@@ -21,6 +21,7 @@ SET(FILES_H
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StepBar.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/CompareDialog.h
 )
 SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/ExtWizardPage.cpp
@@ -36,6 +37,7 @@ SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StepBar.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CompareDialog.cpp
 )
 
 IF(CFITSIO_FOUND)

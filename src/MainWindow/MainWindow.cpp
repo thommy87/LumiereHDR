@@ -93,6 +93,7 @@
 #include <UI/ExportToHtmlDialog.h>
 #include <UI/GammaAndLevels.h>
 #include <UI/ImageQualityDialog.h>
+#include <UI/CompareDialog.h>
 #include <UI/StepBar.h>
 #include <UI/SupportedCamerasDialog.h>
 #include <UI/TiffModeDialog.h>
@@ -458,6 +459,37 @@ void MainWindow::createToolBar() {
     QAction *showHistory = history->toggleViewAction();
     showHistory->setText(tr("&History"));
     m_Ui->menuView->addAction(showHistory);
+
+    // before/after: any two open images, split by a draggable line
+    QAction *compare = new QAction(tr("&Compare images..."), this);
+    compare->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+C")));
+    compare->setStatusTip(
+        tr("Compare two open images, for example the HDR and a result"));
+    connect(compare, &QAction::triggered, this, [this]() {
+        if (m_tabwidget->count() < 2) {
+            QMessageBox::information(
+                this, tr("Compare images"),
+                tr("Open or create at least two images to compare them, "
+                   "for example an HDR image and a tone mapped result."));
+            return;
+        }
+        QList<QPair<QString, QImage>> images;
+        for (int i = 0; i < m_tabwidget->count(); ++i) {
+            GenericViewer *v =
+                qobject_cast<GenericViewer *>(m_tabwidget->widget(i));
+            images.append(qMakePair(m_tabwidget->tabText(i),
+                                    v ? v->getQImage() : QImage()));
+        }
+        // the HDR on the left as "before", the shown image as "after"
+        const int right = m_tabwidget->currentIndex();
+        int left = tm_status.curr_tm_frame
+                       ? m_tabwidget->indexOf(tm_status.curr_tm_frame)
+                       : -1;
+        if (left < 0 || left == right) left = right == 0 ? 1 : 0;
+        CompareDialog *dialog = new CompareDialog(images, left, right, this);
+        dialog->show();
+    });
+    m_Ui->menuView->addAction(compare);
 
     connect(m_Ui->actionText_Under_Icons, &QAction::triggered, this,
             &MainWindow::Text_Under_Icons);
