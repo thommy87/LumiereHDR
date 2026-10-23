@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.8.5
+NEW: plain-language tone mapping operator names with a short explanation
+NEW: before/after comparison of two open images (View > Compare images)
+NEW: German translations for the step bar, history, presets and comparison
+
 Changes LumièreHDR 2.8.4
 NEW: undo/redo (Ctrl+Z / Ctrl+Y) and a history panel for rotate, resize and
      projective transformation; Remove selection is now Ctrl+Shift+A
