@@ -68,11 +68,13 @@ jobs:
           mkdir -p ~/apt-cache/partial
           echo "Dir::Cache::Archives \"$HOME/apt-cache\"; Acquire::Retries \"5\"; Acquire::http::Timeout \"30\";" | sudo tee /etc/apt/apt.conf.d/80-ci
           sudo apt-get update
-          pkgs="$APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev"
+          # python3-pil is for the golden-image check
+          pkgs="$APT_PACKAGES ${{ env[matrix.qt] }} clang libomp-dev python3-pil"
           if ! sudo timeout 480 apt-get install -y --no-install-recommends $pkgs; then
             echo "::warning::slow package mirror, switching to archive.ubuntu.com"
             sudo dpkg --configure -a || true
-            echo "http://archive.ubuntu.com/ubuntu/" | sudo tee /etc/apt/apt-mirrors.txt
+            # apt moves on to the next mirror in the list if one fails
+            printf '%s\n' http://archive.ubuntu.com/ubuntu/ http://azure.archive.ubuntu.com/ubuntu/ | sudo tee /etc/apt/apt-mirrors.txt
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends $pkgs
           fi
@@ -111,7 +113,6 @@ jobs:
       - name: Golden-image check of all tone mappers
         if: matrix.name == 'gcc release' || matrix.name == 'gcc qt6'
         run: |
-          sudo apt-get install -y --no-install-recommends python3-pil
           python3 test/golden/run_golden.py build/lumierehdr-cli
 
   fuzz:
@@ -138,7 +139,8 @@ jobs:
           if ! sudo timeout 480 apt-get install -y --no-install-recommends $pkgs; then
             echo "::warning::slow package mirror, switching to archive.ubuntu.com"
             sudo dpkg --configure -a || true
-            echo "http://archive.ubuntu.com/ubuntu/" | sudo tee /etc/apt/apt-mirrors.txt
+            # apt moves on to the next mirror in the list if one fails
+            printf '%s\n' http://archive.ubuntu.com/ubuntu/ http://azure.archive.ubuntu.com/ubuntu/ | sudo tee /etc/apt/apt-mirrors.txt
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends $pkgs
           fi

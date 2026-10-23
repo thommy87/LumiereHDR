@@ -38,6 +38,7 @@
 class Gang;
 class QtWaitingSpinner;
 
+class QLabel;
 class QMenu;
 
 namespace Ui {
@@ -112,6 +113,8 @@ class TonemappingPanel : public QWidget {
     QScopedPointer<ThresholdWidget> m_thd;
     QScopedPointer<Ui::TonemappingPanel> m_Ui;
     QMenu *m_presetMenu;
+    QLabel *m_operatorHelp = nullptr;
+    void applyOperatorNames();
 
    protected Q_SLOTS:
     virtual void changeEvent(QEvent *event);

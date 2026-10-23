@@ -32,6 +32,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QKeyEvent>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QProgressBar>
@@ -324,6 +325,18 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
 
     createDatabase();
 
+    m_operatorHelp = new QLabel(this);
+    m_operatorHelp->setWordWrap(true);
+    m_operatorHelp->setEnabled(false);  // secondary text colour
+    m_Ui->gridLayout_operator->addWidget(m_operatorHelp, 1, 0, 1, 2);
+    // longer names must not widen the whole panel; the list shows them
+    m_Ui->cmbOperators->setSizeAdjustPolicy(
+        QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    m_Ui->cmbOperators->setMinimumContentsLength(16);
+    applyOperatorNames();
+    connect(m_Ui->stackedWidget_operators, &QStackedWidget::currentChanged,
+            this, &TonemappingPanel::applyOperatorNames);
+
     QToolButton *presetButton = new QToolButton(this);
     presetButton->setText(tr("Presets"));
     presetButton->setToolTip(
@@ -403,8 +416,96 @@ TonemappingPanel::~TonemappingPanel() {
 }
 
 void TonemappingPanel::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::LanguageChange) m_Ui->retranslateUi(this);
+    if (event->type() == QEvent::LanguageChange) {
+        m_Ui->retranslateUi(this);
+        applyOperatorNames();
+    }
     QWidget::changeEvent(event);
+}
+
+namespace {
+// in TMOperator order, which is also the order of the operator list
+struct OperatorInfo {
+    const char *name;
+    const char *paper;
+    const char *help;
+};
+const OperatorInfo kOperatorInfo[] = {
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Natural contrast"), "Mantiuk 2006",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Balanced, natural look that keeps local contrast. A "
+                       "good place to start.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Display adaptive"), "Mantiuk 2008",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Fits the contrast to what a screen can show. Clean "
+                       "and realistic.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Strong detail"), "Fattal 2002",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Brings out fine detail and texture. Can look "
+                       "dramatic; raise Alpha for a calmer result.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Perceptual"), "Ferradans 2011",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Models how the eye adapts to light. Natural, with "
+                       "good local contrast.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Soft and bright"), "Drago 2003",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Fast and smooth, with bright shadows and gentle "
+                       "contrast.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Crisp detail"), "Durand 2002",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Compresses the overall brightness while keeping "
+                       "edges and detail sharp.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Photographic"), "Reinhard 2002",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Classic film-like look. Quick and dependable.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Simple and natural"),
+     "Reinhard 2005",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Fast global mapping with controls for brightness "
+                       "and colour adaptation.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Local adaptation"),
+     "Ashikhmin 2002",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Adapts to each area of the image, with gentle "
+                       "contrast.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Human vision"), "Pattanaik 2000",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Simulates how the cones and rods of the eye respond "
+                       "to light.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Automatic"), "Mai 2011",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Fully automatic, no settings to adjust.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Night vision"), "Ferwerda 1996",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Simulates how colour and detail fade in dim light.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Consistent"), "Kim and Kautz 2008",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Keeps the look consistent from image to image; "
+                       "suits series and time-lapses.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Retina model"), "Van Hateren 2006",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Models the response of the retina. Soft and "
+                       "natural.")},
+    {QT_TRANSLATE_NOOP("TonemappingPanel", "Even exposure"), "Lischinski 2006",
+     QT_TRANSLATE_NOOP("TonemappingPanel",
+                       "Evens out bright and dark zones automatically.")},
+};
+}  // namespace
+
+void TonemappingPanel::applyOperatorNames() {
+    const int n = qMin(m_Ui->cmbOperators->count(),
+                       int(sizeof(kOperatorInfo) / sizeof(kOperatorInfo[0])));
+    for (int i = 0; i < n; ++i) {
+        const OperatorInfo &info = kOperatorInfo[i];
+        m_Ui->cmbOperators->setItemText(
+            i, tr("%1 (%2)").arg(tr(info.name), QLatin1String(info.paper)));
+        m_Ui->cmbOperators->setItemData(i, tr(info.help), Qt::ToolTipRole);
+    }
+    const int current = m_Ui->stackedWidget_operators->currentIndex();
+    if (m_operatorHelp == nullptr) return;
+    m_operatorHelp->setText(current >= 0 && current < n
+                                ? tr(kOperatorInfo[current].help)
+                                : QString());
 }
 
 void TonemappingPanel::createDatabase() {
