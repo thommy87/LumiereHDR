@@ -95,6 +95,7 @@
 #include <UI/GammaAndLevels.h>
 #include <UI/ImageQualityDialog.h>
 #include <UI/CompareDialog.h>
+#include <UI/HistogramPanel.h>
 #include <UI/StepBar.h>
 #include <UI/SupportedCamerasDialog.h>
 #include <UI/TiffModeDialog.h>
@@ -460,6 +461,21 @@ void MainWindow::createToolBar() {
     QAction *showHistory = history->toggleViewAction();
     showHistory->setText(tr("&History"));
     m_Ui->menuView->addAction(showHistory);
+
+    m_histogramDock = new QDockWidget(tr("Histogram"), this);
+    m_histogramDock->setObjectName(QStringLiteral("HistogramDock"));
+    m_histogramPanel = new HistogramPanel(m_histogramDock);
+    m_histogramDock->setWidget(m_histogramPanel);
+    addDockWidget(Qt::RightDockWidgetArea, m_histogramDock);
+    m_histogramDock->hide();
+    // only spend time on it while it is shown
+    connect(m_histogramDock, &QDockWidget::visibilityChanged, this,
+            [this](bool visible) {
+                if (visible) updateHistogram();
+            });
+    QAction *showHistogram = m_histogramDock->toggleViewAction();
+    showHistogram->setText(tr("Histo&gram"));
+    m_Ui->menuView->addAction(showHistogram);
 
     // before/after: any two open images, split by a draggable line
     QAction *compare = new QAction(tr("&Compare images..."), this);
@@ -1005,6 +1021,7 @@ void MainWindow::updateActions(int w) {
                                       : StepBar::Import);
     m_stepBar->setToneEnabled(tm_status.is_hdr_ready);
     m_stepBar->setExportEnabled(hasImage);
+    updateHistogram();
 }
 
 namespace {
@@ -1047,6 +1064,13 @@ void MainWindow::markModified(GenericViewer *viewer) {
     setWindowModified(true);
 }
 
+void MainWindow::updateHistogram() {
+    if (!m_histogramDock->isVisible()) return;
+    GenericViewer *v =
+        qobject_cast<GenericViewer *>(m_tabwidget->currentWidget());
+    m_histogramPanel->setImage(v ? v->getQImage() : QImage());
+}
+
 void MainWindow::applyHdrEdit(GenericViewer *viewer, pfs::Frame *edited,
                               const QString &text) {
     // push() runs redo(), which shows the edited frame
@@ -1054,6 +1078,7 @@ void MainWindow::applyHdrEdit(GenericViewer *viewer, pfs::Frame *edited,
         new FrameEditCommand(viewer, edited, text, [this, viewer]() {
             markModified(viewer);
             emit updatedHDR(viewer->getFrame());
+            updateHistogram();
         }));
 }
 
@@ -1968,6 +1993,8 @@ void MainWindow::addLdrFrame(pfs::Frame *frame,
         LdrViewer *viewer = static_cast<LdrViewer *>(n);
         viewer->doSoftProofing(true);
     }
+    // a replaced result does not change the tab
+    updateHistogram();
 }
 
 void MainWindow::tonemapFailed(const QString &error_msg) {

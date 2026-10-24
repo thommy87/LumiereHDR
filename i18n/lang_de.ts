@@ -3409,6 +3409,14 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Histogram</source>
+        <translation>Histogramm</translation>
+    </message>
+    <message>
+        <source>Histo&amp;gram</source>
+        <translation>Histo&amp;gramm</translation>
+    </message>
+    <message>
         <source>HDR image: %1</source>
         <translation>HDR-Bild: %1</translation>
     </message>
@@ -6913,6 +6921,25 @@ Error: %1</source>
     <message>
         <source>Drag the line to move between the two images.</source>
         <translation>Ziehe die Linie, um zwischen den beiden Bildern zu wechseln.</translation>
+    </message>
+</context>
+<context>
+    <name>HistogramPanel</name>
+    <message>
+        <source>Brightness distribution of the shown image, from black on the left to white on the right. Double-click to switch between colour and grey.</source>
+        <translation>Helligkeitsverteilung des gezeigten Bildes, links Schwarz, rechts Weiß. Doppelklick wechselt zwischen Farbe und Grau.</translation>
+    </message>
+    <message>
+        <source>No image shown</source>
+        <translation>Kein Bild angezeigt</translation>
+    </message>
+    <message>
+        <source>Clipped highlights: %1 %</source>
+        <translation>Ausgefressene Lichter: %1 %</translation>
+    </message>
+    <message>
+        <source>Clipped shadows: %1 %</source>
+        <translation>Abgesoffene Schatten: %1 %</translation>
     </message>
 </context>
 </TS>
