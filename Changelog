@@ -1,3 +1,9 @@
+Changes LumièreHDR 2.8.6
+NEW: live histogram with clipped highlights and shadows (View > Histogram)
+NEW: image comparison offers the original exposures, with names on both sides
+NEW: Batch HDR can pass its results straight to Batch tone mapping
+FIX: Mai11 settings can be saved and used in Batch tone mapping
+
 Changes LumièreHDR 2.8.5
 NEW: plain-language tone mapping operator names with a short explanation
 NEW: before/after comparison of two open images (View > Compare images)
