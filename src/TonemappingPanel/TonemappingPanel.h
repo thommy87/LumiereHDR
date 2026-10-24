@@ -156,6 +156,7 @@ class TonemappingPanel : public QWidget {
     void execReinhard05Query(float, float, float, QString);
     void execVanHaterenQuery(float, QString);
     void execLischinskiQuery(float, QString);
+    void execMaiQuery(QString);
 
     void updatePreviews(double);
     void updatePreviewsCB(bool);

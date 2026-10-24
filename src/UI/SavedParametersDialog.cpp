@@ -68,6 +68,8 @@ SavedParametersDialog::SavedParametersDialog(QSqlDatabase &db, QWidget *parent)
     sqlQuery += QLatin1String(
         "SELECT comment, 'vanhateren' AS operator FROM vanhateren UNION ");
     sqlQuery += QLatin1String(
+        "SELECT comment, 'mai' AS operator FROM mai UNION ");
+    sqlQuery += QLatin1String(
         "SELECT comment, 'lischinski' AS operator FROM lischinski");
     m_model->setQuery(sqlQuery, m_db);
 

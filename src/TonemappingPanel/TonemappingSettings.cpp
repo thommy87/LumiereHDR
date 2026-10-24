@@ -545,6 +545,18 @@ void TonemappingSettings::fillPreviews() {
         addPreview(new PreviewLabel(0, tmoLischinski06, index++),
                    m_modelPreviews->record(selectedRow));
     }
+
+    sqlQuery = QStringLiteral("SELECT *, 'mai' AS operator FROM mai");
+    m_modelPreviews->setQuery(sqlQuery, db);
+
+    for (int selectedRow = 0; selectedRow < m_modelPreviews->rowCount();
+         selectedRow++) {
+        TonemappingOptions *tmoMai11 = new TonemappingOptions;
+        fillCommonValues(tmoMai11, origxsize, PREVIEW_WIDTH, mai,
+                         m_modelPreviews->record(selectedRow));
+        addPreview(new PreviewLabel(0, tmoMai11, index++),
+                   m_modelPreviews->record(selectedRow));
+    }
     m_previewSettings->updatePreviews(m_frame);
 }
 
