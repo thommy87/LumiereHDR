@@ -506,7 +506,12 @@ void MainWindow::createToolBar() {
                     size.scaled(2400, 2400, Qt::KeepAspectRatio));
             const QImage image = reader.read();
             if (image.isNull()) {
-                ++skipped;
+                // Qt reads JPEG/PNG/TIFF; raw files need a converter first
+                static const QStringList raw = {
+                    "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2",
+                    "dng", "raf", "orf", "rw2", "pef", "srw", "x3f", "3fr"};
+                if (raw.contains(QFileInfo(file).suffix().toLower()))
+                    ++skipped;
                 continue;
             }
             images.append(qMakePair(
