@@ -589,7 +589,7 @@ void BatchTMDialog::from_database() {
                 QStringLiteral("durand"),     QStringLiteral("fattal"),
                 QStringLiteral("ferradans"),  QStringLiteral("ferwerda"),
                 QStringLiteral("kimkautz"),   QStringLiteral("lischinski"),
-                QStringLiteral("mantiuk06"),  QStringLiteral("mantiuk08"),
+                QStringLiteral("mai"),        QStringLiteral("mantiuk06"),  QStringLiteral("mantiuk08"),
                 QStringLiteral("pattanaik"),  QStringLiteral("reinhard02"),
                 QStringLiteral("reinhard05"), QStringLiteral("vanhateren")};
             if (!operatorTables.contains(tmOperator)) continue;
@@ -792,6 +792,12 @@ void BatchTMDialog::from_database() {
                         query.value(0).toFloat();
                     tm_opt->pregamma = query.value(1).toFloat();
                 }
+            } else if (tmOperator == QLatin1String("mai")) {
+                m_Ui->listWidget_TMopts->addItem(tmOperator + ": " + comment);
+                tm_opt->xsize_percent = m_Ui->spinBox_Width->value();
+                tm_opt->tmoperator = mai;
+                tm_opt->tonemapSelection = false;
+                while (query.next()) tm_opt->pregamma = query.value(0).toFloat();
             } else if (tmOperator == QLatin1String("lischinski")) {
                 m_Ui->listWidget_TMopts->addItem(tmOperator + ": " + comment);
                 tm_opt->xsize_percent = m_Ui->spinBox_Width->value();

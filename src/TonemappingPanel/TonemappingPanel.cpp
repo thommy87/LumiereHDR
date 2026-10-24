@@ -717,6 +717,11 @@ void TonemappingPanel::createDatabase() {
         res = query.exec(QStringLiteral(
                 " ALTER TABLE vanhateren ADD COLUMN postgamma real NOT nullptr DEFAULT 1;"));
     }
+    // Mai11 has no parameters of its own
+    res = query.exec(QStringLiteral(
+        " CREATE TABLE IF NOT EXISTS mai (\
+        pregamma real, comment varchar(150), postsaturation real, postgamma real);"));
+    if (res == false) qDebug() << query.lastError();
     // Lischinski
     res = query.exec(QStringLiteral(
         " CREATE TABLE IF NOT EXISTS lischinski (\
@@ -1812,7 +1817,8 @@ void TonemappingPanel::saveParameters() {
                     execFerradansQuery(rho, inv_alpha, comment);
                 }
                 break;
-            case mai:  // no options
+            case mai:  // no options of its own
+                execMaiQuery(comment);
                 break;
             case mantiuk06:
                 {
@@ -2596,6 +2602,20 @@ void TonemappingPanel::execVanHaterenQuery(float pupil_area,
     query.bindValue(QStringLiteral(":postgamma"), postgamma);
     bool res = query.exec();
     if (res == false) qDebug() << query.lastError();
+}
+
+void TonemappingPanel::execMaiQuery(QString comment) {
+    QSqlDatabase db = QSqlDatabase::database(m_databaseconnection);
+    QSqlQuery query(db);
+    query.prepare(
+        "INSERT INTO mai (pregamma, comment, postsaturation, postgamma) \
+        VALUES (:pregamma, :comment, :postsaturation, :postgamma)");
+    query.bindValue(QStringLiteral(":pregamma"), m_Ui->pregammadsb->value());
+    query.bindValue(QStringLiteral(":comment"), comment);
+    query.bindValue(QStringLiteral(":postsaturation"),
+                    m_Ui->postsaturationdsb->value());
+    query.bindValue(QStringLiteral(":postgamma"), m_Ui->postgammadsb->value());
+    if (!query.exec()) qDebug() << query.lastError();
 }
 
 void TonemappingPanel::execLischinskiQuery(float alpha,
