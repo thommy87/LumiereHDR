@@ -73,6 +73,8 @@ class TMOProgressIndicator;  // #include
 class TonemappingPanel;      // #include "TonemappingPanel/TonemappingPanel.h"
 class StepBar;               // #include "UI/StepBar.h"
 class QUndoGroup;
+class QDockWidget;
+class HistogramPanel;
 class TonemappingOptions;    // #include "Core/TonemappingOptions.h"
 class TMWorker;
 
@@ -336,6 +338,10 @@ class MainWindow : public QMainWindow {
     void applyHdrEdit(GenericViewer *viewer, pfs::Frame *edited,
                       const QString &text);
     void markModified(GenericViewer *viewer);
+    // live histogram of the shown image
+    QDockWidget *m_histogramDock;
+    HistogramPanel *m_histogramPanel;
+    void updateHistogram();
 
     // I/O
     QThread *m_IOThread;
