@@ -52,6 +52,8 @@ class BatchHDRDialog : public QDialog {
    public:
     BatchHDRDialog(QWidget *parent = 0, QSqlDatabase db = QSqlDatabase::database());
     ~BatchHDRDialog();
+    //! the HDR files this run has written
+    QStringList writtenFiles() const { return m_written; }
 
    signals:
     void setValue(int);
@@ -86,6 +88,7 @@ class BatchHDRDialog : public QDialog {
     QString m_tempDir;
 
     QStringList m_bracketed;
+    QStringList m_written;
     QString m_output_file_name_base;
     IOWorker *m_IO_Worker;
     HdrCreationManager *m_hdrCreationManager;

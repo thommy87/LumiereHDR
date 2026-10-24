@@ -514,6 +514,7 @@ void BatchHDRDialog::createHdrFinished() {
         progressValue,
         m_Ui->progressBar->maximum() - m_Ui->progressBar->minimum());
     m_Ui->textEdit->append(tr("Written ") + outName);
+    m_written << outName;
     batch_hdr();
 }
 

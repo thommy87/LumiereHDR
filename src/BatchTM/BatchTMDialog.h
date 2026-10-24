@@ -57,6 +57,8 @@ class BatchTMDialog : public QDialog {
    public:
     BatchTMDialog(QWidget *parent = 0, QSqlDatabase db = QSqlDatabase::database());
     ~BatchTMDialog();
+    //! queue HDR files, e.g. the ones Batch HDR just created
+    void addHdrFiles(const QStringList &files);
 
     // protected:
    private slots:

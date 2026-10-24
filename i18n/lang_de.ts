@@ -3408,6 +3408,13 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>MainWindow</name>
+    <message numerus="yes">
+        <source>%n HDR image(s) created. Tone map them now with Batch tone mapping?</source>
+        <translation>
+            <numerusform>%n HDR-Bild erstellt. Jetzt mit Batch-Tonemapping weiterverarbeiten?</numerusform>
+            <numerusform>%n HDR-Bilder erstellt. Jetzt mit Batch-Tonemapping weiterverarbeiten?</numerusform>
+        </translation>
+    </message>
     <message>
         <source>Histogram</source>
         <translation>Histogramm</translation>

@@ -1571,7 +1571,20 @@ void MainWindow::on_actionBring_All_to_Front_triggered() {
 void MainWindow::on_actionBatch_HDR_triggered() {
     BatchHDRDialog *batch_hdr_dialog = new BatchHDRDialog(this, QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection()));
     batch_hdr_dialog->exec();
+    const QStringList created = batch_hdr_dialog->writtenFiles();
     delete batch_hdr_dialog;
+
+    // go straight on from brackets to finished pictures
+    if (created.isEmpty()) return;
+    if (QMessageBox::question(
+            this, tr("Batch HDR"),
+            tr("%n HDR image(s) created. Tone map them now with Batch tone "
+               "mapping?",
+               "", created.size())) != QMessageBox::Yes)
+        return;
+    BatchTMDialog batchdialog(this, QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection()));
+    batchdialog.addHdrFiles(created);
+    batchdialog.exec();
 }
 
 void MainWindow::on_actionBatch_Tone_Mapping_triggered() {

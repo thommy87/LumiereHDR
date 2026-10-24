@@ -271,6 +271,11 @@ void BatchTMDialog::out_folder_clicked() {
     }
 }
 
+void BatchTMDialog::addHdrFiles(const QStringList &files) {
+    add_view_model_HDRs(files);
+    check_enable_start();
+}
+
 void BatchTMDialog::add_view_model_HDRs(const QStringList &list) {
     for (int idx = 0; idx < list.size(); ++idx) {
         // fill graphical list
