@@ -3409,6 +3409,29 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>HDR image: %1</source>
+        <translation>HDR-Bild: %1</translation>
+    </message>
+    <message>
+        <source>Result: %1</source>
+        <translation>Ergebnis: %1</translation>
+    </message>
+    <message>
+        <source>Result: %1 (%2)</source>
+        <translation>Ergebnis: %1 (%2)</translation>
+    </message>
+    <message>
+        <source>Original: %1</source>
+        <translation>Original: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n raw original(s) cannot be shown here yet.</source>
+        <translation>
+            <numerusform>%n Raw-Original kann hier noch nicht angezeigt werden.</numerusform>
+            <numerusform>%n Raw-Originale können hier noch nicht angezeigt werden.</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>&amp;Compare images...</source>
         <translation>Bilder &amp;vergleichen...</translation>
     </message>
