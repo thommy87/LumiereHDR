@@ -32,6 +32,7 @@ class SplitCompareView : public QWidget {
    public:
     explicit SplitCompareView(QWidget *parent = nullptr);
     void setImages(const QImage &left, const QImage &right);
+    void setLabels(const QString &left, const QString &right);
 
    protected:
     void paintEvent(QPaintEvent *event) override;
@@ -39,11 +40,14 @@ class SplitCompareView : public QWidget {
     void mouseMoveEvent(QMouseEvent *event) override;
 
    private:
+    QRect fitRect(const QImage &image) const;
     QRect imageRect() const;
     void moveSplit(int x);
 
     QImage m_left;
     QImage m_right;
+    QString m_leftLabel;
+    QString m_rightLabel;
     double m_split;  // 0..1 across the image
 };
 
@@ -53,7 +57,8 @@ class CompareDialog : public QDialog {
    public:
     //! \a images: tab title and image of every open tab, in tab order
     CompareDialog(const QList<QPair<QString, QImage>> &images, int left,
-                  int right, QWidget *parent = nullptr);
+                  int right, const QString &note = QString(),
+                  QWidget *parent = nullptr);
 
    private:
     void updateView();

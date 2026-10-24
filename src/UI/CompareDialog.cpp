@@ -18,6 +18,7 @@
 
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QFontMetrics>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMouseEvent>
@@ -38,15 +39,24 @@ void SplitCompareView::setImages(const QImage &left, const QImage &right) {
     update();
 }
 
-QRect SplitCompareView::imageRect() const {
-    // both images are fitted into the same rectangle, sized from the left one
-    const QImage &ref = m_left.isNull() ? m_right : m_left;
-    if (ref.isNull()) return QRect();
-    QSize size = ref.size();
+void SplitCompareView::setLabels(const QString &left, const QString &right) {
+    m_leftLabel = left;
+    m_rightLabel = right;
+    update();
+}
+
+QRect SplitCompareView::fitRect(const QImage &image) const {
+    if (image.isNull()) return QRect();
+    QSize size = image.size();
     size.scale(this->size(), Qt::KeepAspectRatio);
     QRect r(QPoint(0, 0), size);
     r.moveCenter(rect().center());
     return r;
+}
+
+QRect SplitCompareView::imageRect() const {
+    // each image keeps its own aspect ratio; the split spans both
+    return fitRect(m_left).united(fitRect(m_right));
 }
 
 void SplitCompareView::paintEvent(QPaintEvent *) {
@@ -59,12 +69,29 @@ void SplitCompareView::paintEvent(QPaintEvent *) {
     const int x = r.left() + qRound(m_split * r.width());
     p.save();
     p.setClipRect(QRect(r.left(), r.top(), x - r.left(), r.height()));
-    p.drawImage(r, m_left);
+    if (!m_left.isNull()) p.drawImage(fitRect(m_left), m_left);
     p.restore();
     p.save();
     p.setClipRect(QRect(x, r.top(), r.right() - x + 1, r.height()));
-    p.drawImage(r, m_right);
+    if (!m_right.isNull()) p.drawImage(fitRect(m_right), m_right);
     p.restore();
+
+    // name of each side in its top corner
+    auto tag = [&](const QString &text, bool right) {
+        if (text.isEmpty()) return;
+        const QFontMetrics fm(font());
+        QRect box(0, 0, fm.horizontalAdvance(text) + 12, fm.height() + 6);
+        box.moveTop(r.top() + 8);
+        if (right)
+            box.moveRight(r.right() - 8);
+        else
+            box.moveLeft(r.left() + 8);
+        p.fillRect(box, QColor(0, 0, 0, 150));
+        p.setPen(Qt::white);
+        p.drawText(box, Qt::AlignCenter, text);
+    };
+    tag(m_leftLabel, false);
+    tag(m_rightLabel, true);
 
     // the split line with a handle in the middle
     p.setRenderHint(QPainter::Antialiasing);
@@ -90,7 +117,8 @@ void SplitCompareView::mouseMoveEvent(QMouseEvent *event) {
 }
 
 CompareDialog::CompareDialog(const QList<QPair<QString, QImage>> &images,
-                             int left, int right, QWidget *parent)
+                             int left, int right, const QString &note,
+                             QWidget *parent)
     : QDialog(parent), m_images(images) {
     setWindowTitle(tr("Compare images"));
     setAttribute(Qt::WA_DeleteOnClose);
@@ -119,8 +147,10 @@ CompareDialog::CompareDialog(const QList<QPair<QString, QImage>> &images,
     choose->addWidget(m_rightBox, 1);
 
     m_view = new SplitCompareView(this);
-    QLabel *hint = new QLabel(
-        tr("Drag the line to move between the two images."), this);
+    QString hintText = tr("Drag the line to move between the two images.");
+    if (!note.isEmpty()) hintText += QLatin1Char(' ') + note;
+    QLabel *hint = new QLabel(hintText, this);
+    hint->setWordWrap(true);
     hint->setEnabled(false);
 
     QDialogButtonBox *buttons =
@@ -146,4 +176,5 @@ void CompareDialog::updateView() {
     const int r = m_rightBox->currentIndex();
     if (l < 0 || r < 0) return;
     m_view->setImages(m_images[l].second, m_images[r].second);
+    m_view->setLabels(m_images[l].first, m_images[r].first);
 }

@@ -47,6 +47,7 @@
 #include <QString>
 #include <QTextStream>
 #include <QDockWidget>
+#include <QImageReader>
 #include <QTimer>
 #include <QUndoGroup>
 #include <QUndoView>
@@ -466,27 +467,76 @@ void MainWindow::createToolBar() {
     compare->setStatusTip(
         tr("Compare two open images, for example the HDR and a result"));
     connect(compare, &QAction::triggered, this, [this]() {
-        if (m_tabwidget->count() < 2) {
+        QList<QPair<QString, QImage>> images;
+        int hdrIndex = -1, firstResult = -1;
+        for (int i = 0; i < m_tabwidget->count(); ++i) {
+            GenericViewer *v =
+                qobject_cast<GenericViewer *>(m_tabwidget->widget(i));
+            QString name = m_tabwidget->tabText(i);
+            if (name.startsWith(QLatin1String("(*) "))) name.remove(0, 4);
+            QString label;
+            if (v && v->isHDR()) {
+                label = tr("HDR image: %1").arg(name);
+                if (v == tm_status.curr_tm_frame) hdrIndex = images.size();
+            } else {
+                TonemappingOptions *opts =
+                    v ? v->getTonemappingOptions() : nullptr;
+                const QString op =
+                    opts ? opts->getCaption(false, QStringLiteral("|"))
+                               .section(QLatin1Char('|'), 0, 0)
+                               .remove(QLatin1Char(':'))
+                         : QString();
+                label = op.isEmpty() ? tr("Result: %1").arg(name)
+                                     : tr("Result: %1 (%2)").arg(name, op);
+                if (firstResult < 0 || i == m_tabwidget->currentIndex())
+                    firstResult = images.size();
+            }
+            images.append(qMakePair(label, v ? v->getQImage() : QImage()));
+        }
+
+        // the photos the HDR was merged from, as the real "before"
+        const int firstOriginal = images.size();
+        int skipped = 0;
+        for (const QString &file : m_inputFilesName) {
+            QImageReader reader(file);
+            reader.setAutoTransform(true);
+            const QSize size = reader.size();
+            if (size.isValid() && qMax(size.width(), size.height()) > 2400)
+                reader.setScaledSize(
+                    size.scaled(2400, 2400, Qt::KeepAspectRatio));
+            const QImage image = reader.read();
+            if (image.isNull()) {
+                // Qt reads JPEG/PNG/TIFF; raw files need a converter first
+                static const QStringList raw = {
+                    "cr2", "cr3", "crw", "nef", "nrw", "arw", "srf", "sr2",
+                    "dng", "raf", "orf", "rw2", "pef", "srw", "x3f", "3fr"};
+                if (raw.contains(QFileInfo(file).suffix().toLower()))
+                    ++skipped;
+                continue;
+            }
+            images.append(qMakePair(
+                tr("Original: %1").arg(QFileInfo(file).fileName()), image));
+        }
+        const int originals = images.size() - firstOriginal;
+
+        if (images.size() < 2) {
             QMessageBox::information(
                 this, tr("Compare images"),
                 tr("Open or create at least two images to compare them, "
                    "for example an HDR image and a tone mapped result."));
             return;
         }
-        QList<QPair<QString, QImage>> images;
-        for (int i = 0; i < m_tabwidget->count(); ++i) {
-            GenericViewer *v =
-                qobject_cast<GenericViewer *>(m_tabwidget->widget(i));
-            images.append(qMakePair(m_tabwidget->tabText(i),
-                                    v ? v->getQImage() : QImage()));
-        }
-        // the HDR on the left as "before", the shown image as "after"
-        const int right = m_tabwidget->currentIndex();
-        int left = tm_status.curr_tm_frame
-                       ? m_tabwidget->indexOf(tm_status.curr_tm_frame)
-                       : -1;
+        // before: the middle exposure (or the HDR); after: the result shown
+        int left = originals > 0 ? firstOriginal + originals / 2 : hdrIndex;
+        int right =
+            firstResult >= 0 ? firstResult : m_tabwidget->currentIndex();
         if (left < 0 || left == right) left = right == 0 ? 1 : 0;
-        CompareDialog *dialog = new CompareDialog(images, left, right, this);
+        const QString note =
+            skipped > 0 ? tr("%n raw original(s) cannot be shown here yet.",
+                             "", skipped)
+                        : QString();
+        CompareDialog *dialog =
+            new CompareDialog(images, left, right, note, this);
         dialog->show();
     });
     m_Ui->menuView->addAction(compare);
