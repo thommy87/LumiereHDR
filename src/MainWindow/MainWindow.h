@@ -73,6 +73,7 @@ class TMOProgressIndicator;  // #include
 class TonemappingPanel;      // #include "TonemappingPanel/TonemappingPanel.h"
 class StepBar;               // #include "UI/StepBar.h"
 class QUndoGroup;
+class QTimer;
 class QDockWidget;
 class HistogramPanel;
 class TonemappingOptions;    // #include "Core/TonemappingOptions.h"
@@ -341,6 +342,8 @@ class MainWindow : public QMainWindow {
     // live histogram of the shown image
     QDockWidget *m_histogramDock;
     HistogramPanel *m_histogramPanel;
+    QTimer *m_histogramTimer;
+    void watchViewer(GenericViewer *viewer);
     void updateHistogram();
 
     // I/O
