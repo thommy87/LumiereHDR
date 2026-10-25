@@ -33,8 +33,8 @@ class StepBar : public QWidget {
 
     //! Import runs \a newHdr; \a open is offered in its drop-down menu.
     void setImportActions(QAction *newHdr, QAction *open);
-    //! Export runs \a saveAs.
-    void setExportAction(QAction *saveAs);
+    //! Export runs \a saveAs; \a saveAll is offered in its menu.
+    void setExportActions(QAction *saveAs, QAction *saveAll);
 
     void setCurrentStep(Step step);
     void setToneEnabled(bool enabled);
