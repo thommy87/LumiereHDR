@@ -81,6 +81,7 @@ HdrViewer::HdrViewer(pfs::Frame *frame, QWidget *parent, bool ns)
 
     QScopedPointer<QImage> qImage(mapFrameToImage(getFrame()));
     mPixmap->setPixmap(QPixmap::fromImage(*qImage));
+    emit imageChanged();
 
     updateView();
     m_lumRange->blockSignals(false);
@@ -139,6 +140,7 @@ void HdrViewer::refreshPixmap() {
 
     QScopedPointer<QImage> qImage(mapFrameToImage(getFrame()));
     mPixmap->setPixmap(QPixmap::fromImage(*qImage));
+    emit imageChanged();
 
     unsetCursor();
 }

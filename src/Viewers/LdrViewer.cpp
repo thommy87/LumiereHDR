@@ -206,6 +206,7 @@ void LdrViewer::updatePixmap() {
 
     doCMSTransform(*temp_qimage, false, false);
     mPixmap->setPixmap(QPixmap::fromImage(*temp_qimage));
+    emit imageChanged();
 
     parseOptions(mTonemappingOptions, caption);
     informativeLabel->setText(tr("LDR image [%1 x %2]: %3")
@@ -240,6 +241,7 @@ void LdrViewer::doSoftProofing(bool doGamutCheck) {
     QScopedPointer<QImage> src_image(fromLDRPFStoQImage(getFrame()));
     if (doCMSTransform(*src_image, true, doGamutCheck)) {
         mPixmap->setPixmap(QPixmap::fromImage(*src_image));
+        emit imageChanged();
     }
 }
 
@@ -247,5 +249,6 @@ void LdrViewer::undoSoftProofing() {
     QScopedPointer<QImage> src_image(fromLDRPFStoQImage(getFrame()));
     if (doCMSTransform(*src_image, false, false)) {
         mPixmap->setPixmap(QPixmap::fromImage(*src_image));
+        emit imageChanged();
     }
 }

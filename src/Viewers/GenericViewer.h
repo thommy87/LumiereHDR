@@ -224,6 +224,7 @@ class GenericViewer : public QWidget {
     void goNext(GenericViewer *v);       // shows next image in fullscreen
     void goPrevious(GenericViewer *v);   // shows previous image in fullscreen
     void syncViewers(GenericViewer *v);  // toggle viewers synchronization
+    void imageChanged();  // the shown pixels changed (exposure, levels...)
 };
 
 inline bool GenericViewer::needsSaving(void) { return mNeedsSaving; }

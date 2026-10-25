@@ -465,6 +465,14 @@ void MainWindow::createToolBar() {
     m_histogramDock = new QDockWidget(tr("Histogram"), this);
     m_histogramDock->setObjectName(QStringLiteral("HistogramDock"));
     m_histogramPanel = new HistogramPanel(m_histogramDock);
+    // compact: it should not take the whole height on the right
+    m_histogramPanel->setMaximumHeight(240);
+    // coalesce bursts of changes (dragging a slider) into one update
+    m_histogramTimer = new QTimer(this);
+    m_histogramTimer->setSingleShot(true);
+    m_histogramTimer->setInterval(150);
+    connect(m_histogramTimer, &QTimer::timeout, this,
+            &MainWindow::updateHistogram);
     m_histogramDock->setWidget(m_histogramPanel);
     addDockWidget(Qt::RightDockWidgetArea, m_histogramDock);
     m_histogramDock->hide();
@@ -1064,6 +1072,12 @@ void MainWindow::markModified(GenericViewer *viewer) {
     setWindowModified(true);
 }
 
+void MainWindow::watchViewer(GenericViewer *viewer) {
+    connect(viewer, &GenericViewer::imageChanged, this, [this, viewer]() {
+        if (viewer == m_tabwidget->currentWidget()) m_histogramTimer->start();
+    });
+}
+
 void MainWindow::updateHistogram() {
     if (!m_histogramDock->isVisible()) return;
     GenericViewer *v =
@@ -1375,6 +1389,7 @@ void MainWindow::load_success(pfs::Frame *new_hdr_frame,
 
         newhdr->setAttribute(Qt::WA_DeleteOnClose);
 
+        watchViewer(newhdr);
         connect(newhdr, &GenericViewer::selectionReady, this,
                 &MainWindow::enableCrop);
         connect(newhdr, &GenericViewer::changed, this,
@@ -1978,6 +1993,7 @@ void MainWindow::addLdrFrame(pfs::Frame *frame,
 
         n = new LdrViewer(frame, tm_options, this, true);
 
+        watchViewer(n);
         connect(n, &GenericViewer::changed, this, &MainWindow::syncViewers);
         connect(n, &GenericViewer::changed, this,
                 &MainWindow::updateMagnificationButtons);

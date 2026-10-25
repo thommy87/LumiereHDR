@@ -342,6 +342,7 @@ void GenericViewer::setQImage(const QImage &qimage) {
     QPixmap pixmap = QPixmap::fromImage(qimage);
     pixmap.setDevicePixelRatio(m_devicePixelRatio);
     mPixmap->setPixmap(pixmap);
+    emit imageChanged();
 }
 
 int GenericViewer::getWidth() {
