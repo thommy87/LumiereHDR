@@ -1,3 +1,11 @@
+Changes LumièreHDR 2.9.2
+NEW: live preview: every change is shown on the result right away (can be
+     switched off)
+NEW: clearer image tabs
+FIX: the step bar now follows the work: Tone map while editing, Export
+     after saving
+FIX: Brightness and Contrast labels showed a stray "&"
+
 Changes LumièreHDR 2.9.1
 NEW: basic sliders Brightness and Contrast, the same for every operator
 NEW: the workflow steps hold New HDR, Open, Save as and Save all; the main
