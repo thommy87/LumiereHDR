@@ -125,8 +125,27 @@ QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
     QString filetypes = QObject::tr("All LDR formats");
     filetypes += QLatin1String(
         " (*.jpg *.jpeg *.png *.ppm *.pbm *.bmp *.JPG *.JPEG *.PNG *.PPM *.PBM "
-        "*.BMP);;");
+        "*.BMP"
+#ifdef HAVE_LIBAVIF
+        " *.avif *.AVIF"
+#endif
+#ifdef HAVE_LIBJXL
+        " *.jxl *.JXL"
+#endif
+#ifdef HAVE_LIBWEBP
+        " *.webp *.WEBP"
+#endif
+        ");;");
     filetypes += QLatin1String("JPEG (*.jpg *.jpeg *.JPG *.JPEG);;");
+#ifdef HAVE_LIBAVIF
+    filetypes += QLatin1String("AVIF (*.avif *.AVIF);;");
+#endif
+#ifdef HAVE_LIBJXL
+    filetypes += QLatin1String("JPEG XL (*.jxl *.JXL);;");
+#endif
+#ifdef HAVE_LIBWEBP
+    filetypes += QLatin1String("WebP (*.webp *.WEBP);;");
+#endif
     filetypes += QLatin1String("PNG (*.png *.PNG);;");
     filetypes += QLatin1String("PPM PBM (*.ppm *.pbm *.PPM *.PBM);;");
     filetypes += QLatin1String("BMP (*.bmp *.BMP);;");
@@ -852,7 +871,7 @@ void MainWindow::on_fileSaveAsAction_triggered() {
 
         if (outputFilename.isEmpty()) return;
 
-        QString format = QFileInfo(outputFilename).suffix();
+        QString format = QFileInfo(outputFilename).suffix().toLower();
 
         if (format.isEmpty()) {  // default as JPG
             format = QStringLiteral("jpg");
@@ -860,7 +879,9 @@ void MainWindow::on_fileSaveAsAction_triggered() {
         }
 
         pfs::Params p;
-        if (format == QLatin1String("png") || format == QLatin1String("jpg")) {
+        if (format == QLatin1String("png") || format == QLatin1String("jpg") ||
+            format == QLatin1String("jpeg") || format == QLatin1String("avif") ||
+            format == QLatin1String("jxl") || format == QLatin1String("webp")) {
             ImageQualityDialog savedFileQuality(l_v->getFrame(), format, -1,
                                                 this);
             savedFileQuality.setWindowTitle(QObject::tr("Save as...") +

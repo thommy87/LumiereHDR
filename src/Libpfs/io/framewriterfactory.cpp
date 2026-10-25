@@ -74,6 +74,15 @@ bool FrameWriterFactory::isSupported(const std::string &format) {
 #include <Libpfs/io/pngwriter.h>
 #include <Libpfs/io/rgbewriter.h>
 #include <Libpfs/io/tiffwriter.h>
+#ifdef HAVE_LIBAVIF
+#include <Libpfs/io/avifwriter.h>
+#endif
+#ifdef HAVE_LIBJXL
+#include <Libpfs/io/jxlwriter.h>
+#endif
+#ifdef HAVE_LIBWEBP
+#include <Libpfs/io/webpwriter.h>
+#endif
 
 namespace pfs {
 namespace io {
@@ -88,6 +97,15 @@ FrameWriterFactory::FrameWriterCreatorMap FrameWriterFactory::sm_registry =
     // LDR formats
     ("jpeg", creator<JpegWriter>)(
         "jpg", creator<JpegWriter>)("png", creator<PngWriter>)
+#ifdef HAVE_LIBAVIF
+    ("avif", creator<AvifWriter>)
+#endif
+#ifdef HAVE_LIBJXL
+    ("jxl", creator<JxlWriter>)
+#endif
+#ifdef HAVE_LIBWEBP
+    ("webp", creator<WebpWriter>)
+#endif
     // Ibrid formats (can be both, depending on the parameters
     ("tiff", creator<TiffWriter>)("tif", creator<TiffWriter>)
     // HDR formats

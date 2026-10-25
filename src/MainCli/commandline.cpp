@@ -117,7 +117,17 @@ CommandLineInterfaceManager::CommandLineInterfaceManager(const int argc,
                        << "bmp"
                        << "pgm"
                        << "xpm"
-                       << "xbm";
+                       << "xbm"
+#ifdef HAVE_LIBAVIF
+                       << "avif"
+#endif
+#ifdef HAVE_LIBJXL
+                       << "jxl"
+#endif
+#ifdef HAVE_LIBWEBP
+                       << "webp"
+#endif
+                       ;
     validHdrExtensions << "exr"
                        << "hdr"
                        << "tif"

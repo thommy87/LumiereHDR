@@ -49,6 +49,15 @@ void FormatHelper::initConnection(QComboBox *comboBox,
         comboBox->addItem(QObject::tr("TIFF"), QVariant(20));
         comboBox->addItem(QObject::tr("JPEG"), QVariant(21));
         comboBox->addItem(QObject::tr("PNG"), QVariant(22));
+#ifdef HAVE_LIBAVIF
+        comboBox->addItem(QObject::tr("AVIF"), QVariant(26));
+#endif
+#ifdef HAVE_LIBJXL
+        comboBox->addItem(QObject::tr("JPEG XL"), QVariant(27));
+#endif
+#ifdef HAVE_LIBWEBP
+        comboBox->addItem(QObject::tr("WebP"), QVariant(28));
+#endif
         comboBox->addItem(QObject::tr("BMP"), QVariant(23));
         comboBox->addItem(QObject::tr("PPM"), QVariant(24));
         comboBox->addItem(QObject::tr("PBM"), QVariant(25));
@@ -92,6 +101,12 @@ QString FormatHelper::getFileExtensionForFormat(int format) {
             return ("ppm");
         case 25:
             return ("pbm");
+        case 26:
+            return ("avif");
+        case 27:
+            return ("jxl");
+        case 28:
+            return ("webp");
     }
     return QStringLiteral("tiff");
 }
@@ -126,6 +141,18 @@ pfs::Params FormatHelper::getParamsForFormat(int format) {
             params.set("format", std::string("png"));
             params.set("quality", 100);
             break;
+        case 26:
+            params.set("format", std::string("avif"));
+            params.set("quality", 90);
+            break;
+        case 27:
+            params.set("format", std::string("jxl"));
+            params.set("quality", 90);
+            break;
+        case 28:
+            params.set("format", std::string("webp"));
+            params.set("quality", 90);
+            break;
         case 23:
         case 24:
         case 25:
@@ -158,13 +185,16 @@ void FormatHelper::buttonPressed() {
             }
         } break;
         case 21:
-        case 22: {
+        case 22:
+        case 26:
+        case 27:
+        case 28: {
             size_t quality;
             int qual = -1;
             if (m_params.get("quality", quality)) qual = quality;
 
-            ImageQualityDialog d(nullptr, format == 21 ? "png" : "jpg", qual,
-                                 m_settingsButton);
+            ImageQualityDialog d(nullptr, getFileExtensionForFormat(format),
+                                 qual, m_settingsButton);
             if (d.exec() == QDialog::Accepted) {
                 size_t quality = d.getQuality();
                 m_params.set("quality", quality);
@@ -183,7 +213,10 @@ void FormatHelper::updateButton(int format) {
     bool enabled = format == 2       // tiff
                    || format == 20   // tiff-dr
                    || format == 21   // jpg
-                   || format == 22;  // png
+                   || format == 22   // png
+                   || format == 26   // avif
+                   || format == 27   // jxl
+                   || format == 28;  // webp
     m_settingsButton->setEnabled(enabled);
 }
 
