@@ -396,8 +396,18 @@ void MainWindow::createCentralWidget() {
     m_tabwidget->setElideMode(Qt::ElideRight);
     m_tabwidget->setUsesScrollButtons(true);
     m_tabwidget->tabBar()->setExpanding(false);
-    m_tabwidget->setStyleSheet(
-        QStringLiteral("QTabBar::tab { width: 190px; }"));
+    // a style sheet on tabs replaces the native look entirely, so give
+    // them a complete one: clear, taller tabs from the palette (light and
+    // dark), the shown image marked with the highlight colour
+    m_tabwidget->setStyleSheet(QStringLiteral(
+        "QTabBar::tab { width: 190px; height: 30px; padding: 0 10px;"
+        " margin: 4px 2px 6px 0; border: 1px solid palette(mid);"
+        " border-radius: 6px; background: palette(button);"
+        " color: palette(button-text); }"
+        "QTabBar::tab:hover { border-color: palette(highlight); }"
+        "QTabBar::tab:selected { background: palette(highlight);"
+        " color: palette(highlighted-text); border-color: palette(highlight);"
+        " font-weight: bold; }"));
 
     m_centralwidget_splitter->addWidget(m_tonemapPanel);
     m_centralwidget_splitter->addWidget(m_bottom_splitter);
