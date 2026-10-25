@@ -212,4 +212,14 @@ TARGET_LINK_LIBRARIES(TestRGBEReader pfs
     ${LIBS})
 ADD_TEST(TestRGBEReader TestRGBEReader)
 
+# AVIF / JPEG XL export
+IF(LIBAVIF_FOUND OR LIBJXL_FOUND)
+    ADD_EXECUTABLE(TestModernWriters TestModernWriters.cpp)
+    TARGET_LINK_LIBRARIES(TestModernWriters pfs
+        ${GTEST_BOTH_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${LIBS})
+    ADD_TEST(TestModernWriters TestModernWriters)
+ENDIF()
+
 ENDIF(GTEST_FOUND)

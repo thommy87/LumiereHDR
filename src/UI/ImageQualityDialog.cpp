@@ -34,6 +34,12 @@
 
 #include <Libpfs/io/jpegwriter.h>
 #include <Libpfs/io/pngwriter.h>
+#ifdef HAVE_LIBAVIF
+#include <Libpfs/io/avifwriter.h>
+#endif
+#ifdef HAVE_LIBJXL
+#include <Libpfs/io/jxlwriter.h>
+#endif
 
 namespace {
 const static QString IMAGE_QUALITY_KEY =
@@ -97,6 +103,18 @@ void ImageQualityDialog::on_getSizeButton_clicked() {
         pfs::io::PngWriter writer;
         writer.write(*m_frame, params);
         size = writer.getFileSize();
+#ifdef HAVE_LIBAVIF
+    } else if (m_format == QLatin1String("avif")) {
+        pfs::io::AvifWriter writer;
+        writer.write(*m_frame, params);
+        size = writer.getFileSize();
+#endif
+#ifdef HAVE_LIBJXL
+    } else if (m_format == QLatin1String("jxl")) {
+        pfs::io::JxlWriter writer;
+        writer.write(*m_frame, params);
+        size = writer.getFileSize();
+#endif
     } else {
         return;
     }
