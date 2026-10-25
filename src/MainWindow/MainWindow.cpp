@@ -466,7 +466,7 @@ void MainWindow::createToolBar() {
     m_histogramDock->setObjectName(QStringLiteral("HistogramDock"));
     m_histogramPanel = new HistogramPanel(m_histogramDock);
     // compact: it should not take the whole height on the right
-    m_histogramPanel->setMaximumHeight(240);
+    m_histogramPanel->setMaximumHeight(200);
     // coalesce bursts of changes (dragging a slider) into one update
     m_histogramTimer = new QTimer(this);
     m_histogramTimer->setSingleShot(true);
