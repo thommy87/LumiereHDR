@@ -1,3 +1,11 @@
+Changes LumièreHDR 2.9.0
+NEW: export to AVIF, JPEG XL and WebP (save dialog, batch, command line)
+NEW: preset strip under the image: a preview of every preset, click to apply
+NEW: the tone mapping panel shows the active preset
+NEW: histogram updates live and takes less room
+CHANGE: the operator previews on the right are replaced by the preset strip
+FIX: batch format settings asked about PNG for JPEG and vice versa
+
 Changes LumièreHDR 2.8.6
 NEW: live histogram with clipped highlights and shadows (View > Histogram)
 NEW: image comparison offers the original exposures, with names on both sides
