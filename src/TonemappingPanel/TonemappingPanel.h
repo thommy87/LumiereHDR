@@ -114,6 +114,9 @@ class TonemappingPanel : public QWidget {
     QScopedPointer<Ui::TonemappingPanel> m_Ui;
     QMenu *m_presetMenu;
     QLabel *m_operatorHelp = nullptr;
+    QLabel *m_presetLabel = nullptr;
+    QString m_currentPreset;
+    bool m_applyingPreset = false;
     void applyOperatorNames();
 
    protected Q_SLOTS:
@@ -128,8 +131,9 @@ class TonemappingPanel : public QWidget {
     void on_savesettingsbutton_clicked();
     void on_loadsettingsbutton_clicked();
     void fillPresetMenu();
-    void applyPreset(const QString &fileName);
+    void applyPreset(const QString &fileName, const QString &name);
     void savePreset();
+    void markCustomSettings();
     void on_queueButton_clicked();
     void on_lblOpenQueue_linkActivated(const QString &link);
 
@@ -177,8 +181,13 @@ class TonemappingPanel : public QWidget {
     void setExportQueueSize(int);
     QString & getDatabaseConnection();
 
+    //! name and settings file of the built-in and the user's presets
+    QList<QPair<QString, QString>> presets() const;
+
    public Q_SLOTS:
     void setEnabled(bool);
+    //! sets operator and sliders from a preset file and tone maps
+    void applyPresetFile(const QString &fileName, const QString &name);
     void updatedHDR(pfs::Frame *);
     void updateTonemappingParams(TonemappingOptions *opts);
     void setRealtimePreviews(bool);
@@ -187,6 +196,10 @@ class TonemappingPanel : public QWidget {
     void tonemap();
 
    signals:
+    //! a preset was saved, so the list of presets changed
+    void presetsChanged();
+    //! the preset now applied; empty once a setting is changed by hand
+    void currentPresetChanged(const QString &name);
     void startTonemapping(TonemappingOptions *);
     void startExport(TonemappingOptions *);
     void autoLevels(bool, float);

@@ -3408,6 +3408,10 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>MainWindow</name>
+    <message>
+        <source>&amp;Preset strip</source>
+        <translation>&amp;Preset-Leiste</translation>
+    </message>
     <message numerus="yes">
         <source>%n HDR image(s) created. Tone map them now with Batch tone mapping?</source>
         <translation>
@@ -5873,6 +5877,14 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 <context>
     <name>TonemappingPanel</name>
     <message>
+        <source>Preset: %1</source>
+        <translation>Preset: %1</translation>
+    </message>
+    <message>
+        <source>Preset: own settings</source>
+        <translation>Preset: eigene Einstellungen</translation>
+    </message>
+    <message>
         <source>Natural</source>
         <translation>Natürlich</translation>
     </message>
@@ -6947,6 +6959,13 @@ Error: %1</source>
     <message>
         <source>Clipped shadows: %1 %</source>
         <translation>Abgesoffene Schatten: %1 %</translation>
+    </message>
+</context>
+<context>
+    <name>PresetStrip</name>
+    <message>
+        <source>Apply the preset &quot;%1&quot;</source>
+        <translation>Preset „%1“ anwenden</translation>
     </message>
 </context>
 </TS>

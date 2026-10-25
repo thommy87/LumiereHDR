@@ -113,6 +113,7 @@
 #include <HelpBrowser/helpbrowser.h>
 #include <LibpfsAdditions/formathelper.h>
 #include <Preferences/PreferencesDialog.h>
+#include <PreviewPanel/PresetStrip.h>
 #include <PreviewPanel/PreviewPanel.h>
 #include <Projection/ProjectionsDialog.h>
 #include <Resize/ResizeDialog.h>
@@ -376,11 +377,28 @@ void MainWindow::createCentralWidget() {
     m_centralwidget_splitter->addWidget(m_PreviewscrollArea);
     m_centralwidget_splitter->setCollapsible(2, false);
 
-    if (LuminanceOptions().getPreviewPanelMode()) {
-        showPreviewsOnTheBottom();
-    } else {
-        showPreviewsOnTheRight();
-    }
+    // the operator previews are replaced by the preset strip under the
+    // image; the panel stays for the tone mapping panel's own use
+    m_PreviewscrollArea->setParent(m_bottom_splitter);
+    m_PreviewscrollArea->hide();
+
+    m_presetStrip = new PresetStrip;
+    m_presetStrip->setPresets(m_tonemapPanel->presets());
+    m_bottom_splitter->addWidget(m_presetStrip);
+    m_bottom_splitter->setCollapsible(m_bottom_splitter->indexOf(m_presetStrip),
+                                      false);
+    m_presetStrip->hide();
+    connect(m_presetStrip, &PresetStrip::presetClicked, m_tonemapPanel,
+            &TonemappingPanel::applyPresetFile);
+    connect(m_tonemapPanel, &TonemappingPanel::currentPresetChanged,
+            m_presetStrip, &PresetStrip::setCurrent);
+    connect(m_tonemapPanel, &TonemappingPanel::presetsChanged, this, [this]() {
+        m_presetStrip->setPresets(m_tonemapPanel->presets());
+        if (tm_status.curr_tm_frame)
+            m_presetStrip->updatePreviews(tm_status.curr_tm_frame->getFrame());
+    });
+    connect(this, &MainWindow::updatedHDR, m_presetStrip,
+            &PresetStrip::updatePreviews);
 
     connect(m_tabwidget, &QTabWidget::tabCloseRequested, this,
             &MainWindow::removeTab);
@@ -687,6 +705,11 @@ void MainWindow::loadOptions() {
         LuminanceOptions().isRealtimePreviewsActive());
     m_Ui->actionRealtimePreviews->setEnabled(
         LuminanceOptions().isPreviewPanelActive());
+    // the preset strip sits under the image and needs no live operator
+    // previews, so these options are gone
+    m_Ui->actionRealtimePreviews->setVisible(false);
+    m_Ui->menuPreview_Panel_2->menuAction()->setVisible(false);
+    m_Ui->actionShowPreviewPanel->setText(tr("&Preset strip"));
 
     bool isPreviewPanelRight = LuminanceOptions().getPreviewPanelMode() == 0;
     m_Ui->actionShow_on_the_bottom->setChecked(!isPreviewPanelRight);
@@ -2049,40 +2072,11 @@ void MainWindow::syncViewers(GenericViewer *sender) {
 }
 
 void MainWindow::showPreviewPanel(bool b) {
-    m_Ui->actionRealtimePreviews->setEnabled(b);
-    m_tonemapPanel->setRealtimePreviews(b && LuminanceOptions().isRealtimePreviewsActive());
-    if (b) {
-        if (tm_status.is_hdr_ready) {
-            m_PreviewscrollArea->show();
-            // ask panel to refresh itself
-            m_PreviewPanel->setAutolevels(
-                m_tonemapPanel->doAutoLevels(),
-                m_tonemapPanel->getAutoLevelsThreshold());
-            m_PreviewPanel->updatePreviews(tm_status.curr_tm_frame->getFrame());
-
-            // connect signals
-            connect(this, SIGNAL(updatedHDR(pfs::Frame *)), m_PreviewPanel,
-                    SLOT(updatePreviews(pfs::Frame *)));
-            connect(m_PreviewPanel, &PreviewPanel::startTonemapping, this,
-                    &MainWindow::tonemapImage);
-            connect(m_PreviewPanel, &PreviewPanel::startTonemapping,
-                    m_tonemapPanel, &TonemappingPanel::updateTonemappingParams);
-            connect(m_tonemapPanel, SIGNAL(autoLevels(bool, float)), this,
-                    SLOT(updatePreviews(bool, float)));
-        }
-    } else {
-        m_PreviewscrollArea->hide();
-
-        // disconnect signals
-        disconnect(this, SIGNAL(updatedHDR(pfs::Frame *)), m_PreviewPanel,
-                   SLOT(updatePreviews(pfs::Frame *)));
-        disconnect(m_PreviewPanel, &PreviewPanel::startTonemapping, this,
-                   &MainWindow::tonemapImage);
-        disconnect(m_PreviewPanel, &PreviewPanel::startTonemapping,
-                   m_tonemapPanel, &TonemappingPanel::updateTonemappingParams);
-        disconnect(m_tonemapPanel, SIGNAL(autoLevels(bool, float)), this,
-                   SLOT(updatePreviews(bool, float)));
-    }
+    // the strip of presets under the image replaced the operator previews
+    m_tonemapPanel->setRealtimePreviews(false);
+    m_presetStrip->setVisible(b && tm_status.is_hdr_ready);
+    if (b && tm_status.is_hdr_ready)
+        m_presetStrip->updatePreviews(tm_status.curr_tm_frame->getFrame());
 }
 
 void MainWindow::updatePreviews(bool b, float th) {
@@ -2318,7 +2312,7 @@ void MainWindow::whiteBalanceDone() {
     m_viewerToProcess->updatePixmap();
     if (m_viewerToProcess->isHDR()) {
         m_viewerToProcess->setNeedsSaving(true);
-        m_PreviewPanel->updatePreviews(tm_status.curr_tm_frame->getFrame());
+        m_presetStrip->updatePreviews(tm_status.curr_tm_frame->getFrame());
     }
 }
 

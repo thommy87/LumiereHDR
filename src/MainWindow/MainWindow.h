@@ -72,6 +72,7 @@ class TMOProgressIndicator;  // #include
                              // "TonemappingPanel/TMOProgressIndicator.h"
 class TonemappingPanel;      // #include "TonemappingPanel/TonemappingPanel.h"
 class StepBar;               // #include "UI/StepBar.h"
+class PresetStrip;
 class QUndoGroup;
 class QDockWidget;
 class HistogramPanel;
@@ -333,6 +334,7 @@ class MainWindow : public QMainWindow {
     TonemappingPanel *m_tonemapPanel;
     // Import -> Tone -> Export workflow bar
     StepBar *m_stepBar;
+    PresetStrip *m_presetStrip;
     // undo/redo of HDR edits, one stack per open image
     QUndoGroup *m_undoGroup;
     void applyHdrEdit(GenericViewer *viewer, pfs::Frame *edited,

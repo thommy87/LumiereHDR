@@ -29,6 +29,8 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
+#include <QAbstractButton>
+#include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -336,6 +338,25 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
     applyOperatorNames();
     connect(m_Ui->stackedWidget_operators, &QStackedWidget::currentChanged,
             this, &TonemappingPanel::applyOperatorNames);
+
+    m_presetLabel = new QLabel(tr("Preset: own settings"), this);
+    QFont presetFont = m_presetLabel->font();
+    presetFont.setBold(true);
+    m_presetLabel->setFont(presetFont);
+    m_Ui->gridLayout_operator->addWidget(m_presetLabel, 2, 0, 1, 2);
+    // any change by hand turns a preset into own settings
+    connect(m_Ui->stackedWidget_operators, &QStackedWidget::currentChanged,
+            this, &TonemappingPanel::markCustomSettings);
+    for (QWidget *area : {static_cast<QWidget *>(m_Ui->tonemapGroupBox),
+                          static_cast<QWidget *>(m_Ui->processingToolBox)}) {
+        for (QDoubleSpinBox *box : area->findChildren<QDoubleSpinBox *>())
+            connect(box, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+                    this, &TonemappingPanel::markCustomSettings);
+        for (QAbstractButton *button : area->findChildren<QAbstractButton *>())
+            if (button->isCheckable())
+                connect(button, &QAbstractButton::toggled, this,
+                        &TonemappingPanel::markCustomSettings);
+    }
 
     QToolButton *presetButton = new QToolButton(this);
     presetButton->setText(tr("Presets"));
@@ -1257,26 +1278,34 @@ QString userPresetDir() {
 }
 }  // namespace
 
-void TonemappingPanel::fillPresetMenu() {
-    m_presetMenu->clear();
-    m_presetMenu->addSection(tr("Built-in"));
-    for (const BuiltinPreset &preset : kBuiltinPresets) {
-        const QString file =
-            QStringLiteral(":/presets/%1.txt").arg(QLatin1String(preset.file));
-        m_presetMenu->addAction(tr(preset.name), this,
-                                [this, file]() { applyPreset(file); });
-    }
-
+QList<QPair<QString, QString>> TonemappingPanel::presets() const {
+    QList<QPair<QString, QString>> list;
+    for (const BuiltinPreset &preset : kBuiltinPresets)
+        list.append(qMakePair(
+            tr(preset.name),
+            QStringLiteral(":/presets/%1.txt").arg(QLatin1String(preset.file))));
     const QFileInfoList own =
         QDir(userPresetDir())
             .entryInfoList({QStringLiteral("*.txt")}, QDir::Files, QDir::Name);
-    m_presetMenu->addSection(tr("My presets"));
-    for (const QFileInfo &fi : own) {
-        const QString file = fi.absoluteFilePath();
-        m_presetMenu->addAction(fi.completeBaseName(), this,
-                                [this, file]() { applyPreset(file); });
+    for (const QFileInfo &fi : own)
+        list.append(qMakePair(fi.completeBaseName(), fi.absoluteFilePath()));
+    return list;
+}
+
+void TonemappingPanel::fillPresetMenu() {
+    m_presetMenu->clear();
+    const QList<QPair<QString, QString>> all = presets();
+    const int builtin = int(sizeof(kBuiltinPresets) / sizeof(kBuiltinPresets[0]));
+    m_presetMenu->addSection(tr("Built-in"));
+    for (int i = 0; i < all.size(); ++i) {
+        if (i == builtin) m_presetMenu->addSection(tr("My presets"));
+        const QString name = all[i].first;
+        const QString file = all[i].second;
+        m_presetMenu->addAction(name, this,
+                                [this, file, name]() { applyPreset(file, name); });
     }
-    if (own.isEmpty())
+    if (all.size() == builtin) m_presetMenu->addSection(tr("My presets"));
+    if (all.size() == builtin)
         m_presetMenu->addAction(tr("(none saved yet)"))->setEnabled(false);
 
     m_presetMenu->addSeparator();
@@ -1289,11 +1318,29 @@ void TonemappingPanel::fillPresetMenu() {
     });
 }
 
-void TonemappingPanel::applyPreset(const QString &fileName) {
+void TonemappingPanel::applyPreset(const QString &fileName,
+                                   const QString &name) {
+    m_applyingPreset = true;
     tmoSettingsFilename = fileName;
     fromTxt2Gui();
+    m_applyingPreset = false;
+    m_currentPreset = name;
+    m_presetLabel->setText(tr("Preset: %1").arg(name));
+    emit currentPresetChanged(name);
     // show the result right away when an HDR image is loaded
     tonemap();
+}
+
+void TonemappingPanel::applyPresetFile(const QString &fileName,
+                                       const QString &name) {
+    applyPreset(fileName, name);
+}
+
+void TonemappingPanel::markCustomSettings() {
+    if (m_applyingPreset || m_currentPreset.isEmpty()) return;
+    m_currentPreset.clear();
+    m_presetLabel->setText(tr("Preset: own settings"));
+    emit currentPresetChanged(QString());
 }
 
 void TonemappingPanel::savePreset() {
@@ -1317,6 +1364,10 @@ void TonemappingPanel::savePreset() {
             QMessageBox::Yes)
         return;
     fromGui2Txt(file);
+    m_currentPreset = name;
+    m_presetLabel->setText(tr("Preset: %1").arg(name));
+    emit presetsChanged();
+    emit currentPresetChanged(name);
 }
 
 void TonemappingPanel::on_loadsettingsbutton_clicked() {
