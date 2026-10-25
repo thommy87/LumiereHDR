@@ -5901,6 +5901,14 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 <context>
     <name>TonemappingPanel</name>
     <message>
+        <source>&amp;Live preview</source>
+        <translation>&amp;Live-Vorschau</translation>
+    </message>
+    <message>
+        <source>Show every change on the image right away. Turn it off if a slow operator makes large images lag.</source>
+        <translation>Zeigt jede Änderung sofort im Bild. Abschalten, wenn ein langsames Verfahren große Bilder ausbremst.</translation>
+    </message>
+    <message>
         <source>Restore the default value (0)</source>
         <translation>Standardwert (0) wiederherstellen</translation>
     </message>
