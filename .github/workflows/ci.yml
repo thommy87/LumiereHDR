@@ -114,6 +114,11 @@ jobs:
         if: matrix.name == 'gcc release' || matrix.name == 'gcc qt6'
         run: |
           python3 test/golden/run_golden.py build/lumierehdr-cli
+      - name: Calibration of the basic sliders
+        # diagnostic only, for work on the basic sliders
+        if: matrix.name == 'gcc release' && contains(github.ref, 'basics')
+        continue-on-error: true
+        run: python3 test/golden/calibrate_basics.py build/lumierehdr-cli
 
   fuzz:
     name: Fuzz Radiance reader

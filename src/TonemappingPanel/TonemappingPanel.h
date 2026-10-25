@@ -39,6 +39,7 @@ class Gang;
 class QtWaitingSpinner;
 
 class QLabel;
+class QSlider;
 class QMenu;
 
 namespace Ui {
@@ -115,6 +116,11 @@ class TonemappingPanel : public QWidget {
     QMenu *m_presetMenu;
     QLabel *m_operatorHelp = nullptr;
     QLabel *m_presetLabel = nullptr;
+    // basic sliders that act on the result of any operator
+    Gang *postbrightnessGang = nullptr;
+    Gang *postcontrastGang = nullptr;
+    QSlider *m_postbrightnessSlider = nullptr;
+    QSlider *m_postcontrastSlider = nullptr;
     QString m_currentPreset;
     bool m_applyingPreset = false;
     void applyOperatorNames();

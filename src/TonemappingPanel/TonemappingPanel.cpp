@@ -29,6 +29,8 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
+#include <QSlider>
+#include <QGridLayout>
 #include <QAbstractButton>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
@@ -326,6 +328,57 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
     m_spinner->setVisible(false);
 
     createDatabase();
+
+    // Basics: brightness and contrast work on the result of every operator,
+    // next to saturation and gamma
+    {
+        QGridLayout *grid = m_Ui->gridLayout_3;
+        auto addRow = [this, grid](int row, const QString &text, float min,
+                                   float max, int decimals,
+                                   const QString &suffix, const QString &tip,
+                                   QSlider *&sliderOut) -> Gang * {
+            QLabel *label = new QLabel(text, this);
+            label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+            QSlider *slider = new QSlider(Qt::Horizontal, this);
+            slider->setRange(0, 100);
+            sliderOut = slider;
+            QDoubleSpinBox *box = new QDoubleSpinBox(this);
+            box->setRange(min, max);
+            box->setDecimals(decimals);
+            box->setSingleStep(decimals > 0 ? 0.1 : 5);
+            box->setSuffix(suffix);
+            QToolButton *reset = new QToolButton(this);
+            reset->setIcon(m_Ui->postgammadefault->icon());
+            reset->setToolTip(tr("Restore the default value (0)"));
+            for (QWidget *w : {static_cast<QWidget *>(label),
+                               static_cast<QWidget *>(slider),
+                               static_cast<QWidget *>(box)})
+                w->setToolTip(tip);
+            grid->addWidget(label, row, 0);
+            grid->addWidget(slider, row, 1);
+            grid->addWidget(reset, row, 2);
+            grid->addWidget(box, row, 3);
+            Gang *gang = new Gang(slider, box, nullptr, nullptr, nullptr,
+                                  nullptr, min, max, 0.f);
+            connect(reset, &QToolButton::clicked, this,
+                    [gang]() { gang->setDefault(); });
+            return gang;
+        };
+        postbrightnessGang = addRow(
+            grid->rowCount(), tr("&Brightness"), -3.f, 3.f, 1,
+            tr(" EV"),
+            tr("Makes the result brighter or darker, in stops. The same for "
+               "every operator."),
+            m_postbrightnessSlider);
+        postcontrastGang = addRow(
+            grid->rowCount(), tr("C&ontrast"), -100.f, 100.f, 0,
+            QStringLiteral(" %"),
+            tr("Raises or lowers the contrast of the result around mid "
+               "grey. The same for every operator."),
+            m_postcontrastSlider);
+        m_Ui->processingToolBox->setItemText(0, tr("Basics"));
+        m_Ui->label_10->setText(tr("Sat&uration"));
+    }
 
     m_operatorHelp = new QLabel(this);
     m_operatorHelp->setWordWrap(true);
@@ -967,6 +1020,8 @@ void TonemappingPanel::fillToneMappingOptions(bool exportMode) {
     m_toneMappingOptions->pregamma = pregammaGang->v();
     m_toneMappingOptions->postgamma = postgammaGang->v();
     m_toneMappingOptions->postsaturation = postsaturationGang->v();
+    m_toneMappingOptions->postbrightness = postbrightnessGang->v();
+    m_toneMappingOptions->postcontrast = postcontrastGang->v() / 100.f;
     // toneMappingOptions->tonemapSelection = checkBoxSelection->isChecked();
     // toneMappingOptions->tonemapOriginal = checkBoxOriginal->isChecked();
     switch (m_currentTmoOperator) {
@@ -1550,6 +1605,8 @@ void TonemappingPanel::fromGui2Txt(QString destination) {
     out << "PREGAMMA=" << pregammaGang->v() << Qt::endl;
     out << "POSTSATURATION=" << postsaturationGang->v() << Qt::endl;
     out << "POSTGAMMA=" << postgammaGang->v() << Qt::endl;
+    out << "POSTBRIGHTNESS=" << postbrightnessGang->v() << Qt::endl;
+    out << "POSTCONTRAST=" << postcontrastGang->v() / 100.f << Qt::endl;
     file.close();
 }
 
@@ -1565,6 +1622,8 @@ void TonemappingPanel::fromTxt2Gui() {
     QTextStream in(&file);
     QString field, value;
     QString tmo;  // Hack, same parameter "RANGE" in durand and reinhard02
+    postbrightnessGang->setDefault();
+    postcontrastGang->setDefault();
 
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -1775,6 +1834,12 @@ void TonemappingPanel::fromTxt2Gui() {
             m_Ui->postsaturationSlider->setValue(postsaturationGang->v2p(value.toFloat()));
         } else if (field == QLatin1String("POSTGAMMA")) {
             m_Ui->postgammaSlider->setValue(postgammaGang->v2p(value.toFloat()));
+        } else if (field == QLatin1String("POSTBRIGHTNESS")) {
+            m_postbrightnessSlider->setValue(
+                postbrightnessGang->v2p(value.toFloat()));
+        } else if (field == QLatin1String("POSTCONTRAST")) {
+            m_postcontrastSlider->setValue(
+                postcontrastGang->v2p(100.f * value.toFloat()));
         }
     }
 }
