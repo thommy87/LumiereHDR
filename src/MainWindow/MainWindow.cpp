@@ -48,6 +48,7 @@
 #include <QTextStream>
 #include <QDockWidget>
 #include <QImageReader>
+#include <QTabBar>
 #include <QTimer>
 #include <QUndoGroup>
 #include <QUndoView>
@@ -377,6 +378,12 @@ void MainWindow::createCentralWidget() {
 
     m_tabwidget->setDocumentMode(true);
     m_tabwidget->setTabsClosable(true);
+    // equal tabs: long file names end in "..." (full name in the tooltip)
+    m_tabwidget->setElideMode(Qt::ElideRight);
+    m_tabwidget->setUsesScrollButtons(true);
+    m_tabwidget->tabBar()->setExpanding(false);
+    m_tabwidget->setStyleSheet(
+        QStringLiteral("QTabBar::tab { width: 190px; }"));
 
     m_centralwidget_splitter->addWidget(m_tonemapPanel);
     m_centralwidget_splitter->addWidget(m_bottom_splitter);
@@ -1061,6 +1068,10 @@ void MainWindow::updateActions(int w) {
 
     m_Ui->actionLock->setEnabled(hasImage && curr_num_ldr_open >= 1);
     m_Ui->actionShow_Image_Full_Screen->setEnabled(hasImage);
+
+    // the full name of every image, as the tab text may be cut short
+    for (int i = 0; i < m_tabwidget->count(); ++i)
+        m_tabwidget->setTabToolTip(i, m_tabwidget->tabText(i));
 
     // undo/redo follows the image that is shown
     if (g_v && !m_undoGroup->stacks().contains(g_v->undoStack()))
