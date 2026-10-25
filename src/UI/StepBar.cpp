@@ -70,9 +70,14 @@ void StepBar::setImportActions(QAction *newHdr, QAction *open) {
     b->setPopupMode(QToolButton::MenuButtonPopup);
 }
 
-void StepBar::setExportAction(QAction *saveAs) {
-    connect(m_buttons[Export], &QToolButton::clicked, saveAs,
-            &QAction::trigger);
+void StepBar::setExportActions(QAction *saveAs, QAction *saveAll) {
+    QToolButton *b = m_buttons[Export];
+    connect(b, &QToolButton::clicked, saveAs, &QAction::trigger);
+    QMenu *menu = new QMenu(b);
+    menu->addAction(saveAs);
+    menu->addAction(saveAll);
+    b->setMenu(menu);
+    b->setPopupMode(QToolButton::MenuButtonPopup);
 }
 
 void StepBar::setCurrentStep(Step step) {
@@ -109,7 +114,8 @@ void StepBar::retranslate() {
         tr("Tone map the HDR image with the settings in the panel on the "
            "left"));
     m_buttons[Export]->setText(tr("3  Export"));
-    m_buttons[Export]->setToolTip(tr("Save the current image"));
+    m_buttons[Export]->setToolTip(
+        tr("Save the current image; all results are in the menu"));
 }
 
 void StepBar::changeEvent(QEvent *event) {
