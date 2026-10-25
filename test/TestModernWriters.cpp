@@ -14,7 +14,7 @@
  * ----------------------------------------------------------------------
  */
 
-// AVIF and JPEG XL export: a small gradient must encode, lower quality
+// AVIF, JPEG XL and WebP export: a small gradient must encode, lower quality
 // must give a smaller file, and a file must reach the disk.
 
 #include <gtest/gtest.h>
@@ -31,6 +31,9 @@
 #endif
 #ifdef HAVE_LIBJXL
 #include "Libpfs/io/jxlwriter.h"
+#endif
+#ifdef HAVE_LIBWEBP
+#include "Libpfs/io/webpwriter.h"
 #endif
 
 namespace {
@@ -77,4 +80,8 @@ TEST(TestModernWriters, Avif) { checkWriter<pfs::io::AvifWriter>("avif"); }
 
 #ifdef HAVE_LIBJXL
 TEST(TestModernWriters, JpegXl) { checkWriter<pfs::io::JxlWriter>("jxl"); }
+#endif
+
+#ifdef HAVE_LIBWEBP
+TEST(TestModernWriters, WebP) { checkWriter<pfs::io::WebpWriter>("webp"); }
 #endif

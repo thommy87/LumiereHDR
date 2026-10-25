@@ -43,7 +43,7 @@ jobs:
             toolchain:p cmake:p ninja:p pkgconf:p
             qt6-base:p qt6-tools:p qt6-svg:p qt6-5compat:p qt6-translations:p
             boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
-            cfitsio:p libraw:p fftw:p lcms2:p eigen3:p libavif:p libjxl:p
+            cfitsio:p libraw:p fftw:p lcms2:p eigen3:p libavif:p libjxl:p libwebp:p
 
       - name: Build
         run: |

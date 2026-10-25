@@ -124,6 +124,9 @@ CommandLineInterfaceManager::CommandLineInterfaceManager(const int argc,
 #ifdef HAVE_LIBJXL
                        << "jxl"
 #endif
+#ifdef HAVE_LIBWEBP
+                       << "webp"
+#endif
                        ;
     validHdrExtensions << "exr"
                        << "hdr"

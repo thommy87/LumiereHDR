@@ -80,6 +80,9 @@ bool FrameWriterFactory::isSupported(const std::string &format) {
 #ifdef HAVE_LIBJXL
 #include <Libpfs/io/jxlwriter.h>
 #endif
+#ifdef HAVE_LIBWEBP
+#include <Libpfs/io/webpwriter.h>
+#endif
 
 namespace pfs {
 namespace io {
@@ -99,6 +102,9 @@ FrameWriterFactory::FrameWriterCreatorMap FrameWriterFactory::sm_registry =
 #endif
 #ifdef HAVE_LIBJXL
     ("jxl", creator<JxlWriter>)
+#endif
+#ifdef HAVE_LIBWEBP
+    ("webp", creator<WebpWriter>)
 #endif
     // Ibrid formats (can be both, depending on the parameters
     ("tiff", creator<TiffWriter>)("tif", creator<TiffWriter>)

@@ -55,6 +55,9 @@ void FormatHelper::initConnection(QComboBox *comboBox,
 #ifdef HAVE_LIBJXL
         comboBox->addItem(QObject::tr("JPEG XL"), QVariant(27));
 #endif
+#ifdef HAVE_LIBWEBP
+        comboBox->addItem(QObject::tr("WebP"), QVariant(28));
+#endif
         comboBox->addItem(QObject::tr("BMP"), QVariant(23));
         comboBox->addItem(QObject::tr("PPM"), QVariant(24));
         comboBox->addItem(QObject::tr("PBM"), QVariant(25));
@@ -102,6 +105,8 @@ QString FormatHelper::getFileExtensionForFormat(int format) {
             return ("avif");
         case 27:
             return ("jxl");
+        case 28:
+            return ("webp");
     }
     return QStringLiteral("tiff");
 }
@@ -144,6 +149,10 @@ pfs::Params FormatHelper::getParamsForFormat(int format) {
             params.set("format", std::string("jxl"));
             params.set("quality", 90);
             break;
+        case 28:
+            params.set("format", std::string("webp"));
+            params.set("quality", 90);
+            break;
         case 23:
         case 24:
         case 25:
@@ -178,7 +187,8 @@ void FormatHelper::buttonPressed() {
         case 21:
         case 22:
         case 26:
-        case 27: {
+        case 27:
+        case 28: {
             size_t quality;
             int qual = -1;
             if (m_params.get("quality", quality)) qual = quality;
@@ -205,7 +215,8 @@ void FormatHelper::updateButton(int format) {
                    || format == 21   // jpg
                    || format == 22   // png
                    || format == 26   // avif
-                   || format == 27;  // jxl
+                   || format == 27   // jxl
+                   || format == 28;  // webp
     m_settingsButton->setEnabled(enabled);
 }
 

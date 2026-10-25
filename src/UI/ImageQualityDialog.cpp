@@ -40,6 +40,9 @@
 #ifdef HAVE_LIBJXL
 #include <Libpfs/io/jxlwriter.h>
 #endif
+#ifdef HAVE_LIBWEBP
+#include <Libpfs/io/webpwriter.h>
+#endif
 
 namespace {
 const static QString IMAGE_QUALITY_KEY =
@@ -112,6 +115,12 @@ void ImageQualityDialog::on_getSizeButton_clicked() {
 #ifdef HAVE_LIBJXL
     } else if (m_format == QLatin1String("jxl")) {
         pfs::io::JxlWriter writer;
+        writer.write(*m_frame, params);
+        size = writer.getFileSize();
+#endif
+#ifdef HAVE_LIBWEBP
+    } else if (m_format == QLatin1String("webp")) {
+        pfs::io::WebpWriter writer;
         writer.write(*m_frame, params);
         size = writer.getFileSize();
 #endif
