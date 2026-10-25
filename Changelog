@@ -1,3 +1,11 @@
+Changes LumièreHDR 2.9.1
+NEW: basic sliders Brightness and Contrast, the same for every operator
+NEW: the workflow steps hold New HDR, Open, Save as and Save all; the main
+     toolbar keeps the view and adjustment tools
+NEW: equal-width image tabs, long names end in "..."
+NEW: image facts under the histogram (size, dynamic range, source photos)
+FIX: tone mapping results started at 256 px wide and looked blurry
+
 Changes LumièreHDR 2.9.0
 NEW: export to AVIF, JPEG XL and WebP (save dialog, batch, command line)
 NEW: preset strip under the image: a preview of every preset, click to apply
