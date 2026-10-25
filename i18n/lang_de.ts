@@ -5901,6 +5901,38 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 <context>
     <name>TonemappingPanel</name>
     <message>
+        <source>Restore the default value (0)</source>
+        <translation>Standardwert (0) wiederherstellen</translation>
+    </message>
+    <message>
+        <source>&amp;Brightness</source>
+        <translation>&amp;Helligkeit</translation>
+    </message>
+    <message>
+        <source> EV</source>
+        <translation> LW</translation>
+    </message>
+    <message>
+        <source>Makes the result brighter or darker, in stops. The same for every operator.</source>
+        <translation>Macht das Ergebnis heller oder dunkler, in Blendenstufen. Bei jedem Verfahren gleich.</translation>
+    </message>
+    <message>
+        <source>C&amp;ontrast</source>
+        <translation>K&amp;ontrast</translation>
+    </message>
+    <message>
+        <source>Raises or lowers the contrast of the result around mid grey. The same for every operator.</source>
+        <translation>Erhöht oder senkt den Kontrast des Ergebnisses um das mittlere Grau. Bei jedem Verfahren gleich.</translation>
+    </message>
+    <message>
+        <source>Basics</source>
+        <translation>Grundlagen</translation>
+    </message>
+    <message>
+        <source>Sat&amp;uration</source>
+        <translation>Sätti&amp;gung</translation>
+    </message>
+    <message>
         <source>Preset: %1</source>
         <translation>Preset: %1</translation>
     </message>

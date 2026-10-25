@@ -25,6 +25,9 @@
 
 #include <Core/TMWorker.h>
 
+#include <algorithm>
+#include <cmath>
+
 #ifdef QT_DEBUG
 #include <QDebug>
 #endif
@@ -204,10 +207,35 @@ pfs::Frame *TMWorker::preprocessFrame(pfs::Frame *input_frame,
     return working_frame;
 }
 
+namespace {
+//! exposure change in stops, then an S-curve around mid grey; the same for
+//! every operator, so the basic sliders mean the same everywhere
+void applyBrightnessContrast(pfs::Frame *frame, float stops, float contrast) {
+    pfs::Channel *r, *g, *b;
+    frame->getXYZChannels(r, g, b);
+    if (!r || !g || !b) return;
+    const float gain = std::pow(2.f, stops);
+    // contrast -1..+1 -> curve exponent 0.5..2 (1 = straight line)
+    const float k = std::pow(2.f, contrast);
+    auto curve = [gain, k](float v) {
+        v = std::min(std::max(v * gain, 0.f), 1.f);
+        if (k == 1.f) return v;
+        return v < 0.5f ? 0.5f * std::pow(2.f * v, k)
+                        : 1.f - 0.5f * std::pow(2.f * (1.f - v), k);
+    };
+    for (pfs::Channel *c : {r, g, b})
+        for (float &v : *c) v = curve(v);
+}
+}  // namespace
+
 void TMWorker::postprocessFrame(pfs::Frame *working_frame, TonemappingOptions *tm_options) {
     // auto-level?
     // black-point?
     // white-point?
+    if (tm_options->postbrightness != 0.f || tm_options->postcontrast != 0.f) {
+        applyBrightnessContrast(working_frame, tm_options->postbrightness,
+                                tm_options->postcontrast);
+    }
     if (tm_options->postsaturation != 1.0) {
         pfs::applySaturation(working_frame, tm_options->postsaturation);
     }

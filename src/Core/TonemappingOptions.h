@@ -64,6 +64,9 @@ class TonemappingOptions {
     float pregamma;
     float postgamma;
     float postsaturation;
+    // applied to the result of every operator alike
+    float postbrightness;  // exposure change in stops, 0 = none
+    float postcontrast;    // -1 (flat) .. 0 (none) .. +1 (strong)
     bool tonemapSelection;  // we should let do this thing to the tonemapping
                             // thread
     TMOperator tmoperator;
