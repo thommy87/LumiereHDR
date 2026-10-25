@@ -6919,6 +6919,10 @@ Error: %1</source>
 <context>
     <name>StepBar</name>
     <message>
+        <source>Save the current image; all results are in the menu</source>
+        <translation>Aktuelles Bild speichern; alle Ergebnisse speichern im Menü</translation>
+    </message>
+    <message>
         <source>1  Import / Merge</source>
         <translation>1  Import / Zusammenführen</translation>
     </message>

@@ -355,14 +355,17 @@ void MainWindow::createCentralWidget() {
 
     m_stepBar = new StepBar;
     m_stepBar->setImportActions(m_Ui->fileNewAction, m_Ui->fileOpenAction);
-    m_stepBar->setExportAction(m_Ui->fileSaveAsAction);
+    m_stepBar->setExportActions(m_Ui->fileSaveAsAction,
+                                m_Ui->fileSaveAllAction);
 
     // the workflow steps sit in the toolbar row instead of a strip of
     // their own above the image
     QToolBar *workflow = new QToolBar(tr("Workflow"), this);
     workflow->setObjectName(QStringLiteral("WorkflowToolBar"));
     workflow->addWidget(m_stepBar);
-    addToolBar(Qt::TopToolBarArea, workflow);
+    // first in the row: new/open/save live here now, the main toolbar
+    // keeps the view and adjustment tools
+    insertToolBar(m_Ui->toolBar, workflow);
     m_Ui->menuToolbars->addAction(workflow->toggleViewAction());
     setCentralWidget(m_centralwidget_splitter);
 

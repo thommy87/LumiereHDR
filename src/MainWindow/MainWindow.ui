@@ -187,11 +187,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="fileNewAction"/>
-   <addaction name="fileOpenAction"/>
-   <addaction name="fileSaveAsAction"/>
-   <addaction name="fileSaveAllAction"/>
-   <addaction name="separator"/>
    <addaction name="fitToWindowAct"/>
    <addaction name="actionFill_to_Window"/>
    <addaction name="normalSizeAct"/>
