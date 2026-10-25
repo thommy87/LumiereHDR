@@ -376,6 +376,12 @@ void MainWindow::createCentralWidget() {
         sm_NumMainWindows, m_PreviewPanel);  //(m_centralwidget_splitter);
     connect(m_stepBar, &StepBar::toneRequested, m_tonemapPanel,
             &TonemappingPanel::tonemap);
+    // any new tone mapping brings the workflow back to the Tone step
+    connect(m_tonemapPanel, &TonemappingPanel::startTonemapping, this,
+            [this](TonemappingOptions *) {
+                m_resultSaved = false;
+                m_stepBar->setCurrentStep(StepBar::Tone);
+            });
 
     connect(m_Ui->actionRealtimePreviews, &QAction::toggled, m_tonemapPanel,
             &TonemappingPanel::setRealtimePreviews);
@@ -981,6 +987,8 @@ void MainWindow::save_hdr_failed(const QString &fname) {
 
 void MainWindow::save_ldr_success(GenericViewer *saved_ldr,
                                   const QString &fname) {
+    m_resultSaved = true;
+    m_stepBar->setCurrentStep(StepBar::Export);
     if (!saved_ldr->isHDR())
         m_tabwidget->setTabText(m_tabwidget->indexOf(saved_ldr),
                                 QFileInfo(fname).fileName());
@@ -1084,10 +1092,13 @@ void MainWindow::updateActions(int w) {
         m_undoGroup->addStack(g_v->undoStack());
     m_undoGroup->setActiveStack(g_v ? g_v->undoStack() : nullptr);
 
-    // workflow bar: no image -> import, HDR -> tone map, LDR -> export
-    m_stepBar->setCurrentStep(isLdr ? StepBar::Export
-                              : isHdr ? StepBar::Tone
-                                      : StepBar::Import);
+    // workflow bar: no image -> import; while working on a picture ->
+    // tone map; after saving the result shown -> export
+    m_stepBar->setCurrentStep(
+        !hasImage ? StepBar::Import
+        : (isLdr && (m_resultSaved || !tm_status.is_hdr_ready))
+            ? StepBar::Export
+            : StepBar::Tone);
     m_stepBar->setToneEnabled(tm_status.is_hdr_ready);
     m_stepBar->setExportEnabled(hasImage);
     updateHistogram();

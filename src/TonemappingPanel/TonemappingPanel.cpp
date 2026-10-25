@@ -29,6 +29,8 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
+#include <QTimer>
+#include <QCheckBox>
 #include <QSlider>
 #include <QGridLayout>
 #include <QAbstractButton>
@@ -354,6 +356,7 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
                                static_cast<QWidget *>(slider),
                                static_cast<QWidget *>(box)})
                 w->setToolTip(tip);
+            label->setBuddy(slider);
             grid->addWidget(label, row, 0);
             grid->addWidget(slider, row, 1);
             grid->addWidget(reset, row, 2);
@@ -391,6 +394,24 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
     applyOperatorNames();
     connect(m_Ui->stackedWidget_operators, &QStackedWidget::currentChanged,
             this, &TonemappingPanel::applyOperatorNames);
+
+    m_liveTimer = new QTimer(this);
+    m_liveTimer->setSingleShot(true);
+    m_liveTimer->setInterval(300);
+    connect(m_liveTimer, &QTimer::timeout, this,
+            &TonemappingPanel::runLivePreview);
+    m_liveCheck = new QCheckBox(tr("&Live preview"), this);
+    m_liveCheck->setToolTip(
+        tr("Show every change on the image right away. Turn it off if a "
+           "slow operator makes large images lag."));
+    m_liveCheck->setChecked(
+        LuminanceOptions().value(QStringLiteral("TonemappingLivePreview"), true)
+            .toBool());
+    connect(m_liveCheck, &QCheckBox::toggled, this, [](bool on) {
+        LuminanceOptions().setValue(QStringLiteral("TonemappingLivePreview"),
+                                    on);
+    });
+    m_Ui->horizontalLayout_38->addWidget(m_liveCheck);
 
     m_presetLabel = new QLabel(tr("Preset: own settings"), this);
     QFont presetFont = m_presetLabel->font();
@@ -988,6 +1009,7 @@ void TonemappingPanel::on_postsaturationdefault_clicked() {
 }
 
 void TonemappingPanel::on_applyButton_clicked() {
+    m_lastRunWasLive = false;
     fillToneMappingOptions(false);
     setupUndo();
 
@@ -1392,8 +1414,12 @@ void TonemappingPanel::applyPreset(const QString &fileName,
     m_currentPreset = name;
     m_presetLabel->setText(tr("Preset: %1").arg(name));
     emit currentPresetChanged(name);
-    // show the result right away when an HDR image is loaded
-    tonemap();
+    // show the result right away when an HDR image is loaded; with live
+    // preview it replaces the result shown, like any other change
+    if (m_liveCheck && m_liveCheck->isChecked())
+        runLivePreview();
+    else
+        tonemap();
 }
 
 void TonemappingPanel::applyPresetFile(const QString &fileName,
@@ -1401,7 +1427,22 @@ void TonemappingPanel::applyPresetFile(const QString &fileName,
     applyPreset(fileName, name);
 }
 
+void TonemappingPanel::scheduleLivePreview() {
+    if (m_liveCheck && m_liveCheck->isChecked()) m_liveTimer->start();
+}
+
+void TonemappingPanel::runLivePreview() {
+    // the panel is disabled while a result is computed or no HDR is loaded
+    if (!m_Ui->applyButton->isEnabled()) return;
+    fillToneMappingOptions(false);
+    setupUndo();
+    // a live result replaces the one shown instead of opening a new tab
+    m_lastRunWasLive = true;
+    emit startTonemapping(m_toneMappingOptions);
+}
+
 void TonemappingPanel::markCustomSettings() {
+    if (!m_applyingPreset) scheduleLivePreview();
     if (m_applyingPreset || m_currentPreset.isEmpty()) return;
     m_currentPreset.clear();
     m_presetLabel->setText(tr("Preset: own settings"));
@@ -2765,7 +2806,7 @@ void TonemappingPanel::execLischinskiQuery(float alpha,
 }
 
 bool TonemappingPanel::replaceLdr() {
-    return m_Ui->replaceLdrCheckBox->isChecked();
+    return m_Ui->replaceLdrCheckBox->isChecked() || m_lastRunWasLive;
 }
 
 bool TonemappingPanel::doAutoLevels() {

@@ -335,6 +335,7 @@ class MainWindow : public QMainWindow {
     TonemappingPanel *m_tonemapPanel;
     // Import -> Tone -> Export workflow bar
     StepBar *m_stepBar;
+    bool m_resultSaved = false;  // Export done until the next change
     PresetStrip *m_presetStrip;
     // undo/redo of HDR edits, one stack per open image
     QUndoGroup *m_undoGroup;

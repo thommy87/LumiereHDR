@@ -39,6 +39,8 @@ class Gang;
 class QtWaitingSpinner;
 
 class QLabel;
+class QCheckBox;
+class QTimer;
 class QSlider;
 class QMenu;
 
@@ -116,6 +118,12 @@ class TonemappingPanel : public QWidget {
     QMenu *m_presetMenu;
     QLabel *m_operatorHelp = nullptr;
     QLabel *m_presetLabel = nullptr;
+    // live preview: re-run tone mapping shortly after a change
+    QCheckBox *m_liveCheck = nullptr;
+    QTimer *m_liveTimer = nullptr;
+    bool m_lastRunWasLive = false;
+    void scheduleLivePreview();
+    void runLivePreview();
     // basic sliders that act on the result of any operator
     Gang *postbrightnessGang = nullptr;
     Gang *postcontrastGang = nullptr;
