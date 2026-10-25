@@ -25,8 +25,10 @@
 
 StepBar::StepBar(QWidget *parent) : QWidget(parent), m_current(Import) {
     setObjectName(QStringLiteral("StepBar"));
+    // fill the rest of the toolbar row, steps centred in it
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(6, 4, 6, 4);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(4);
     layout->addStretch();
     for (int i = 0; i < 3; ++i) {

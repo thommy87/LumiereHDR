@@ -3409,6 +3409,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Workflow</source>
+        <translation>Arbeitsablauf</translation>
+    </message>
+    <message>
         <source>&amp;Preset strip</source>
         <translation>&amp;Preset-Leiste</translation>
     </message>

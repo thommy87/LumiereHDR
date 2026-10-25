@@ -49,6 +49,7 @@
 #include <QDockWidget>
 #include <QImageReader>
 #include <QTabBar>
+#include <QToolBar>
 #include <QTimer>
 #include <QUndoGroup>
 #include <QUndoView>
@@ -353,13 +354,14 @@ void MainWindow::createCentralWidget() {
     m_stepBar->setImportActions(m_Ui->fileNewAction, m_Ui->fileOpenAction);
     m_stepBar->setExportAction(m_Ui->fileSaveAsAction);
 
-    QWidget *central = new QWidget;
-    QVBoxLayout *centralLayout = new QVBoxLayout(central);
-    centralLayout->setContentsMargins(0, 0, 0, 0);
-    centralLayout->setSpacing(0);
-    centralLayout->addWidget(m_stepBar);
-    centralLayout->addWidget(m_centralwidget_splitter, 1);
-    setCentralWidget(central);
+    // the workflow steps sit in the toolbar row instead of a strip of
+    // their own above the image
+    QToolBar *workflow = new QToolBar(tr("Workflow"), this);
+    workflow->setObjectName(QStringLiteral("WorkflowToolBar"));
+    workflow->addWidget(m_stepBar);
+    addToolBar(Qt::TopToolBarArea, workflow);
+    m_Ui->menuToolbars->addAction(workflow->toggleViewAction());
+    setCentralWidget(m_centralwidget_splitter);
 
     m_PreviewPanel = new PreviewPanel();
 
