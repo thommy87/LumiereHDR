@@ -48,6 +48,8 @@
 #include <QTextStream>
 #include <QDockWidget>
 #include <QImageReader>
+#include <QTabBar>
+#include <QToolBar>
 #include <QTimer>
 #include <QUndoGroup>
 #include <QUndoView>
@@ -56,6 +58,9 @@
 #include <QtConcurrentRun>
 
 #include <functional>
+#include <vector>
+#include <cmath>
+#include <algorithm>
 #include <memory>
 
 //#include <functional>
@@ -352,13 +357,14 @@ void MainWindow::createCentralWidget() {
     m_stepBar->setImportActions(m_Ui->fileNewAction, m_Ui->fileOpenAction);
     m_stepBar->setExportAction(m_Ui->fileSaveAsAction);
 
-    QWidget *central = new QWidget;
-    QVBoxLayout *centralLayout = new QVBoxLayout(central);
-    centralLayout->setContentsMargins(0, 0, 0, 0);
-    centralLayout->setSpacing(0);
-    centralLayout->addWidget(m_stepBar);
-    centralLayout->addWidget(m_centralwidget_splitter, 1);
-    setCentralWidget(central);
+    // the workflow steps sit in the toolbar row instead of a strip of
+    // their own above the image
+    QToolBar *workflow = new QToolBar(tr("Workflow"), this);
+    workflow->setObjectName(QStringLiteral("WorkflowToolBar"));
+    workflow->addWidget(m_stepBar);
+    addToolBar(Qt::TopToolBarArea, workflow);
+    m_Ui->menuToolbars->addAction(workflow->toggleViewAction());
+    setCentralWidget(m_centralwidget_splitter);
 
     m_PreviewPanel = new PreviewPanel();
 
@@ -377,6 +383,12 @@ void MainWindow::createCentralWidget() {
 
     m_tabwidget->setDocumentMode(true);
     m_tabwidget->setTabsClosable(true);
+    // equal tabs: long file names end in "..." (full name in the tooltip)
+    m_tabwidget->setElideMode(Qt::ElideRight);
+    m_tabwidget->setUsesScrollButtons(true);
+    m_tabwidget->tabBar()->setExpanding(false);
+    m_tabwidget->setStyleSheet(
+        QStringLiteral("QTabBar::tab { width: 190px; }"));
 
     m_centralwidget_splitter->addWidget(m_tonemapPanel);
     m_centralwidget_splitter->addWidget(m_bottom_splitter);
@@ -502,8 +514,6 @@ void MainWindow::createToolBar() {
     m_histogramDock = new QDockWidget(tr("Histogram"), this);
     m_histogramDock->setObjectName(QStringLiteral("HistogramDock"));
     m_histogramPanel = new HistogramPanel(m_histogramDock);
-    // compact: it should not take the whole height on the right
-    m_histogramPanel->setMaximumHeight(200);
     // coalesce bursts of changes (dragging a slider) into one update
     m_histogramTimer = new QTimer(this);
     m_histogramTimer->setSingleShot(true);
@@ -1062,6 +1072,10 @@ void MainWindow::updateActions(int w) {
     m_Ui->actionLock->setEnabled(hasImage && curr_num_ldr_open >= 1);
     m_Ui->actionShow_Image_Full_Screen->setEnabled(hasImage);
 
+    // the full name of every image, as the tab text may be cut short
+    for (int i = 0; i < m_tabwidget->count(); ++i)
+        m_tabwidget->setTabToolTip(i, m_tabwidget->tabText(i));
+
     // undo/redo follows the image that is shown
     if (g_v && !m_undoGroup->stacks().contains(g_v->undoStack()))
         m_undoGroup->addStack(g_v->undoStack());
@@ -1122,11 +1136,73 @@ void MainWindow::watchViewer(GenericViewer *viewer) {
     });
 }
 
+namespace {
+//! stops between the darkest and brightest 0.1 % of an HDR frame
+double dynamicRangeStops(const pfs::Frame *frame) {
+    const pfs::Channel *r, *g, *b;
+    frame->getXYZChannels(r, g, b);
+    if (!r || !g || !b) return 0.0;
+    std::vector<float> lum;
+    const size_t n = frame->getWidth() * frame->getHeight();
+    const size_t step = qMax<size_t>(1, n / 200000);  // a sample is enough
+    lum.reserve(n / step + 1);
+    for (size_t i = 0; i < n; i += step) {
+        const float y =
+            0.2126f * (*r)(i) + 0.7152f * (*g)(i) + 0.0722f * (*b)(i);
+        if (y > 0.f) lum.push_back(y);
+    }
+    if (lum.size() < 2) return 0.0;
+    std::sort(lum.begin(), lum.end());
+    const float lo = lum[lum.size() / 1000];
+    const float hi = lum[lum.size() - 1 - lum.size() / 1000];
+    return lo > 0.f ? std::log2(double(hi) / lo) : 0.0;
+}
+
+QString exposureText(float seconds) {
+    if (seconds <= 0.f) return QString();
+    if (seconds >= 1.f) return QStringLiteral("%1 s").arg(seconds, 0, 'g', 3);
+    return QStringLiteral("1/%1 s").arg(qRound(1.f / seconds));
+}
+}  // namespace
+
 void MainWindow::updateHistogram() {
     if (!m_histogramDock->isVisible()) return;
     GenericViewer *v =
         qobject_cast<GenericViewer *>(m_tabwidget->currentWidget());
     m_histogramPanel->setImage(v ? v->getQImage() : QImage());
+
+    QStringList info;
+    if (v && v->getFrame()) {
+        const pfs::Frame *f = v->getFrame();
+        info << tr("Size: %1 x %2 pixels").arg(f->getWidth()).arg(f->getHeight());
+        if (v->isHDR()) {
+            // the range only changes with the frame, not with the display
+            if (f != m_rangeFrame) {
+                m_rangeFrame = f;
+                m_rangeStops = dynamicRangeStops(f);
+            }
+            if (m_rangeStops > 0.0)
+                info << tr("Dynamic range: %1 stops")
+                            .arg(QLocale().toString(m_rangeStops, 'f', 1));
+            if (m_inputFilesName.size() > 1) {
+                QStringList times;
+                for (float t : m_inputExpoTimes) {
+                    const QString text = exposureText(t);
+                    if (!text.isEmpty()) times << text;
+                }
+                info << (times.isEmpty()
+                             ? tr("Merged from %1 photos")
+                                   .arg(m_inputFilesName.size())
+                             : tr("Merged from %1 photos: %2")
+                                   .arg(m_inputFilesName.size())
+                                   .arg(times.join(QStringLiteral(", "))));
+            }
+        } else if (TonemappingOptions *opts = v->getTonemappingOptions()) {
+            info << tr("Tone mapping: %1")
+                        .arg(opts->getCaption(false, QStringLiteral(", ")));
+        }
+    }
+    m_histogramPanel->setInfo(info);
 }
 
 void MainWindow::applyHdrEdit(GenericViewer *viewer, pfs::Frame *edited,

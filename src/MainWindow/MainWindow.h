@@ -345,6 +345,9 @@ class MainWindow : public QMainWindow {
     QDockWidget *m_histogramDock;
     HistogramPanel *m_histogramPanel;
     QTimer *m_histogramTimer;
+    // dynamic range of the last HDR shown, computed once per frame
+    const pfs::Frame *m_rangeFrame = nullptr;
+    double m_rangeStops = 0.0;
     void watchViewer(GenericViewer *viewer);
     void updateHistogram();
 

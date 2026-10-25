@@ -775,7 +775,17 @@ void TonemappingPanel::setSizes(int width, int height) {
     sizes.push_front(width);
     heightToWidthRatio = ((float)height) / ((float)width);
     fillCustomSizeComboBox();
-    m_Ui->sizeComboBox->setCurrentIndex(m_Ui->sizeComboBox->count() - 1);
+    // sizes run from the full width down to 256 px; the smallest made every
+    // result look blurry, so start with the largest one up to 2048 px:
+    // sharp on screen and still quick to compute
+    int start = m_Ui->sizeComboBox->count() - 1;
+    for (int i = 0; i < sizes.size(); ++i) {
+        if (sizes[i] <= 2048) {
+            start = i;
+            break;
+        }
+    }
+    m_Ui->sizeComboBox->setCurrentIndex(start);
 }
 
 void TonemappingPanel::on_defaultButton_clicked() {
