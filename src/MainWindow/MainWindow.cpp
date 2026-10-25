@@ -58,6 +58,9 @@
 #include <QtConcurrentRun>
 
 #include <functional>
+#include <vector>
+#include <cmath>
+#include <algorithm>
 #include <memory>
 
 //#include <functional>
@@ -511,8 +514,6 @@ void MainWindow::createToolBar() {
     m_histogramDock = new QDockWidget(tr("Histogram"), this);
     m_histogramDock->setObjectName(QStringLiteral("HistogramDock"));
     m_histogramPanel = new HistogramPanel(m_histogramDock);
-    // compact: it should not take the whole height on the right
-    m_histogramPanel->setMaximumHeight(200);
     // coalesce bursts of changes (dragging a slider) into one update
     m_histogramTimer = new QTimer(this);
     m_histogramTimer->setSingleShot(true);
@@ -1135,11 +1136,73 @@ void MainWindow::watchViewer(GenericViewer *viewer) {
     });
 }
 
+namespace {
+//! stops between the darkest and brightest 0.1 % of an HDR frame
+double dynamicRangeStops(const pfs::Frame *frame) {
+    const pfs::Channel *r, *g, *b;
+    frame->getXYZChannels(r, g, b);
+    if (!r || !g || !b) return 0.0;
+    std::vector<float> lum;
+    const size_t n = frame->getWidth() * frame->getHeight();
+    const size_t step = qMax<size_t>(1, n / 200000);  // a sample is enough
+    lum.reserve(n / step + 1);
+    for (size_t i = 0; i < n; i += step) {
+        const float y =
+            0.2126f * (*r)(i) + 0.7152f * (*g)(i) + 0.0722f * (*b)(i);
+        if (y > 0.f) lum.push_back(y);
+    }
+    if (lum.size() < 2) return 0.0;
+    std::sort(lum.begin(), lum.end());
+    const float lo = lum[lum.size() / 1000];
+    const float hi = lum[lum.size() - 1 - lum.size() / 1000];
+    return lo > 0.f ? std::log2(double(hi) / lo) : 0.0;
+}
+
+QString exposureText(float seconds) {
+    if (seconds <= 0.f) return QString();
+    if (seconds >= 1.f) return QStringLiteral("%1 s").arg(seconds, 0, 'g', 3);
+    return QStringLiteral("1/%1 s").arg(qRound(1.f / seconds));
+}
+}  // namespace
+
 void MainWindow::updateHistogram() {
     if (!m_histogramDock->isVisible()) return;
     GenericViewer *v =
         qobject_cast<GenericViewer *>(m_tabwidget->currentWidget());
     m_histogramPanel->setImage(v ? v->getQImage() : QImage());
+
+    QStringList info;
+    if (v && v->getFrame()) {
+        const pfs::Frame *f = v->getFrame();
+        info << tr("Size: %1 x %2 pixels").arg(f->getWidth()).arg(f->getHeight());
+        if (v->isHDR()) {
+            // the range only changes with the frame, not with the display
+            if (f != m_rangeFrame) {
+                m_rangeFrame = f;
+                m_rangeStops = dynamicRangeStops(f);
+            }
+            if (m_rangeStops > 0.0)
+                info << tr("Dynamic range: %1 stops")
+                            .arg(QLocale().toString(m_rangeStops, 'f', 1));
+            if (m_inputFilesName.size() > 1) {
+                QStringList times;
+                for (float t : m_inputExpoTimes) {
+                    const QString text = exposureText(t);
+                    if (!text.isEmpty()) times << text;
+                }
+                info << (times.isEmpty()
+                             ? tr("Merged from %1 photos")
+                                   .arg(m_inputFilesName.size())
+                             : tr("Merged from %1 photos: %2")
+                                   .arg(m_inputFilesName.size())
+                                   .arg(times.join(QStringLiteral(", "))));
+            }
+        } else if (TonemappingOptions *opts = v->getTonemappingOptions()) {
+            info << tr("Tone mapping: %1")
+                        .arg(opts->getCaption(false, QStringLiteral(", ")));
+        }
+    }
+    m_histogramPanel->setInfo(info);
 }
 
 void MainWindow::applyHdrEdit(GenericViewer *viewer, pfs::Frame *edited,

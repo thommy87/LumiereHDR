@@ -32,18 +32,30 @@ const int kMaxSide = 1000;
 HistogramPanel::HistogramPanel(QWidget *parent) : QWidget(parent) {
     m_histogram = new HistogramLDR(this);
     m_histogram->setColorHistogram(true);
+    m_histogram->setFixedHeight(120);
     m_histogram->setToolTip(
         tr("Brightness distribution of the shown image, from black on the "
            "left to white on the right. Double-click to switch between "
            "colour and grey."));
     m_highlights = new QLabel(this);
     m_shadows = new QLabel(this);
+    m_info = new QLabel(this);
+    m_info->setWordWrap(true);
+    m_info->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    m_info->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(m_histogram, 1);
     layout->addWidget(m_highlights);
     layout->addWidget(m_shadows);
+    layout->addSpacing(8);
+    layout->addWidget(m_info);
+    layout->addStretch();
     setImage(QImage());
+}
+
+void HistogramPanel::setInfo(const QStringList &lines) {
+    m_info->setText(lines.join(QLatin1Char('\n')));
 }
 
 void HistogramPanel::setImage(const QImage &source) {

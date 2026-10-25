@@ -3409,6 +3409,26 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Size: %1 x %2 pixels</source>
+        <translation>Größe: %1 x %2 Pixel</translation>
+    </message>
+    <message>
+        <source>Dynamic range: %1 stops</source>
+        <translation>Dynamikumfang: %1 Blendenstufen</translation>
+    </message>
+    <message>
+        <source>Merged from %1 photos</source>
+        <translation>Zusammengefügt aus %1 Fotos</translation>
+    </message>
+    <message>
+        <source>Merged from %1 photos: %2</source>
+        <translation>Zusammengefügt aus %1 Fotos: %2</translation>
+    </message>
+    <message>
+        <source>Tone mapping: %1</source>
+        <translation>Tonemapping: %1</translation>
+    </message>
+    <message>
         <source>Workflow</source>
         <translation>Arbeitsablauf</translation>
     </message>

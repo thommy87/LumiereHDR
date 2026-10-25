@@ -30,11 +30,14 @@ class HistogramPanel : public QWidget {
     explicit HistogramPanel(QWidget *parent = nullptr);
     //! a null image clears the panel
     void setImage(const QImage &image);
+    //! lines of facts about the shown image, under the histogram
+    void setInfo(const QStringList &lines);
 
    private:
     HistogramLDR *m_histogram;
     QLabel *m_highlights;
     QLabel *m_shadows;
+    QLabel *m_info;
 };
 
 #endif
