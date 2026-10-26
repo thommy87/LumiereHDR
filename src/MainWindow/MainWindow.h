@@ -245,7 +245,7 @@ class MainWindow : public QMainWindow {
     QSplitter *m_centralwidget_splitter;
     QSplitter *m_bottom_splitter;
 
-    QTabWidget *m_tabwidget;
+    QTabWidget *m_tabwidget = nullptr;
 
     QSignalMapper *windowMapper;
     QDialog *splash;
@@ -335,6 +335,7 @@ class MainWindow : public QMainWindow {
     TonemappingPanel *m_tonemapPanel;
     // Import -> Tone -> Export workflow bar
     StepBar *m_stepBar;
+    void applyTabStyle();
     bool m_resultSaved = false;  // Export done until the next change
     PresetStrip *m_presetStrip;
     // undo/redo of HDR edits, one stack per open image

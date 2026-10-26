@@ -396,18 +396,7 @@ void MainWindow::createCentralWidget() {
     m_tabwidget->setElideMode(Qt::ElideRight);
     m_tabwidget->setUsesScrollButtons(true);
     m_tabwidget->tabBar()->setExpanding(false);
-    // a style sheet on tabs replaces the native look entirely, so give
-    // them a complete one: clear, taller tabs from the palette (light and
-    // dark), the shown image marked with the highlight colour
-    m_tabwidget->setStyleSheet(QStringLiteral(
-        "QTabBar::tab { width: 190px; height: 30px; padding: 0 10px;"
-        " margin: 4px 2px 6px 0; border: 1px solid palette(mid);"
-        " border-radius: 6px; background: palette(button);"
-        " color: palette(button-text); }"
-        "QTabBar::tab:hover { border-color: palette(highlight); }"
-        "QTabBar::tab:selected { background: palette(highlight);"
-        " color: palette(highlighted-text); border-color: palette(highlight);"
-        " font-weight: bold; }"));
+    applyTabStyle();
 
     m_centralwidget_splitter->addWidget(m_tonemapPanel);
     m_centralwidget_splitter->addWidget(m_bottom_splitter);
@@ -1859,8 +1848,35 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 }
 
+void MainWindow::applyTabStyle() {
+    // a style sheet on tabs replaces the native look, so the tabs get a
+    // complete, quiet one: flat like the rest of the window, the shown
+    // image marked by an accent line, a small close cross with room to the
+    // tab's edge (in the colour that suits the scheme)
+    const bool dark = palette().color(QPalette::Window).lightness() < 128;
+    m_tabwidget->setStyleSheet(
+        QStringLiteral(
+            "QTabBar::tab { width: 190px; height: 28px; padding: 0 4px 0 12px;"
+            " margin: 6px 2px 4px 0; border: none;"
+            " border-bottom: 2px solid transparent; border-radius: 4px;"
+            " background: transparent; color: palette(window-text); }"
+            "QTabBar::tab:hover { background: rgba(128, 128, 128, 40); }"
+            "QTabBar::tab:selected { background: rgba(128, 128, 128, 28);"
+            " border-bottom: 2px solid palette(highlight);"
+            " border-bottom-left-radius: 0; border-bottom-right-radius: 0;"
+            " font-weight: 600; }"
+            "QTabBar::close-button { image: url(:/ui/tab-close-%1.svg);"
+            " subcontrol-position: right; width: 16px; height: 16px;"
+            " margin-right: 6px; border-radius: 3px; }"
+            "QTabBar::close-button:hover { background: rgba(128, 128, 128, 80); }")
+            .arg(dark ? QStringLiteral("dark") : QStringLiteral("light")));
+}
+
 bool MainWindow::event(QEvent *event) {
     bool result = QMainWindow::event(event);
+    // the colour scheme can change while the app runs
+    if (event->type() == QEvent::PaletteChange && m_tabwidget != nullptr)
+        applyTabStyle();
     if (event->type() == QEvent::WindowActivate && m_firstWindow == 1) {
         m_firstWindow = 2;
         if (LuminanceOptions().doShowWindowsOnWindows64Message()) {
