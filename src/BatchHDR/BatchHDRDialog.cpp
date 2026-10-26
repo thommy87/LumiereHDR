@@ -29,6 +29,8 @@
 #include <Common/CommonFunctions.h>
 
 #include <QDebug>
+
+#include <HdrWizard/HdrProfiles.h>
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
@@ -126,6 +128,8 @@ BatchHDRDialog::BatchHDRDialog(QWidget *p, QSqlDatabase db)
 
     m_Ui->inputLineEdit->setText(m_batchHdrInputDir);
     m_Ui->outputLineEdit->setText(m_batchHdrOutputDir);
+
+    hdrprofiles::label(m_Ui->profileComboBox);
 
     QSqlQueryModel model;
     model.setQuery(QStringLiteral("SELECT * FROM parameters"), m_db);

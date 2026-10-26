@@ -7036,4 +7036,51 @@ Error: %1</source>
         <translation>Preset „%1“ anwenden</translation>
     </message>
 </context>
+<context>
+    <name>HdrProfiles</name>
+    <message>
+        <source>Standard, for raw files</source>
+        <translation>Standard, für Raw-Dateien</translation>
+    </message>
+    <message>
+        <source>Standard, for JPEG/TIFF</source>
+        <translation>Standard, für JPEG/TIFF</translation>
+    </message>
+    <message>
+        <source>Smooth, less noise, for raw files</source>
+        <translation>Weich, wenig Rauschen, für Raw-Dateien</translation>
+    </message>
+    <message>
+        <source>Smooth, less noise, for JPEG/TIFF</source>
+        <translation>Weich, wenig Rauschen, für JPEG/TIFF</translation>
+    </message>
+    <message>
+        <source>Careful with highlights, for raw files</source>
+        <translation>Schonend für Lichter, für Raw-Dateien</translation>
+    </message>
+    <message>
+        <source>Careful with highlights, for JPEG/TIFF</source>
+        <translation>Schonend für Lichter, für JPEG/TIFF</translation>
+    </message>
+    <message>
+        <source>Balanced: every photo counts most in its well-exposed mid-tones. A good default.</source>
+        <translation>Ausgewogen: Jedes Foto zählt am meisten in seinen gut belichteten Mitteltönen. Eine gute Standardwahl.</translation>
+    </message>
+    <message>
+        <source>Uses a wider range of each photo, which gives smoother results with less noise.</source>
+        <translation>Nutzt einen größeren Bereich jedes Fotos, das ergibt weichere Ergebnisse mit weniger Rauschen.</translation>
+    </message>
+    <message>
+        <source>Trusts only the safest mid-tones, which helps when bright areas are blown out or shadows are noisy.</source>
+        <translation>Vertraut nur den sichersten Mitteltönen; hilft, wenn helle Bereiche ausgefressen oder Schatten verrauscht sind.</translation>
+    </message>
+    <message>
+        <source>For raw files, whose data is linear.</source>
+        <translation>Für Raw-Dateien, deren Daten linear sind.</translation>
+    </message>
+    <message>
+        <source>For JPEG or TIFF photos from the camera, which are already gamma encoded.</source>
+        <translation>Für JPEG- oder TIFF-Fotos aus der Kamera, die bereits gammakodiert sind.</translation>
+    </message>
+</context>
 </TS>
