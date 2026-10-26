@@ -180,7 +180,8 @@ bool IOWorker::write_ldr_frame(pfs::Frame *ldr_input, const QString &filename,
     std::string writerFormat;
     params.get("format", writerFormat);
     // copying EXIF rewrites the JPEG and could lose the gain map
-    if (status && writerFormat != "ultrahdr") {
+    if (status) {
+      if (writerFormat != "ultrahdr") {
         // this come from an existing HDR file, we do not have exif data
         // let's write our own tags only
         if (inputFileName == "FromHdrFile") {
@@ -221,6 +222,7 @@ bool IOWorker::write_ldr_frame(pfs::Frame *ldr_input, const QString &filename,
                                          encodedName.constData(), false,
                                          comment.toStdString(), true, false);
         }
+      }
 
         emit write_ldr_success(ldr_input, filename);
     } else {
