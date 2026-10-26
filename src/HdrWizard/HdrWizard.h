@@ -26,6 +26,7 @@
 
 #include <QDebug>
 #include <QDialog>
+#include <QLabel>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QString>
@@ -66,6 +67,10 @@ class HdrWizard : public QDialog {
     int m_agGoodImageIndex;
     bool m_processing;
     bool m_isConfigChanged;
+    // the profile follows the file type until the user picks one
+    bool m_profileChosen = false;
+    QLabel *m_profileHelp = nullptr;
+    void updateProfileHelp();
     QSqlDatabase m_db;
     QScopedPointer<HdrPreview> m_hdrPreview;
     ProgressHelper m_ph;

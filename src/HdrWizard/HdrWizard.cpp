@@ -22,11 +22,14 @@
  */
 
 #include "HdrWizard/HdrWizard.h"
+#include <HdrWizard/HdrProfiles.h>
 #include "HdrWizard/ui_HdrWizard.h"
 
 #include <cmath>
 
 #include <QDebug>
+#include <QGridLayout>
+#include <QLabel>
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
@@ -178,6 +181,23 @@ void HdrWizard::setupConnections() {
             SLOT(updateEVSpinBox(double)));
     connect(m_Ui->profileComboBox, SIGNAL(activated(int)), this,
             SLOT(predefConfigsComboBoxActivated(int)));
+
+    // plain profile names, and a line that says what the chosen one does
+    hdrprofiles::label(m_Ui->profileComboBox);
+    m_profileHelp = new QLabel(this);
+    m_profileHelp->setWordWrap(true);
+    m_profileHelp->setEnabled(false);  // secondary text colour
+    if (QGridLayout *grid = qobject_cast<QGridLayout *>(
+            m_Ui->profileComboBox->parentWidget()->layout())) {
+        grid->addWidget(m_profileHelp, grid->rowCount(), 0, 1,
+                        grid->columnCount());
+    }
+    connect(m_Ui->profileComboBox, QOverload<int>::of(&QComboBox::activated),
+            this, [this]() {
+                m_profileChosen = true;
+                updateProfileHelp();
+            });
+    updateProfileHelp();
     connect(m_Ui->customConfigCheckBox, &QAbstractButton::toggled, this,
             &HdrWizard::customConfigCheckBoxToggled);
     connect(m_Ui->weightFunctionComboBox, SIGNAL(activated(int)), this,
@@ -454,8 +474,24 @@ void HdrWizard::loadInputFiles(const QStringList &files) {
     }
 }
 
+void HdrWizard::updateProfileHelp() {
+    const int index = m_Ui->profileComboBox->currentIndex();
+    m_profileHelp->setText(index >= 0 && index <= 5 ? hdrprofiles::help(index)
+                                                    : QString());
+}
+
 void HdrWizard::loadInputFilesDone() {
     m_futureWatcher.waitForFinished();  // should breeze over...
+
+    // raw files want the linear profile, JPEG/TIFF the gamma one
+    if (!m_profileChosen && !m_Ui->customConfigCheckBox->isChecked()) {
+        const int standard = hdrprofiles::standardFor(m_inputFilesName);
+        const QString nextText = m_Ui->NextFinishButton->text();
+        m_Ui->profileComboBox->setCurrentIndex(standard);
+        predefConfigsComboBoxActivated(standard);
+        m_Ui->NextFinishButton->setText(nextText);
+        updateProfileHelp();
+    }
 
     m_Ui->progressBar->hide();
     m_Ui->loadImagesButton->setEnabled(true);
