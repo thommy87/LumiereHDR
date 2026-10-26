@@ -5288,6 +5288,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QObject</name>
     <message>
+        <source>Ultra HDR JPEG, brighter on HDR screens (*.jpg *.JPG)</source>
+        <translation>Ultra-HDR-JPEG, heller auf HDR-Bildschirmen (*.jpg *.JPG)</translation>
+    </message>
+    <message>
         <location filename="../src/HdrHTML/pfsouthdrhtml.cpp" line="76"/>
         <source>The quality must be between 1 (worst) and 5 (best).</source>
         <translation>Die Qualität muss zwischen 1 (schlechteste) und 5 (beste) liegen.</translation>

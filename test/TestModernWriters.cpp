@@ -21,6 +21,7 @@
 
 #include <cstdio>
 #include <fstream>
+#include <iterator>
 #include <string>
 
 #include "Libpfs/frame.h"
@@ -34,6 +35,11 @@
 #endif
 #ifdef HAVE_LIBWEBP
 #include "Libpfs/io/webpwriter.h"
+#endif
+#ifdef HAVE_LIBUHDR
+#include <memory>
+
+#include "Libpfs/io/ultrahdrwriter.h"
 #endif
 
 namespace {
@@ -84,4 +90,40 @@ TEST(TestModernWriters, JpegXl) { checkWriter<pfs::io::JxlWriter>("jxl"); }
 
 #ifdef HAVE_LIBWEBP
 TEST(TestModernWriters, WebP) { checkWriter<pfs::io::WebpWriter>("webp"); }
+#endif
+
+#ifdef HAVE_LIBUHDR
+TEST(TestModernWriters, UltraHdr) {
+    // result in 0..1, HDR with highlights up to 8 times brighter
+    pfs::Frame result(96, 64);
+    fillGradient(result);
+    std::shared_ptr<pfs::Frame> hdr = std::make_shared<pfs::Frame>(96, 64);
+    fillGradient(*hdr);
+    pfs::Channel *r, *g, *b;
+    hdr->getXYZChannels(r, g, b);
+    for (pfs::Channel *c : {r, g, b})
+        for (float &v : *c) v = v * v * 8.f;
+
+    const std::string path = "TestModernWriters_ultrahdr.jpg";
+    pfs::Params params("quality", (size_t)90);
+    params.set("hdr_frame", hdr);
+    pfs::io::UltraHdrWriter writer(path);
+    ASSERT_TRUE(writer.write(result, params));
+
+    std::ifstream in(path.c_str(), std::ios::binary);
+    std::string data((std::istreambuf_iterator<char>(in)),
+                     std::istreambuf_iterator<char>());
+    in.close();
+    std::remove(path.c_str());
+    ASSERT_GT(data.size(), 4u);
+    EXPECT_EQ((unsigned char)data[0], 0xFF);  // a JPEG
+    EXPECT_EQ((unsigned char)data[1], 0xD8);
+    // the gain map metadata of Ultra HDR
+    EXPECT_NE(data.find("hdrgm"), std::string::npos);
+
+    // without the HDR image there is nothing to encode
+    pfs::io::UltraHdrWriter missing(path);
+    EXPECT_THROW(missing.write(result, pfs::Params("quality", (size_t)90)),
+                 pfs::io::WriteException);
+}
 #endif

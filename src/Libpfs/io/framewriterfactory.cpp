@@ -83,6 +83,9 @@ bool FrameWriterFactory::isSupported(const std::string &format) {
 #ifdef HAVE_LIBWEBP
 #include <Libpfs/io/webpwriter.h>
 #endif
+#ifdef HAVE_LIBUHDR
+#include <Libpfs/io/ultrahdrwriter.h>
+#endif
 
 namespace pfs {
 namespace io {
@@ -105,6 +108,10 @@ FrameWriterFactory::FrameWriterCreatorMap FrameWriterFactory::sm_registry =
 #endif
 #ifdef HAVE_LIBWEBP
     ("webp", creator<WebpWriter>)
+#endif
+#ifdef HAVE_LIBUHDR
+    // chosen by the "format" parameter: the files end in .jpg
+    ("ultrahdr", creator<UltraHdrWriter>)
 #endif
     // Ibrid formats (can be both, depending on the parameters
     ("tiff", creator<TiffWriter>)("tif", creator<TiffWriter>)

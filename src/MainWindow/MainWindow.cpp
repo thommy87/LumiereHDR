@@ -127,7 +127,8 @@
 
 namespace {
 QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
-                                     QWidget *parent = 0) {
+                                     QWidget *parent = 0,
+                                     bool *ultraHdr = nullptr) {
     QString filetypes = QObject::tr("All LDR formats");
     filetypes += QLatin1String(
         " (*.jpg *.jpeg *.png *.ppm *.pbm *.bmp *.JPG *.JPEG *.PNG *.PPM *.PBM "
@@ -143,6 +144,11 @@ QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
 #endif
         ");;");
     filetypes += QLatin1String("JPEG (*.jpg *.jpeg *.JPG *.JPEG);;");
+#ifdef HAVE_LIBUHDR
+    const QString ultraHdrFilter =
+        QObject::tr("Ultra HDR JPEG, brighter on HDR screens (*.jpg *.JPG)");
+    if (ultraHdr) filetypes += ultraHdrFilter + QStringLiteral(";;");
+#endif
 #ifdef HAVE_LIBAVIF
     filetypes += QLatin1String("AVIF (*.avif *.AVIF);;");
 #endif
@@ -158,11 +164,18 @@ QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
     filetypes += QLatin1String("TIFF (*.tif *.tiff *.TIF *.TIFF)");
 
     QFileInfo qfi(suggestedFileName);
+    QString selectedFilter;
     QString outputFilename = QFileDialog::getSaveFileName(
         parent, QObject::tr("Save the LDR image as..."),
         LuminanceOptions().getDefaultPathLdrOut() + QDir::separator() +
             qfi.completeBaseName() + "." + qfi.suffix(),
-        filetypes);
+        filetypes, &selectedFilter);
+    if (ultraHdr) {
+        *ultraHdr = false;
+#ifdef HAVE_LIBUHDR
+        *ultraHdr = selectedFilter == ultraHdrFilter;
+#endif
+    }
 
     if (!outputFilename.isEmpty()) {
         QFileInfo qfi(outputFilename);
@@ -915,8 +928,11 @@ void MainWindow::on_fileSaveAsAction_triggered() {
         // QString outputFilename = getLdrFileNameFromSaveDialog(ldr_name + "_"
         // +
         // l_v->getFileNamePostFix() + ".jpg", this);
-        QString outputFilename =
-            getLdrFileNameFromSaveDialog(proposedFileName, this);
+        // Ultra HDR needs the HDR image behind the result
+        bool ultraHdr = false;
+        const bool canUltraHdr = tm_status.curr_tm_frame != nullptr;
+        QString outputFilename = getLdrFileNameFromSaveDialog(
+            proposedFileName, this, canUltraHdr ? &ultraHdr : nullptr);
 
         if (outputFilename.isEmpty()) return;
 
@@ -928,6 +944,14 @@ void MainWindow::on_fileSaveAsAction_triggered() {
         }
 
         pfs::Params p;
+        if (ultraHdr) {
+            if (format != QLatin1String("jpg") &&
+                format != QLatin1String("jpeg"))
+                outputFilename += QLatin1String(".jpg");
+            format = QStringLiteral("jpg");
+            p.set("format", std::string("ultrahdr"));
+            p.set("hdr_frame", tm_status.curr_tm_frame->getFrameShared());
+        }
         if (format == QLatin1String("png") || format == QLatin1String("jpg") ||
             format == QLatin1String("jpeg") || format == QLatin1String("avif") ||
             format == QLatin1String("jxl") || format == QLatin1String("webp")) {
