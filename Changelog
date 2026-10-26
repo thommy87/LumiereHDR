@@ -1,3 +1,9 @@
+Changes LumièreHDR 2.9.5
+NEW: export to Ultra HDR JPEG (JPEG_R): brighter highlights on HDR screens,
+     a normal JPEG everywhere else (Windows build)
+NEW: readable file name proposals: source photos, operator and preset
+NEW: the comparison window keeps its lists short (full names as tooltip)
+
 Changes LumièreHDR 2.9.4
 NEW: HDR creation profiles with plain names, an explanation and a default
      that suits the loaded files (raw or JPEG/TIFF)
