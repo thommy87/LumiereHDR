@@ -1,3 +1,7 @@
+Changes LumièreHDR 2.9.7
+FIX: Ultra HDR: only the bright parts of the scene glow, smoothly, instead of
+     shadows and edges; the gain map is much smaller
+
 Changes LumièreHDR 2.9.6
 FIX: saving an Ultra HDR JPEG reported an error although the file was written
 
