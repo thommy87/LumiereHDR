@@ -1029,6 +1029,8 @@ void TonemappingPanel::on_queueButton_clicked() {
 
 void TonemappingPanel::fillToneMappingOptions(bool exportMode) {
     m_toneMappingOptions = new TonemappingOptions;
+    m_toneMappingOptions->operatorLabel = m_Ui->cmbOperators->currentText();
+    m_toneMappingOptions->presetName = m_currentPreset;
     if (!exportMode) {
         m_toneMappingOptionsToDelete.push_back(m_toneMappingOptions);
     }

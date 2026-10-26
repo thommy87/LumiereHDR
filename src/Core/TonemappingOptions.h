@@ -67,6 +67,9 @@ class TonemappingOptions {
     // applied to the result of every operator alike
     float postbrightness;  // exposure change in stops, 0 = none
     float postcontrast;    // -1 (flat) .. 0 (none) .. +1 (strong)
+    // as shown in the tone mapping panel, for readable file names
+    QString operatorLabel;  // e.g. "Natural contrast (Mantiuk 2006)"
+    QString presetName;     // empty for own settings
     bool tonemapSelection;  // we should let do this thing to the tonemapping
                             // thread
     TMOperator tmoperator;

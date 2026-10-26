@@ -48,6 +48,7 @@
 #include <QTextStream>
 #include <QDockWidget>
 #include <QImageReader>
+#include <QRegularExpression>
 #include <QTabBar>
 #include <QToolBar>
 #include <QTimer>
@@ -907,10 +908,20 @@ void MainWindow::on_fileSaveAsAction_triggered() {
 
         if (l_v == nullptr) return;
 
-        QString ldr_name = QFileInfo(getCurrentHDRName()).baseName();
-
-        QString proposedFileName =
-            ldr_name + "_" + l_v->getFileNamePostFix() + ".jpg";
+        // source photos (first-last), the operator as shown in the panel
+        // and the preset, e.g. "IMG_1-IMG_3_Natural contrast (Mantiuk
+        // 2006)_Vivid.jpg", instead of every parameter value
+        QStringList parts;
+        parts << QFileInfo(getCurrentHDRName()).completeBaseName();
+        if (TonemappingOptions *opts = l_v->getTonemappingOptions()) {
+            if (!opts->operatorLabel.isEmpty()) parts << opts->operatorLabel;
+            if (!opts->presetName.isEmpty()) parts << opts->presetName;
+        }
+        if (parts.size() == 1) parts << l_v->getFileNamePostFix();
+        QString proposedName = parts.join(QLatin1Char('_'));
+        proposedName.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")),
+                             QStringLiteral("-"));
+        QString proposedFileName = proposedName + ".jpg";
 
         // QString outputFilename = getLdrFileNameFromSaveDialog(ldr_name + "_"
         // +
