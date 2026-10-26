@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.9.4
+NEW: HDR creation profiles with plain names, an explanation and a default
+     that suits the loaded files (raw or JPEG/TIFF)
+NEW: the active image tab uses the window colour, with its accent line
+
 Changes LumièreHDR 2.9.3
 NEW: flat image tabs with an accent line and a small close cross
 
