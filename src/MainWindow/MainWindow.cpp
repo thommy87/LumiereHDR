@@ -1861,7 +1861,7 @@ void MainWindow::applyTabStyle() {
             " border-bottom: 2px solid transparent; border-radius: 4px;"
             " background: transparent; color: palette(window-text); }"
             "QTabBar::tab:hover { background: rgba(128, 128, 128, 40); }"
-            "QTabBar::tab:selected { background: rgba(128, 128, 128, 28);"
+            "QTabBar::tab:selected { background: palette(window);"
             " border-bottom: 2px solid palette(highlight);"
             " border-bottom-left-radius: 0; border-bottom-right-radius: 0;"
             " font-weight: 600; }"
