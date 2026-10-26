@@ -1,3 +1,7 @@
+Changes LumièreHDR 2.9.9
+FIX: Ultra HDR: LumièreHDR makes the gain map itself: a smooth boost of the
+     brightest parts of each picture (up to three stops), no glowing edges
+
 Changes LumièreHDR 2.9.8
 FIX: Ultra HDR: the boost starts two stops above the scene median, so large
      skies glow too; no glowing colour edges
