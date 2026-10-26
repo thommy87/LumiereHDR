@@ -125,9 +125,19 @@ CompareDialog::CompareDialog(const QList<QPair<QString, QImage>> &images,
 
     m_leftBox = new QComboBox(this);
     m_rightBox = new QComboBox(this);
+    // long names would make the window as wide as the longest one
     for (const auto &image : m_images) {
-        m_leftBox->addItem(image.first);
-        m_rightBox->addItem(image.first);
+        QString shown = image.first;
+        if (shown.size() > 20) shown = shown.left(19) + QChar(0x2026);
+        for (QComboBox *box : {m_leftBox, m_rightBox}) {
+            box->addItem(shown);
+            box->setItemData(box->count() - 1, image.first, Qt::ToolTipRole);
+        }
+    }
+    for (QComboBox *box : {m_leftBox, m_rightBox}) {
+        box->setSizeAdjustPolicy(
+            QComboBox::AdjustToMinimumContentsLengthWithIcon);
+        box->setMinimumContentsLength(20);
     }
     m_leftBox->setCurrentIndex(left);
     m_rightBox->setCurrentIndex(right);
