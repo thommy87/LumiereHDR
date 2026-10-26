@@ -8,4 +8,8 @@
     <file>presets/photographic.txt</file>
     <file>presets/blackwhite.txt</file>
 </qresource>
+<qresource prefix="/ui">
+    <file alias="tab-close-light.svg">ui/tab-close-light.svg</file>
+    <file alias="tab-close-dark.svg">ui/tab-close-dark.svg</file>
+</qresource>
 </RCC>
