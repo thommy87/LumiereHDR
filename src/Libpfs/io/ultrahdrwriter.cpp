@@ -98,35 +98,91 @@ bool UltraHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
     if (!hr || !hg || !hb)
         throw WriteException("Ultra HDR: the HDR image has no colour data");
 
-    // HDR values are on an arbitrary scale; match them to the result in
-    // the mid-tones so that 1.0 is the result's white (203 nits) and the
-    // gain map only brightens what the HDR holds above it
+    // The HDR intent is the result itself, brightened only where the scene
+    // is really bright. Tone mappers lift shadows and darken skies locally,
+    // so the plain HDR/result ratio would light up shadows and edges; the
+    // boost follows the scene's own luminance instead: the brightest ~10 %
+    // get up to three stops more, on a smooth, coarse map so that no edge
+    // or noise flickers.
     const size_t n = width * height;
-    std::vector<float> ratios;
-    ratios.reserve(n / 16 + 1);
-    for (size_t i = 0; i < n; i += 16) {
-        const float sdr = 0.2126f * srgbToLinear(rgb[3 * i] / 255.f) +
-                          0.7152f * srgbToLinear(rgb[3 * i + 1] / 255.f) +
-                          0.0722f * srgbToLinear(rgb[3 * i + 2] / 255.f);
-        const float lum =
-            0.2126f * (*hr)(i) + 0.7152f * (*hg)(i) + 0.0722f * (*hb)(i);
-        if (sdr > 0.05f && sdr < 0.5f && lum > 0.f) ratios.push_back(sdr / lum);
+    const size_t cell = std::max<size_t>(1, std::max(width, height) / 256);
+    const size_t gw = (width + cell - 1) / cell;
+    const size_t gh = (height + cell - 1) / cell;
+    std::vector<float> grid(gw * gh, 0.f);
+    {
+        std::vector<int> count(gw * gh, 0);
+        for (size_t y = 0; y < height; ++y)
+            for (size_t x = 0; x < width; ++x) {
+                const size_t i = y * width + x;
+                const float lum = 0.2126f * (*hr)(i) + 0.7152f * (*hg)(i) +
+                                  0.0722f * (*hb)(i);
+                const size_t g = (y / cell) * gw + x / cell;
+                grid[g] += std::max(lum, 0.f);
+                ++count[g];
+            }
+        for (size_t g = 0; g < grid.size(); ++g)
+            grid[g] /= std::max(count[g], 1);
     }
-    float scale = 1.f;
-    if (!ratios.empty()) {
-        std::nth_element(ratios.begin(), ratios.begin() + ratios.size() / 2,
-                         ratios.end());
-        scale = ratios[ratios.size() / 2];
+    std::vector<float> sorted(grid);
+    std::nth_element(sorted.begin(), sorted.begin() + sorted.size() * 9 / 10,
+                     sorted.end());
+    const float reference = sorted[sorted.size() * 9 / 10];
+    const float maxBoost = 8.f;  // three stops
+    for (float &g : grid)
+        g = reference > 0.f ? std::min(std::max(g / reference, 1.f), maxBoost)
+                            : 1.f;
+    // three box blurs, close to a gaussian, horizontally and vertically
+    std::vector<float> tmp(grid.size());
+    const int radius = 2;
+    for (int pass = 0; pass < 3; ++pass) {
+        for (size_t y = 0; y < gh; ++y)
+            for (size_t x = 0; x < gw; ++x) {
+                float sum = 0.f;
+                int k = 0;
+                for (int d = -radius; d <= radius; ++d) {
+                    const long xx = long(x) + d;
+                    if (xx < 0 || xx >= long(gw)) continue;
+                    sum += grid[y * gw + size_t(xx)];
+                    ++k;
+                }
+                tmp[y * gw + x] = sum / k;
+            }
+        for (size_t y = 0; y < gh; ++y)
+            for (size_t x = 0; x < gw; ++x) {
+                float sum = 0.f;
+                int k = 0;
+                for (int d = -radius; d <= radius; ++d) {
+                    const long yy = long(y) + d;
+                    if (yy < 0 || yy >= long(gh)) continue;
+                    sum += tmp[size_t(yy) * gw + x];
+                    ++k;
+                }
+                grid[y * gw + x] = sum / k;
+            }
     }
+    auto boostAt = [&](size_t x, size_t y) {
+        // bilinear between cell centres
+        const float fx = std::min(std::max((x + 0.5f) / cell - 0.5f, 0.f),
+                                  float(gw - 1));
+        const float fy = std::min(std::max((y + 0.5f) / cell - 0.5f, 0.f),
+                                  float(gh - 1));
+        const size_t x0 = size_t(fx), y0 = size_t(fy);
+        const size_t x1 = std::min(x0 + 1, gw - 1), y1 = std::min(y0 + 1, gh - 1);
+        const float ax = fx - x0, ay = fy - y0;
+        const float top = grid[y0 * gw + x0] * (1 - ax) + grid[y0 * gw + x1] * ax;
+        const float bottom =
+            grid[y1 * gw + x0] * (1 - ax) + grid[y1 * gw + x1] * ax;
+        return top * (1 - ay) + bottom * ay;
+    };
 
     const float maxValue = 10000.f / 203.f;
     std::vector<uint16_t> half(n * 4);
     std::vector<uint8_t> rgba(n * 4);
     for (size_t i = 0; i < n; ++i) {
-        const float values[3] = {(*hr)(i), (*hg)(i), (*hb)(i)};
+        const float boost = boostAt(i % width, i / width);
         for (int c = 0; c < 3; ++c)
-            half[4 * i + c] =
-                toHalf(std::min(std::max(values[c] * scale, 0.f), maxValue));
+            half[4 * i + c] = toHalf(std::min(
+                srgbToLinear(rgb[3 * i + c] / 255.f) * boost, maxValue));
         half[4 * i + 3] = toHalf(1.f);
         rgba[4 * i] = rgb[3 * i];
         rgba[4 * i + 1] = rgb[3 * i + 1];
@@ -169,8 +225,14 @@ bool UltraHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
                                UHDR_GAIN_MAP_IMG),
           "gain map quality");
     // up to three stops above the result's white, shown on 1000-nit screens
-    check(uhdr_enc_set_min_max_content_boost(encoder.get(), 1.f, 8.f),
+    check(uhdr_enc_set_min_max_content_boost(encoder.get(), 1.f, maxBoost),
           "content boost");
+    // the boost is the same for all colours and smooth: one channel at a
+    // quarter of the size is enough and keeps the file small
+    check(uhdr_enc_set_using_multi_channel_gainmap(encoder.get(), 0),
+          "gain map channels");
+    check(uhdr_enc_set_gainmap_scale_factor(encoder.get(), 4),
+          "gain map size");
     check(uhdr_enc_set_target_display_peak_brightness(encoder.get(), 1000.f),
           "peak brightness");
 
