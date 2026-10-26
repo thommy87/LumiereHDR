@@ -60,6 +60,41 @@ float srgbToLinear(float v) {
                          : std::pow((v + 0.055f) / 1.055f, 2.4f);
 }
 
+//! the image with its colour averaged over 2x2 blocks, as a 4:2:0 JPEG
+//! stores it. The encoder compares the HDR with this version of the image;
+//! doing it beforehand keeps colour edges out of the gain map.
+std::vector<uint8_t> subsampleChroma(const std::vector<uint8_t> &rgb,
+                                     size_t width, size_t height) {
+    std::vector<uint8_t> out(rgb.size());
+    auto clamp8 = [](float v) {
+        return uint8_t(std::min(std::max(v + 0.5f, 0.f), 255.f));
+    };
+    for (size_t by = 0; by < height; by += 2)
+        for (size_t bx = 0; bx < width; bx += 2) {
+            float cb = 0.f, cr = 0.f;
+            int k = 0;
+            for (size_t y = by; y < std::min(by + 2, height); ++y)
+                for (size_t x = bx; x < std::min(bx + 2, width); ++x) {
+                    const uint8_t *p = &rgb[3 * (y * width + x)];
+                    cb += -0.168736f * p[0] - 0.331264f * p[1] + 0.5f * p[2];
+                    cr += 0.5f * p[0] - 0.418688f * p[1] - 0.081312f * p[2];
+                    ++k;
+                }
+            cb /= k;
+            cr /= k;
+            for (size_t y = by; y < std::min(by + 2, height); ++y)
+                for (size_t x = bx; x < std::min(bx + 2, width); ++x) {
+                    const size_t i = 3 * (y * width + x);
+                    const float luma = 0.299f * rgb[i] + 0.587f * rgb[i + 1] +
+                                       0.114f * rgb[i + 2];
+                    out[i] = clamp8(luma + 1.402f * cr);
+                    out[i + 1] = clamp8(luma - 0.344136f * cb - 0.714136f * cr);
+                    out[i + 2] = clamp8(luma + 1.772f * cb);
+                }
+        }
+    return out;
+}
+
 void check(const uhdr_error_info_t &status, const char *what) {
     if (status.error_code != UHDR_CODEC_OK) {
         std::string message = std::string("Ultra HDR: ") + what;
@@ -82,7 +117,8 @@ bool UltraHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
     p.parse(params);
     const size_t width = frame.getWidth();
     const size_t height = frame.getHeight();
-    const std::vector<uint8_t> rgb = toRgb8(frame, p);
+    const std::vector<uint8_t> rgb =
+        subsampleChroma(toRgb8(frame, p), frame.getWidth(), frame.getHeight());
 
     // the gain map needs the HDR at the size of the tone mapped result
     std::unique_ptr<pfs::Frame> resized;
@@ -101,9 +137,11 @@ bool UltraHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
     // The HDR intent is the result itself, brightened only where the scene
     // is really bright. Tone mappers lift shadows and darken skies locally,
     // so the plain HDR/result ratio would light up shadows and edges; the
-    // boost follows the scene's own luminance instead: the brightest ~10 %
-    // get up to three stops more, on a smooth, coarse map so that no edge
-    // or noise flickers.
+    // boost follows the scene's own luminance instead: whatever is more than
+    // two stops brighter than the scene's median (sky, lights, reflections)
+    // gets up to three stops more, on a smooth, coarse map so that no edge
+    // or noise flickers. (A fixed share such as "the brightest 10 %" fails
+    // when the sky fills a third of the picture.)
     const size_t n = width * height;
     const size_t cell = std::max<size_t>(1, std::max(width, height) / 256);
     const size_t gw = (width + cell - 1) / cell;
@@ -124,9 +162,9 @@ bool UltraHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
             grid[g] /= std::max(count[g], 1);
     }
     std::vector<float> sorted(grid);
-    std::nth_element(sorted.begin(), sorted.begin() + sorted.size() * 9 / 10,
+    std::nth_element(sorted.begin(), sorted.begin() + sorted.size() / 2,
                      sorted.end());
-    const float reference = sorted[sorted.size() * 9 / 10];
+    const float reference = 4.f * sorted[sorted.size() / 2];
     const float maxBoost = 8.f;  // three stops
     for (float &g : grid)
         g = reference > 0.f ? std::min(std::max(g / reference, 1.f), maxBoost)
