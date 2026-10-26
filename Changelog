@@ -1,3 +1,6 @@
+Changes LumièreHDR 2.9.6
+FIX: saving an Ultra HDR JPEG reported an error although the file was written
+
 Changes LumièreHDR 2.9.5
 NEW: export to Ultra HDR JPEG (JPEG_R): brighter highlights on HDR screens,
      a normal JPEG everywhere else (Windows build)
