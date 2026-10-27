@@ -209,6 +209,8 @@ class HdrCreationManager : public QObject {
    private slots:
     void ais_failed_slot(QProcess::ProcessError);
     void loadFilesDone();
+
+   private:
     // photos before a manual rotation, kept to rotate from
     QHash<int, QPair<pfs::FramePtr, QImage>> m_unrotated;
 };
