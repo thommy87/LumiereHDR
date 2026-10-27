@@ -40,7 +40,13 @@ namespace libhdr {
 //! Aligns every frame to the middle one (the usual middle exposure):
 //! finds a rotation of up to +-2 degrees and a shift for each, so that
 //! hand-held brackets line up.
-void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList);
+//! empty borders the alignment left on the photos, in pixels: there is
+//! no picture there, and merged they turn into coloured blotches
+struct AlignmentMargins {
+    int left = 0, top = 0, right = 0, bottom = 0;
+};
+
+AlignmentMargins mtb_alignment(std::vector<pfs::FramePtr> &framePtrList);
 
 //! Rotates all channels of \a frame around its centre, by \a degrees
 //! (clockwise on screen for positive values); uncovered corners become 0.

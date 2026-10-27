@@ -92,6 +92,7 @@ class EditingTools : public QDialog {
 
     void setAntiGhostingWidget(QImage *, QPair<int, int>);
     void cropAgMasks(const QRect &ca);
+    void cropEmptyBorders();
     void computeAgMask();
 
    private slots:

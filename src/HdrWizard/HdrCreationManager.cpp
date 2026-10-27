@@ -338,7 +338,25 @@ void HdrCreationManager::align_with_mtb() {
     }
 
     // run MTB
-    libhdr::mtb_alignment(frames);
+    const libhdr::AlignmentMargins margins = libhdr::mtb_alignment(frames);
+
+    // cut away the empty borders, or they merge into coloured blotches
+    const int width = int(m_data[0].frame()->getWidth());
+    const int height = int(m_data[0].frame()->getHeight());
+    const int keepW = width - margins.left - margins.right;
+    const int keepH = height - margins.top - margins.bottom;
+    if ((margins.left || margins.top || margins.right || margins.bottom) &&
+        keepW > width / 2 && keepH > height / 2) {
+        for (size_t i = 0; i < m_data.size(); ++i) {
+            pfs::FramePtr cropped(pfs::cut(m_data[i].frame().get(),
+                                           size_t(margins.left),
+                                           size_t(margins.top),
+                                           size_t(width - margins.right),
+                                           size_t(height - margins.bottom)));
+            m_data[i].frame()->swap(*cropped);
+        }
+        m_unrotated.clear();
+    }
 
     // rebuild previews
     QFutureWatcher<void> futureWatcher;

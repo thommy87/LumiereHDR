@@ -372,8 +372,9 @@ void mtbalign(const pfs::Frame &image1, const pfs::Frame &image2,
 static const double quantile = 0.5;
 static const int noise = 4;
 
-void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
-    if (framePtrList.size() <= 1) return;
+AlignmentMargins mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
+    AlignmentMargins margins;
+    if (framePtrList.size() <= 1) return margins;
 
     int width = framePtrList[0]->getWidth();
     int height = framePtrList[0]->getHeight();
@@ -427,10 +428,14 @@ void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
 
         const double degrees =
             estimateRotation(referenceLum, referenceMedian, lum, median, noise);
+        int turnX = 0, turnY = 0;  // corners a rotation leaves empty
         if (degrees != 0.0) {
             PRINT_DEBUG("Rotating image " << i << " by " << degrees);
             rotateFrame(*framePtrList[i], degrees);
             median = getLum(*framePtrList[i], lum, quantile);
+            const double s = std::fabs(std::sin(degrees * kPi / 180.0));
+            turnX = int(std::ceil(height / 2.0 * s)) + 1;
+            turnY = int(std::ceil(width / 2.0 * s)) + 1;
         }
 
         int shiftX = 0, shiftY = 0;
@@ -456,6 +461,12 @@ void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
                 pfs::shift(*framePtrList[i], -shiftX, -shiftY));
             framePtrList[i]->swap(*shiftedFrame);
         }
+        // out(x) = in(x + shiftX): a positive shift empties the right edge
+        margins.left = std::max(margins.left, turnX + std::max(0, -shiftX));
+        margins.right = std::max(margins.right, turnX + std::max(0, shiftX));
+        margins.top = std::max(margins.top, turnY + std::max(0, -shiftY));
+        margins.bottom = std::max(margins.bottom, turnY + std::max(0, shiftY));
     }
+    return margins;
 }
 }

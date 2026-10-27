@@ -29,6 +29,8 @@
 
 #include <QColorDialog>
 #include <QDebug>
+#include <algorithm>
+#include <cmath>
 #include <QToolButton>
 #include <QBoxLayout>
 #include <QApplication>
@@ -478,11 +480,44 @@ void EditingTools::computeAgMask() {
     }
 }
 
+void EditingTools::cropEmptyBorders() {
+    // shifting and turning photos by hand leaves borders without picture;
+    // merged they turn into coloured blotches, so all photos lose them
+    const QSize full = m_hcm->getData()[0].qimage().size();
+    int left = 0, top = 0, right = 0, bottom = 0;
+    const int count = std::min(m_HV_offsets.size(), m_angles.size());
+    for (int i = 0; i < count; ++i) {
+        const double s =
+            std::fabs(std::sin(m_angles[i] * 3.14159265358979 / 180.0));
+        const int turnX = int(std::ceil(full.height() / 2.0 * s)) + (s ? 1 : 0);
+        const int turnY = int(std::ceil(full.width() / 2.0 * s)) + (s ? 1 : 0);
+        const int dx = m_HV_offsets[i].first, dy = m_HV_offsets[i].second;
+        // a positive shift moves the picture right or down
+        left = std::max(left, turnX + std::max(dx, 0));
+        right = std::max(right, turnX + std::max(-dx, 0));
+        top = std::max(top, turnY + std::max(dy, 0));
+        bottom = std::max(bottom, turnY + std::max(-dy, 0));
+    }
+    if (!left && !top && !right && !bottom) return;
+    const QRect ca(left, top, full.width() - left - right,
+                   full.height() - top - bottom);
+    if (ca.width() < full.width() / 2 || ca.height() < full.height() / 2)
+        return;
+    QImage *tmp = m_previewWidget->getMask();
+    delete m_antiGhostingMasksList[m_currentAgMaskIndex];
+    m_antiGhostingMasksList.replace(m_currentAgMaskIndex, tmp);
+    cropAgMasks(ca);
+    m_hcm->cropItems(ca);
+}
+
 void EditingTools::nextClicked() {
     m_Ui->Next_Finishbutton->setEnabled(false);
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    if (!m_imagesSaved) m_hcm->applyShiftsToItems(m_HV_offsets);
+    if (!m_imagesSaved) {
+        m_hcm->applyShiftsToItems(m_HV_offsets);
+        cropEmptyBorders();
+    }
     if (m_doAutoAntighosting) {
         QStringList::ConstIterator it = m_fileList.begin();
         while (it != m_fileList.constEnd()) {
