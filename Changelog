@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.11.0
+NEW: export queue window: every fast export with its status (waiting,
+     being made, done, failed); cancel, try again, open the folder
+NEW: Ultra HDR JPEG as a format for fast export and batch tone mapping
+
 Changes LumièreHDR 2.10.5
 NEW: preset "Unedited": the merged HDR exactly as the HDR tab shows it,
      as a picture to export as JPEG, WebP and the other image formats

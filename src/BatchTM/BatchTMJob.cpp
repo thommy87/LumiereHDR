@@ -119,12 +119,21 @@ void BatchTMJob::run() {
                                        opts->getPostfix() + "." +
                                        m_ldr_output_format;
 
+            pfs::Params params = m_params;
+            std::string format;
+            params.get("format", format);
+            if (format == "ultrahdr") {
+                // the HDR goes along for the gain map; it is not freed here
+                params.set("hdr_frame",
+                           std::shared_ptr<pfs::Frame>(
+                               reference_frame.data(), [](pfs::Frame *) {}));
+            }
             if (io_worker.write_ldr_frame(
                     temporary_frame.data(), output_file_name,
                     "FromHdrFile",  // inform we tonemapped an
                                     // existing HDR with no exif
                                     // data
-                    QVector<float>(), opts, m_params)) {
+                    QVector<float>(), opts, params)) {
                 emit add_log_message(
                     tr("[T%1] Successfully saved LDR file: %2")
                         .arg(m_thread_id)

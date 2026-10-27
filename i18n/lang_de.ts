@@ -3501,6 +3501,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Ultra HDR JPEG</source>
+        <translation>Ultra-HDR-JPEG</translation>
+    </message>
+    <message>
         <source>Unedited</source>
         <translation>Unbearbeitet</translation>
     </message>
@@ -5384,6 +5388,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QObject</name>
     <message>
+        <source>Ultra HDR JPEG</source>
+        <translation>Ultra-HDR-JPEG</translation>
+    </message>
+    <message>
         <source>Ultra HDR JPEG, brighter on HDR screens (*.jpg *.JPG)</source>
         <translation>Ultra-HDR-JPEG, heller auf HDR-Bildschirmen (*.jpg *.JPG)</translation>
     </message>
@@ -6000,6 +6008,14 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 </context>
 <context>
     <name>TonemappingPanel</name>
+    <message>
+        <source>&amp;Queue...</source>
+        <translation>&amp;Warteschlange …</translation>
+    </message>
+    <message>
+        <source>Shows the pictures sent to fast export: waiting, being made, done or failed</source>
+        <translation>Zeigt die Bilder aus dem Schnellexport: wartend, in Arbeit, fertig oder fehlgeschlagen</translation>
+    </message>
     <message>
         <source>Unedited</source>
         <translation>Unbearbeitet</translation>
@@ -7185,6 +7201,85 @@ Error: %1</source>
     <message>
         <source>For JPEG or TIFF photos from the camera, which are already gamma encoded.</source>
         <translation>Für JPEG- oder TIFF-Fotos aus der Kamera, die bereits gammakodiert sind.</translation>
+    </message>
+</context>
+<context>
+    <name>ExportQueueDialog</name>
+    <message>
+        <source>Export queue</source>
+        <translation>Export-Warteschlange</translation>
+    </message>
+    <message>
+        <source>Pictures sent to &quot;Fast export&quot; are made one after the other in the background and saved to the export folder.</source>
+        <translation>Bilder aus dem „Schnellexport“ werden nacheinander im Hintergrund erstellt und im Exportordner gespeichert.</translation>
+    </message>
+    <message>
+        <source>Picture</source>
+        <translation>Bild</translation>
+    </message>
+    <message>
+        <source>Look</source>
+        <translation>Stil</translation>
+    </message>
+    <message>
+        <source>Format</source>
+        <translation>Format</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation>&amp;Abbrechen</translation>
+    </message>
+    <message>
+        <source>Stops the selected pictures that are waiting or being made</source>
+        <translation>Stoppt die ausgewählten Bilder, die warten oder gerade erstellt werden</translation>
+    </message>
+    <message>
+        <source>&amp;Try again</source>
+        <translation>&amp;Erneut versuchen</translation>
+    </message>
+    <message>
+        <source>Puts the selected failed or cancelled pictures back in line</source>
+        <translation>Stellt die ausgewählten fehlgeschlagenen oder abgebrochenen Bilder wieder in die Warteschlange</translation>
+    </message>
+    <message>
+        <source>&amp;Open folder</source>
+        <translation>Ordner ö&amp;ffnen</translation>
+    </message>
+    <message>
+        <source>Opens the folder of the selected picture, or the export folder</source>
+        <translation>Öffnet den Ordner des ausgewählten Bildes oder den Exportordner</translation>
+    </message>
+    <message>
+        <source>&amp;Remove finished</source>
+        <translation>Erledigte &amp;entfernen</translation>
+    </message>
+    <message>
+        <source>Removes done and cancelled pictures from the list; the files stay</source>
+        <translation>Entfernt fertige und abgebrochene Bilder aus der Liste; die Dateien bleiben erhalten</translation>
+    </message>
+    <message>
+        <source>Waiting</source>
+        <translation>Wartet</translation>
+    </message>
+    <message>
+        <source>Being made...</source>
+        <translation>Wird erstellt …</translation>
+    </message>
+    <message>
+        <source>Done: %1</source>
+        <translation>Fertig: %1</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation>Fehlgeschlagen</translation>
+    </message>
+    <message>
+        <source>Cancelled</source>
+        <translation>Abgebrochen</translation>
     </message>
 </context>
 </TS>
