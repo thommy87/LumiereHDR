@@ -1,3 +1,9 @@
+Changes LumièreHDR 2.10.0
+NEW: built-in alignment also corrects rotation (up to 3 degrees) and aligns
+     every photo to the middle one; switched on by default
+FIX: built-in alignment shifted photos the wrong way (since Luminance HDR)
+CHANGE: the Hugin alignment option only shows when Hugin is installed
+
 Changes LumièreHDR 2.9.9
 FIX: Ultra HDR: LumièreHDR makes the gain map itself: a smooth boost of the
      brightest parts of each picture (up to three stops), no glowing edges
