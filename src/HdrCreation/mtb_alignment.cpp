@@ -25,9 +25,12 @@
 
 #include <iso646.h>
 #include <boost/lexical_cast.hpp>
+#include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include <Common/global.h>
@@ -386,13 +389,36 @@ void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
     // brightest photo compared with the middle one directly often do not,
     // and then got thrown off by dozens of pixels.
     const size_t count = framePtrList.size();
-    const size_t middle = count / 2;
-    std::vector<size_t> order;
-    for (size_t i = middle; i-- > 0;) order.push_back(i);
-    for (size_t i = middle + 1; i < count; ++i) order.push_back(i);
+    // the photos from darkest to brightest (they may come in any order),
+    // by their average brightness
+    std::vector<double> brightness(count);
+    for (size_t i = 0; i < count; ++i) {
+        Array2D8u probe;
+        getLum(*framePtrList[i], probe, quantile);
+        double sum = 0;
+        for (const uint8_t v : probe) sum += v;
+        brightness[i] = probe.size() ? sum / probe.size() : 0;
+    }
+    std::vector<size_t> sorted(count);
+    for (size_t i = 0; i < count; ++i) sorted[i] = i;
+    std::stable_sort(sorted.begin(), sorted.end(), [&](size_t a, size_t b) {
+        return brightness[a] < brightness[b];
+    });
+    // the anchor is the best exposed one, closest to mid grey; a series
+    // with many dark photos has it off centre
+    size_t middle = count / 2;
+    for (size_t r = 0; r < count; ++r)
+        if (std::fabs(brightness[sorted[r]] - 128) <
+            std::fabs(brightness[sorted[middle]] - 128))
+            middle = r;
+    // from the anchor outwards, each photo next to an aligned one
+    std::vector<std::pair<size_t, size_t>> steps;  // photo, neighbour
+    for (size_t r = middle; r-- > 0;) steps.push_back({sorted[r], sorted[r + 1]});
+    for (size_t r = middle + 1; r < count; ++r)
+        steps.push_back({sorted[r], sorted[r - 1]});
 
-    for (const size_t i : order) {
-        const size_t neighbour = i < middle ? i + 1 : i - 1;
+    for (const auto &step : steps) {
+        const size_t i = step.first, neighbour = step.second;
         Array2D8u referenceLum;
         const int referenceMedian =
             getLum(*framePtrList[neighbour], referenceLum, quantile);
