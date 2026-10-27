@@ -1588,6 +1588,42 @@ FEHLER: Datei kann nicht gespeichert werden: %1</translation>
 <context>
     <name>EditingTools</name>
     <message>
+        <source>Remove &amp;ghosts automatically</source>
+        <translation>&amp;Geister automatisch entfernen</translation>
+    </message>
+    <message>
+        <source>Where something moved between the photos (people, cars, leaves...), only one photo is used there, so nothing appears twice. Method by O. Gallo and others, &quot;Artifact-free High Dynamic Range Imaging&quot;.</source>
+        <translation>Wo sich zwischen den Fotos etwas bewegt hat (Leute, Autos, Blätter …), wird dort nur ein Foto verwendet, damit nichts doppelt erscheint. Verfahren von O. Gallo und anderen, „Artifact-free High Dynamic Range Imaging“.</translation>
+    </message>
+    <message>
+        <source>Moving areas:</source>
+        <translation>Bewegte Bereiche:</translation>
+    </message>
+    <message>
+        <source>Detection threshold</source>
+        <translation>Erkennungsschwelle</translation>
+    </message>
+    <message>
+        <source>Show &amp;moving areas</source>
+        <translation>Bewegte Bereiche &amp;zeigen</translation>
+    </message>
+    <message>
+        <source>Marks the parts of the picture where ghosts will be removed</source>
+        <translation>Markiert die Bildteile, in denen Geister entfernt werden</translation>
+    </message>
+    <message>
+        <source>Mask by &amp;hand</source>
+        <translation>Von &amp;Hand maskieren</translation>
+    </message>
+    <message>
+        <source>Paint the areas with ghosts yourself; switch off the automatic removal first</source>
+        <translation>Bereiche mit Geistern selbst einzeichnen; dazu zuerst die automatische Entfernung ausschalten</translation>
+    </message>
+    <message>
+        <source>Mouse wheel: zoom, middle mouse button: move the view</source>
+        <translation>Mausrad: zoomen, mittlere Maustaste: Ansicht verschieben</translation>
+    </message>
+    <message>
         <source>Turns the selected movable photo, clockwise for positive values</source>
         <translation>Dreht das ausgewählte bewegliche Foto, bei positiven Werten im Uhrzeigersinn</translation>
     </message>

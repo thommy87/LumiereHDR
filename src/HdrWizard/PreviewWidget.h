@@ -241,6 +241,9 @@ class PreviewWidget : public QWidget {
 
     enum { BRUSH, PATH } m_drawingMode;
     enum { EditingMode, AntighostingMode, ViewPatches } m_mode;
+    // dragging the view with the middle mouse button
+    bool m_panning = false;
+    QPoint m_panLast;
 };
 
 #endif

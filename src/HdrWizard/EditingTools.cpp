@@ -212,7 +212,38 @@ EditingTools::EditingTools(HdrCreationManager *hcm, bool autoAg,
         ->addWidget(m_histogram);
     m_previewWidget->setFocus();
 
+    // ghost removal in plain words; the paper it comes from moves into the
+    // tooltip
+    m_Ui->label_6->hide();
+    m_Ui->label_8->hide();
+    m_Ui->autoAG_checkBox->setText(tr("Remove &ghosts automatically"));
+    m_Ui->autoAG_checkBox->setToolTip(
+        tr("Where something moved between the photos (people, cars, "
+           "leaves...), only one photo is used there, so nothing appears "
+           "twice. Method by O. Gallo and others, \"Artifact-free High "
+           "Dynamic Range Imaging\"."));
+    m_Ui->label_2->setText(tr("Moving areas:"));
+    m_Ui->label_5->setText(tr("Detection threshold"));
+    m_Ui->recomputePatches_pushButton->setText(tr("Show &moving areas"));
+    m_Ui->recomputePatches_pushButton->setToolTip(
+        tr("Marks the parts of the picture where ghosts will be removed"));
+    m_Ui->antighostToolButton->setText(tr("Mask by &hand"));
+    m_Ui->antighostToolButton->setToolTip(
+        tr("Paint the areas with ghosts yourself; switch off the automatic "
+           "removal first"));
+    m_previewWidget->setToolTip(
+        tr("Mouse wheel: zoom, middle mouse button: move the view"));
+
     m_Ui->autoAG_checkBox->setChecked(m_doAutoAntighosting);
+    // the form only enables these on a click, not on the start value
+    for (QWidget *w : {static_cast<QWidget *>(m_Ui->label_2),
+                       static_cast<QWidget *>(m_Ui->totalPatches_lineEdit),
+                       static_cast<QWidget *>(m_Ui->label_5),
+                       static_cast<QWidget *>(m_Ui->threshold_horizontalSlider),
+                       static_cast<QWidget *>(m_Ui->threshold_doubleSpinBox),
+                       static_cast<QWidget *>(
+                           m_Ui->recomputePatches_pushButton)})
+        w->setEnabled(m_doAutoAntighosting);
 
     setupConnections();
 

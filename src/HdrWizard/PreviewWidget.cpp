@@ -27,6 +27,8 @@
 #include <QApplication>
 #include <QDebug>
 #include <QPainter>
+#include <QWheelEvent>
+#include <QScrollBar>
 #include <cassert>
 
 #include "Viewers/GenericViewer.h"
@@ -308,6 +310,51 @@ void PreviewWidget::requestedBlendMode(int newindex) {
 }
 
 bool PreviewWidget::eventFilter(QObject *object, QEvent *event) {
+    // the mouse wheel zooms in steps around the pointer, to check the
+    // overlay up close
+    if (event->type() == QEvent::Wheel) {
+        const int delta = static_cast<QWheelEvent *>(event)->angleDelta().y();
+        if (delta == 0) return false;
+        const qreal step = delta > 0 ? 1.25 : 0.8;
+        const qreal next = getScaleFactor() * step;
+        if (next > 16.0 || next < 0.02) return true;
+        mScene->setSceneRect(mPixmap->boundingRect());
+        const QGraphicsView::ViewportAnchor anchor =
+            mView->transformationAnchor();
+        mView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        mView->scale(step, step);
+        mView->setTransformationAnchor(anchor);
+        // a free zoom, kept when the window changes size
+        mViewerMode = NORMAL_SIZE;
+        emit changed(this);
+        return true;
+    }
+    // while aligning, the middle button drags the view around
+    if (m_mode == EditingMode) {
+        QMouseEvent *mouse = static_cast<QMouseEvent *>(event);
+        if (event->type() == QEvent::MouseButtonPress &&
+            mouse->button() == Qt::MiddleButton) {
+            m_panning = true;
+            m_panLast = mouse->pos();
+            mView->viewport()->setCursor(Qt::ClosedHandCursor);
+            return true;
+        }
+        if (m_panning && event->type() == QEvent::MouseMove) {
+            const QPoint moved = mouse->pos() - m_panLast;
+            m_panLast = mouse->pos();
+            mView->horizontalScrollBar()->setValue(
+                mView->horizontalScrollBar()->value() - moved.x());
+            mView->verticalScrollBar()->setValue(
+                mView->verticalScrollBar()->value() - moved.y());
+            return true;
+        }
+        if (m_panning && event->type() == QEvent::MouseButtonRelease &&
+            mouse->button() == Qt::MiddleButton) {
+            m_panning = false;
+            mView->viewport()->unsetCursor();
+            return true;
+        }
+    }
     // if (m_mode == EditingMode || m_mode == ViewPatches) return false;
     if (m_mode == EditingMode) return false;
     if (event->type() == QEvent::MouseButtonPress) {
