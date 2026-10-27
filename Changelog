@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.10.3
+NEW: after merging, the new HDR is shown tone mapped with the Natural preset
+FIX: zooming in the editing tools stops at the closest and furthest view
+     instead of jumping back to the original size
+
 Changes LumièreHDR 2.10.2
 FIX: alignment works from the best exposed photo outwards, each photo
      against its neighbour; no more photos thrown off
