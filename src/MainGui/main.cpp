@@ -125,15 +125,18 @@ int main(int argc, char **argv) {
 #ifdef Q_OS_WIN
     // qInstallMessageHandler(customMessageHandler);
 
+    // the folder that holds the themes (luminance-hdr, luminance-hdr-dark),
+    // not a theme folder itself: pointing into icons/luminance-hdr hid the
+    // whole SVG theme, so the old PNG stand-ins (or nothing) were shown
     QIcon::setThemeSearchPaths(QStringList()
                                << QGuiApplication::applicationDirPath() +
-                                      QString("/icons/luminance-hdr"));
+                                      QString("/icons"));
     QIcon::setThemeName("luminance-hdr");
 #endif
 #ifdef Q_OS_MACOS
     QIcon::setThemeSearchPaths(
         QStringList() << QCoreApplication::applicationDirPath() +
-                             QString("/../Resources/icons/luminance-hdr"));
+                             QString("/../Resources/icons"));
     QIcon::setThemeName("luminance-hdr");
 #endif
 

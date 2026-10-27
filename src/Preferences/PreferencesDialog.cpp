@@ -70,6 +70,12 @@ PreferencesDialog::PreferencesDialog(QWidget *p, int tab)
     : QDialog(p), m_Ui(new Ui::PreferencesDialog) {
     m_Ui->setupUi(this);
 
+    // sharp theme icons where the bundled theme has them
+    if (QIcon::hasThemeIcon(QStringLiteral("tonemap")))
+        m_Ui->toolButtonTM->setIcon(QIcon::fromTheme(QStringLiteral("tonemap")));
+    if (QIcon::hasThemeIcon(QStringLiteral("camera-raw")))
+        m_Ui->toolButtonRAW->setIcon(
+            QIcon::fromTheme(QStringLiteral("camera-raw")));
     if (!QIcon::hasThemeIcon(QStringLiteral("color-management")))
         m_Ui->toolButtonCMS->setIcon(QIcon(":/program-icons/color-management"));
     if (!QIcon::hasThemeIcon(QStringLiteral("preferences-system-windows")))
