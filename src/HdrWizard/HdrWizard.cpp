@@ -199,6 +199,16 @@ void HdrWizard::setupConnections() {
     m_Ui->ais_radioButton->setVisible(hugin);
     m_Ui->autoCropCheckBox->setVisible(hugin);
 
+    // ghosts: on by default, and only used where something moved
+    m_Ui->autoAG_checkBox->setText(
+        tr("Remove &ghosts (moving people, cars, leaves...)"));
+    m_Ui->autoAG_checkBox->setToolTip(
+        tr("Where something moved between the photos, the merged image takes "
+           "that area from one photo only, so no transparent ghosts appear. "
+           "Without movement the photos are merged as usual."));
+    m_Ui->label_7->setText(tr("Detection threshold"));
+    m_Ui->autoAG_checkBox->setChecked(true);
+
     // plain profile names, and a line that says what the chosen one does
     hdrprofiles::label(m_Ui->profileComboBox);
     m_profileHelp = new QLabel(this);
@@ -747,7 +757,9 @@ void HdrWizard::startComputation() {
         m_agGoodImageIndex = m_hdrCreationManager->computePatches(
             m_Ui->threshold_doubleSpinBox->value(), m_patches,
             patchesPercent, HV_offsets);
-        m_doAutoAntighosting = true;
+        // on by default: when (almost) nothing moved, merge as usual and
+        // keep the full dynamic range of every photo
+        m_doAutoAntighosting = patchesPercent >= 0.5f;
     }
     if (m_doAutoAntighosting) {
         int h0;

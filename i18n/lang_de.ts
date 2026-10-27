@@ -2443,6 +2443,18 @@ ERROR: %2</source>
 <context>
     <name>HdrWizard</name>
     <message>
+        <source>Remove &amp;ghosts (moving people, cars, leaves...)</source>
+        <translation>&amp;Geister entfernen (bewegte Personen, Autos, Blätter...)</translation>
+    </message>
+    <message>
+        <source>Where something moved between the photos, the merged image takes that area from one photo only, so no transparent ghosts appear. Without movement the photos are merged as usual.</source>
+        <translation>Wo sich zwischen den Fotos etwas bewegt hat, nimmt das HDR diesen Bereich nur aus einem Foto, damit keine durchsichtigen Geister entstehen. Ohne Bewegung wird ganz normal zusammengefügt.</translation>
+    </message>
+    <message>
+        <source>Detection threshold</source>
+        <translation>Erkennungsschwelle</translation>
+    </message>
+    <message>
         <source>&amp;Built-in (shift and rotation)</source>
         <translation>&amp;Integriert (Verschiebung und Drehung)</translation>
     </message>
