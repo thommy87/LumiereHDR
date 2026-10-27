@@ -101,7 +101,8 @@ void setThreshold(const Array2D8u &in, const int threshold, const int noise,
 
 void getExpShift(const Array2D8u &img1, const int median1,
                  const Array2D8u &img2, const int median2, const int noise,
-                 const int shift_bits, int &shift_x, int &shift_y) {
+                 const int shift_bits, int &shift_x, int &shift_y,
+                 long *error = nullptr) {
     assert(img1.getCols() == img2.getCols());
     assert(img1.getRows() == img2.getRows());
 
@@ -132,7 +133,7 @@ void getExpShift(const Array2D8u &img1, const int median1,
     Array2Db img2_shifted(img2.getCols(), img2.getRows());
     Array2Db img2mask_shifted(img2.getCols(), img2.getRows());
 
-    int minerr = img1.size();
+    long minerr = long(img1.size()) + 1;
     for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
             int dx = curr_x + i;
@@ -152,8 +153,110 @@ void getExpShift(const Array2D8u &img1, const int median1,
         }
     }
 
+    if (error) *error = minerr;
+
     PRINT_DEBUG("getExpShift::Level " << shift_bits << " shift (" << shift_x
                                       << "," << shift_y << ")");
+}
+
+namespace {
+
+const double kPi = 3.14159265358979323846;
+
+//! rotation around the centre, bilinear; outside the source becomes 0
+template <typename T>
+void rotateArray(const Array2D<T> &in, double radians, Array2D<T> &out) {
+    const long w = long(in.getCols()), h = long(in.getRows());
+    out.resize(in.getCols(), in.getRows());
+    const double c = std::cos(radians), s = std::sin(radians);
+    const double cx = (w - 1) / 2.0, cy = (h - 1) / 2.0;
+    for (long y = 0; y < h; ++y)
+        for (long x = 0; x < w; ++x) {
+            // where this output pixel comes from in the input
+            const double dx = x - cx, dy = y - cy;
+            const double sx = c * dx + s * dy + cx;
+            const double sy = -s * dx + c * dy + cy;
+            const long x0 = long(std::floor(sx)), y0 = long(std::floor(sy));
+            if (x0 < 0 || y0 < 0 || x0 + 1 >= w || y0 + 1 >= h) {
+                out(size_t(x), size_t(y)) = T(0);
+                continue;
+            }
+            const double ax = sx - x0, ay = sy - y0;
+            const double v =
+                (1 - ay) * ((1 - ax) * in(size_t(x0), size_t(y0)) +
+                            ax * in(size_t(x0 + 1), size_t(y0))) +
+                ay * ((1 - ax) * in(size_t(x0), size_t(y0 + 1)) +
+                      ax * in(size_t(x0 + 1), size_t(y0 + 1)));
+            out(size_t(x), size_t(y)) = T(v);
+        }
+}
+
+//! the central part of an image, without the corners a rotation empties
+Array2D8u centre(const Array2D8u &in) {
+    const size_t mx = in.getCols() / 8, my = in.getRows() / 8;
+    Array2D8u out(in.getCols() - 2 * mx, in.getRows() - 2 * my);
+    for (size_t y = 0; y < out.getRows(); ++y)
+        for (size_t x = 0; x < out.getCols(); ++x)
+            out(x, y) = in(x + mx, y + my);
+    return out;
+}
+
+//! rotation (degrees) that best matches \a img to \a ref, or 0 when no
+//! rotation clearly helps; searched on images about 512 pixels wide
+double estimateRotation(const Array2D8u &ref, int refMedian,
+                        const Array2D8u &img, int imgMedian, int noise) {
+    const size_t longest = std::max(ref.getCols(), ref.getRows());
+    const double factor = longest > 512 ? 512.0 / longest : 1.0;
+    const size_t w = std::max<size_t>(16, size_t(ref.getCols() * factor));
+    const size_t h = std::max<size_t>(16, size_t(ref.getRows() * factor));
+    Array2D8u refSmall(w, h), imgSmall(w, h), rotated;
+    pfs::resize(ref, refSmall, BilinearInterp);
+    pfs::resize(img, imgSmall, BilinearInterp);
+    const Array2D8u refCentre = centre(refSmall);
+    const int bits = std::max(
+        int(std::floor(std::log2(double(std::min(w, h))))) - 6, 0);
+
+    auto errorAt = [&](double degrees) {
+        rotateArray(imgSmall, degrees * kPi / 180.0, rotated);
+        const Array2D8u rotatedCentre = centre(rotated);
+        int sx = 0, sy = 0;
+        long err = 0;
+        getExpShift(refCentre, refMedian, rotatedCentre, imgMedian, noise,
+                    bits, sx, sy, &err);
+        return err;
+    };
+
+    const long none = errorAt(0.0);
+    double best = 0.0;
+    long bestErr = none;
+    for (double d = -3.0; d <= 3.0001; d += 0.5) {
+        const long e = errorAt(d);
+        if (e < bestErr) {
+            bestErr = e;
+            best = d;
+        }
+    }
+    const double coarse = best;
+    for (double d = coarse - 0.4; d <= coarse + 0.4001; d += 0.1) {
+        const long e = errorAt(d);
+        if (e < bestErr) {
+            bestErr = e;
+            best = d;
+        }
+    }
+    // only rotate when it is clearly better than leaving the image as it is
+    return bestErr < 0.97 * double(none) ? best : 0.0;
+}
+
+}  // namespace
+
+void rotateFrame(pfs::Frame &frame, double degrees) {
+    const double radians = degrees * kPi / 180.0;
+    for (pfs::Channel *channel : frame.getChannels()) {
+        Array2D<float> rotated;
+        rotateArray<float>(*channel, radians, rotated);
+        std::copy(rotated.begin(), rotated.end(), channel->begin());
+    }
 }
 
 int getLum(const Frame &in, Array2D8u &out, double quantile) {
@@ -226,36 +329,38 @@ void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
     PRINT_DEBUG("width=" << width << ", height=" << height
                          << ", shift_bits=" << shift_bits);
 
-    // these arrays contain the shifts of each image (except the 0-th) wrt the
-    // previous one
-    vector<int> shiftsX(framePtrList.size() - 1);
-    vector<int> shiftsY(framePtrList.size() - 1);
+    // every frame is aligned to the middle one directly, so that errors do
+    // not add up along the series
+    const size_t reference = framePtrList.size() / 2;
+    Array2D8u referenceLum;
+    const int referenceMedian =
+        getLum(*framePtrList[reference], referenceLum, quantile);
 
-    // find the shitfs
-    for (size_t i = 0; i < framePtrList.size() - 1; i++) {
-        mtbalign(*framePtrList[i], *framePtrList[i + 1], quantile, noise,
-                 shift_bits, shiftsX[i], shiftsY[i]);
-    }
+    for (size_t i = 0; i < framePtrList.size(); ++i) {
+        if (i == reference) continue;
+        Array2D8u lum;
+        int median = getLum(*framePtrList[i], lum, quantile);
 
-    PRINT_DEBUG("shifting the images");
-    int originalsize = framePtrList.size();
+        const double degrees =
+            estimateRotation(referenceLum, referenceMedian, lum, median, noise);
+        if (degrees != 0.0) {
+            PRINT_DEBUG("Rotating image " << i << " by " << degrees);
+            rotateFrame(*framePtrList[i], degrees);
+            median = getLum(*framePtrList[i], lum, quantile);
+        }
 
-    int cumulativeX = 0;
-    int cumulativeY = 0;
-    // shift the images (apply the shifts starting from the second (index=1))
-    for (int i = 1; i < originalsize; i++) {
-        cumulativeX += shiftsX[i - 1];
-        cumulativeY += shiftsY[i - 1];
-
-        // avoid shifting if cumulativeX and cumulativeY are zero
-        if (cumulativeX || cumulativeY) {
-            PRINT_DEBUG("Cumulative shift for image "
-                        << i << " = (" << cumulativeX << "," << cumulativeY
-                        << ")");
-
+        int shiftX = 0, shiftY = 0;
+        getExpShift(referenceLum, referenceMedian, lum, median, noise,
+                    shift_bits, shiftX, shiftY);
+        if (shiftX || shiftY) {
+            PRINT_DEBUG("Shift for image " << i << " = (" << shiftX << ","
+                                           << shiftY << ")");
+            // getExpShift answers in the convention of the Array2D shift
+            // (out(x) = in(x + dx)); the Frame shift moves content the
+            // other way, so the sign flips here. Using it unflipped, as the
+            // old code did, moved frames further away instead of back.
             FramePtr shiftedFrame(
-                pfs::shift(*framePtrList[i], cumulativeX, cumulativeY));
-
+                pfs::shift(*framePtrList[i], -shiftX, -shiftY));
             framePtrList[i]->swap(*shiftedFrame);
         }
     }
