@@ -27,6 +27,7 @@
  */
 
 #include "HdrCreationManager.h"
+#include <QTransform>
 
 #include <QApplication>
 #include <QColor>
@@ -391,6 +392,32 @@ pfs::Frame *HdrCreationManager::createHdr() {
     }
 
     return outputFrame;
+}
+
+void HdrCreationManager::rotateItem(int idx, double degrees) {
+    if (idx < 0 || idx >= int(m_data.size())) return;
+    HdrCreationItem &item = m_data[idx];
+    if (!m_unrotated.contains(idx)) {
+        m_unrotated.insert(idx, qMakePair(pfs::FramePtr(pfs::copy(item.frame().get())),
+                                          item.qimage().copy()));
+    }
+    const QPair<pfs::FramePtr, QImage> &original = m_unrotated[idx];
+
+    pfs::FramePtr rotated(pfs::copy(original.first.get()));
+    if (degrees != 0.0) libhdr::rotateFrame(*rotated, degrees);
+    item.frame()->swap(*rotated);
+
+    // the preview the same way, cut back to its size around the centre
+    QImage preview = original.second;
+    if (degrees != 0.0) {
+        const QImage turned = original.second.transformed(
+            QTransform().rotate(degrees), Qt::SmoothTransformation);
+        preview = turned.copy((turned.width() - original.second.width()) / 2,
+                              (turned.height() - original.second.height()) / 2,
+                              original.second.width(),
+                              original.second.height());
+    }
+    item.qimage() = preview;
 }
 
 void HdrCreationManager::applyShiftsToItems(

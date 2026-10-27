@@ -201,51 +201,76 @@ Array2D8u centre(const Array2D8u &in) {
     return out;
 }
 
-//! rotation (degrees) that best matches \a img to \a ref, or 0 when no
-//! rotation clearly helps; searched on images about 512 pixels wide
-double estimateRotation(const Array2D8u &ref, int refMedian,
-                        const Array2D8u &img, int imgMedian, int noise) {
-    const size_t longest = std::max(ref.getCols(), ref.getRows());
-    const double factor = longest > 512 ? 512.0 / longest : 1.0;
-    const size_t w = std::max<size_t>(16, size_t(ref.getCols() * factor));
-    const size_t h = std::max<size_t>(16, size_t(ref.getRows() * factor));
-    Array2D8u refSmall(w, h), imgSmall(w, h), rotated;
-    pfs::resize(ref, refSmall, BilinearInterp);
-    pfs::resize(img, imgSmall, BilinearInterp);
-    const Array2D8u refCentre = centre(refSmall);
-    const int bits = std::max(
-        int(std::floor(std::log2(double(std::min(w, h))))) - 6, 0);
+//! the reference and the image at a reduced size, for judging rotations
+class RotationProbe {
+   public:
+    RotationProbe(const Array2D8u &ref, int refMedian, const Array2D8u &img,
+                  int imgMedian, int noise, size_t maxSide)
+        : m_refMedian(refMedian), m_imgMedian(imgMedian), m_noise(noise) {
+        const size_t longest = std::max(ref.getCols(), ref.getRows());
+        const double factor =
+            longest > maxSide ? double(maxSide) / longest : 1.0;
+        const size_t w = std::max<size_t>(16, size_t(ref.getCols() * factor));
+        const size_t h = std::max<size_t>(16, size_t(ref.getRows() * factor));
+        Array2D8u refSmall(w, h);
+        m_img.resize(w, h);
+        pfs::resize(ref, refSmall, BilinearInterp);
+        pfs::resize(img, m_img, BilinearInterp);
+        m_refCentre = centre(refSmall);
+        m_bits = std::max(
+            int(std::floor(std::log2(double(std::min(w, h))))) - 6, 0);
+    }
 
-    auto errorAt = [&](double degrees) {
-        rotateArray(imgSmall, degrees * kPi / 180.0, rotated);
+    //! mismatch after rotating by \a degrees and the best shift
+    long error(double degrees) const {
+        Array2D8u rotated;
+        rotateArray(m_img, degrees * kPi / 180.0, rotated);
         const Array2D8u rotatedCentre = centre(rotated);
         int sx = 0, sy = 0;
         long err = 0;
-        getExpShift(refCentre, refMedian, rotatedCentre, imgMedian, noise,
-                    bits, sx, sy, &err);
+        getExpShift(m_refCentre, m_refMedian, rotatedCentre, m_imgMedian,
+                    m_noise, m_bits, sx, sy, &err);
         return err;
-    };
+    }
 
-    const long none = errorAt(0.0);
+   private:
+    Array2D8u m_refCentre, m_img;
+    int m_refMedian, m_imgMedian, m_noise, m_bits = 0;
+};
+
+//! rotation (degrees) that best matches \a img to \a ref, or 0 unless a
+//! rotation helps clearly. Differently exposed photos give a noisy
+//! mismatch, which once let chance minima pass as rotations of up to 3
+//! degrees; so the search stays within +-2 degrees, the winner has to beat
+//! "no rotation" by 15 %, and a second look at twice the size has to agree.
+double estimateRotation(const Array2D8u &ref, int refMedian,
+                        const Array2D8u &img, int imgMedian, int noise) {
+    const RotationProbe coarseProbe(ref, refMedian, img, imgMedian, noise, 512);
+    const long none = coarseProbe.error(0.0);
     double best = 0.0;
     long bestErr = none;
-    for (double d = -3.0; d <= 3.0001; d += 0.5) {
-        const long e = errorAt(d);
+    for (double d = -2.0; d <= 2.0001; d += 0.25) {
+        const long e = coarseProbe.error(d);
         if (e < bestErr) {
             bestErr = e;
             best = d;
         }
     }
     const double coarse = best;
-    for (double d = coarse - 0.4; d <= coarse + 0.4001; d += 0.1) {
-        const long e = errorAt(d);
+    for (double d = coarse - 0.2; d <= coarse + 0.2001; d += 0.05) {
+        const long e = coarseProbe.error(d);
         if (e < bestErr) {
             bestErr = e;
             best = d;
         }
     }
-    // only rotate when it is clearly better than leaving the image as it is
-    return bestErr < 0.97 * double(none) ? best : 0.0;
+    if (best == 0.0 || bestErr >= 0.85 * double(none)) return 0.0;
+
+    // confirm on a larger copy before touching the photo
+    const RotationProbe fineProbe(ref, refMedian, img, imgMedian, noise, 1024);
+    if (fineProbe.error(best) >= 0.9 * double(fineProbe.error(0.0)))
+        return 0.0;
+    return best;
 }
 
 }  // namespace

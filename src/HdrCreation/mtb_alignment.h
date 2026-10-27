@@ -38,12 +38,12 @@
 namespace libhdr {
 
 //! Aligns every frame to the middle one (the usual middle exposure):
-//! finds a rotation of up to +-3 degrees and a shift for each, so that
+//! finds a rotation of up to +-2 degrees and a shift for each, so that
 //! hand-held brackets line up.
 void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList);
 
 //! Rotates all channels of \a frame around its centre, by \a degrees
-//! (counter-clockwise for positive values); uncovered corners become 0.
+//! (clockwise on screen for positive values); uncovered corners become 0.
 void rotateFrame(pfs::Frame &frame, double degrees);
 
 }  // libhdr

@@ -32,6 +32,8 @@
 #include <vector>
 
 #include <QFutureWatcher>
+#include <QHash>
+#include <QImage>
 #include <QPair>
 #include <QProcess>
 #include <QSharedPointer>
@@ -135,6 +137,9 @@ class HdrCreationManager : public QObject {
     QVector<float> getExpotimes() const;
 
     void applyShiftsToItems(const QList<QPair<int, int>> &);
+    //! turns photo \a idx to \a degrees (clockwise) from how it was
+    //! loaded or aligned, so repeated changes do not blur it
+    void rotateItem(int idx, double degrees);
     void cropItems(const QRect &ca);
     void cropAgMasks(const QRect &ca);
 
@@ -204,5 +209,7 @@ class HdrCreationManager : public QObject {
    private slots:
     void ais_failed_slot(QProcess::ProcessError);
     void loadFilesDone();
+    // photos before a manual rotation, kept to rotate from
+    QHash<int, QPair<pfs::FramePtr, QImage>> m_unrotated;
 };
 #endif
