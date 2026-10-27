@@ -29,6 +29,8 @@
 #include <QObject>
 #include <QString>
 
+#include <memory>
+
 #include <Common/global.h>
 #include <Libpfs/params.h>
 
@@ -84,6 +86,14 @@ class TMWorker : public QObject {
 
    private:
     ProgressHelper *m_Callback;
+
+    // the HDR reduced to the result size, kept for the next run: live
+    // previews would otherwise scale the full photo down on every change
+    std::unique_ptr<pfs::Frame> m_reduced;
+    const pfs::Frame *m_reducedFrom = nullptr;
+    int m_reducedWidth = 0;
+    int m_reducedMethod = -1;
+    double m_reducedFingerprint = 0;
 };
 
 #endif  // TMWORKER_H

@@ -190,6 +190,7 @@ class TonemappingPanel : public QWidget {
     ~TonemappingPanel();
     void setSizes(int, int);
     bool replaceLdr();
+    bool lastRunWasLive() const { return m_lastRunWasLive; }
     bool doAutoLevels();
     float getAutoLevelsThreshold();
     void setExportQueueSize(int);

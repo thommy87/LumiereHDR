@@ -2101,6 +2101,15 @@ void MainWindow::tonemapImage(TonemappingOptions *opts) {
     qDebug() << "Start Tone Mapping";
 #endif
 
+    // while a picture is computed, only the newest request waits; a live
+    // preview still running is out of date and is cut short. Before, every
+    // slider change queued a full run and the preview fell behind.
+    if (m_tmBusy) {
+        m_tmPending = opts;
+        if (m_tmBusyLive) emit m_TMWorker->tonemapRequestTermination(true);
+        return;
+    }
+
     // Warning when using size dependent TMOs with smaller sizes
     if ((opts->tmoperator == fattal) &&
         (opts->operator_options.fattaloptions.fftsolver == false) &&
@@ -2149,6 +2158,8 @@ void MainWindow::tonemapImage(TonemappingOptions *opts) {
 #endif
         // CALL m_TMWorker->getTonemappedFrame(hdr_viewer->getHDRPfsFrame(),
         // opts);
+        m_tmBusy = true;
+        m_tmBusyLive = m_tonemapPanel->lastRunWasLive();
         QMetaObject::invokeMethod(
             m_TMWorker, "computeTonemap", Qt::QueuedConnection,
             Q_ARG(pfs::Frame *, hdr_viewer->getFrame()),
@@ -2181,8 +2192,22 @@ void MainWindow::exportImage(TonemappingOptions *opts) {
     }
 }
 
+void MainWindow::startPendingTonemap() {
+    m_tmBusy = false;
+    if (!m_tmPending) return;
+    TonemappingOptions *next = m_tmPending;
+    m_tmPending = nullptr;
+    tonemapImage(next);
+}
+
 void MainWindow::addLdrFrame(pfs::Frame *frame,
                              TonemappingOptions *tm_options) {
+    // a live result that a newer change already replaced is not shown
+    if (m_tmBusyLive && m_tmPending) {
+        delete frame;
+        startPendingTonemap();
+        return;
+    }
     if (m_tonemapPanel->doAutoLevels()) {
         float threshold, minL, maxL, gammaL;
         threshold = m_tonemapPanel->getAutoLevelsThreshold();
@@ -2232,6 +2257,7 @@ void MainWindow::addLdrFrame(pfs::Frame *frame,
     }
     // a replaced result does not change the tab
     updateHistogram();
+    startPendingTonemap();
 }
 
 void MainWindow::tonemapFailed(const QString &error_msg) {
@@ -2243,6 +2269,8 @@ void MainWindow::tonemapFailed(const QString &error_msg) {
     m_tonemapPanel->setEnabled(true);
     m_PreviewPanel->setEnabled(true);
     m_TMProgressBar->hide();
+    // the export queue reports here too; only the preview worker frees up
+    if (sender() == m_TMWorker) startPendingTonemap();
 }
 
 /*
