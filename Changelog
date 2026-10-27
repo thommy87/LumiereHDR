@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.11.1
+FIX: the sharp SVG icons are used on Windows; a wrong search path had
+     hidden them, so blurry PNG stand-ins or no icon were shown
+NEW: SVG icons for the Tone Mapping and RAW Conversion settings pages
+
 Changes LumièreHDR 2.11.0
 NEW: export queue window: every fast export with its status (waiting,
      being made, done, failed); cancel, try again, open the folder

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22">
+ <!-- tone mapping: a tone curve in its frame -->
+ <g fill="none" stroke="#eff0f1" stroke-width="1">
+  <rect x="3.5" y="3.5" width="15" height="15" rx="1"/>
+  <path d="M4.5 17.5 C 9 17.5 8.5 11 11 11 S 13 4.5 17.5 4.5" stroke-width="1.5"/>
+ </g>
+ <circle cx="11" cy="11" r="1.6" fill="#eff0f1"/>
+</svg>
