@@ -2435,6 +2435,14 @@ ERROR: %2</source>
 <context>
     <name>HdrWizard</name>
     <message>
+        <source>&amp;Built-in (shift and rotation)</source>
+        <translation>&amp;Integriert (Verschiebung und Drehung)</translation>
+    </message>
+    <message>
+        <source>Hu&amp;gin align_image_stack</source>
+        <translation>Hu&amp;gin align_image_stack</translation>
+    </message>
+    <message>
         <location filename="../src/HdrWizard/HdrWizard.ui" line="14"/>
         <source>HDR Creation Wizard</source>
         <translation>Assistent zur HDR-Erzeugung</translation>

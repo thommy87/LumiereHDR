@@ -31,6 +31,9 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QDir>
+#include <QFileInfo>
+#include <QCoreApplication>
+#include <QStandardPaths>
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -181,6 +184,20 @@ void HdrWizard::setupConnections() {
             SLOT(updateEVSpinBox(double)));
     connect(m_Ui->profileComboBox, SIGNAL(activated(int)), this,
             SLOT(predefConfigsComboBoxActivated(int)));
+
+    // alignment: the built-in method handles shift and rotation and needs
+    // nothing else; Hugin's tool is offered only when it is installed
+    m_Ui->mtb_radioButton->setText(tr("&Built-in (shift and rotation)"));
+    m_Ui->ais_radioButton->setText(tr("Hu&gin align_image_stack"));
+    m_Ui->mtb_radioButton->setChecked(true);
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const bool hugin =
+        !QStandardPaths::findExecutable(QStringLiteral("align_image_stack"))
+             .isEmpty() ||
+        QFileInfo::exists(appDir + QStringLiteral("/hugin/align_image_stack.exe")) ||
+        QFileInfo::exists(appDir + QStringLiteral("/align_image_stack"));
+    m_Ui->ais_radioButton->setVisible(hugin);
+    m_Ui->autoCropCheckBox->setVisible(hugin);
 
     // plain profile names, and a line that says what the chosen one does
     hdrprofiles::label(m_Ui->profileComboBox);
@@ -502,6 +519,8 @@ void HdrWizard::loadInputFilesDone() {
     m_Ui->agGroupBox->setEnabled(true);
     if (m_Ui->tableWidget->rowCount() > 1) {
         m_Ui->alignCheckBox->setEnabled(true);
+        // hand-held brackets are the rule: align unless switched off
+        m_Ui->alignCheckBox->setChecked(true);
     }
 
     QApplication::restoreOverrideCursor();
