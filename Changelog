@@ -1,3 +1,9 @@
+Changes LumièreHDR 2.10.1
+FIX: automatic alignment no longer turns photos by chance; it rotates only
+     when the evidence is clear
+NEW: manual rotation of single photos in the advanced editing tools
+NEW: ghost removal is on by default and only used where something moved
+
 Changes LumièreHDR 2.10.0
 NEW: built-in alignment also corrects rotation (up to 3 degrees) and aligns
      every photo to the middle one; switched on by default
