@@ -315,18 +315,7 @@ bool PreviewWidget::eventFilter(QObject *object, QEvent *event) {
     if (event->type() == QEvent::Wheel) {
         const int delta = static_cast<QWheelEvent *>(event)->angleDelta().y();
         if (delta == 0) return false;
-        const qreal step = delta > 0 ? 1.25 : 0.8;
-        const qreal next = getScaleFactor() * step;
-        if (next > 16.0 || next < 0.02) return true;
-        mScene->setSceneRect(mPixmap->boundingRect());
-        const QGraphicsView::ViewportAnchor anchor =
-            mView->transformationAnchor();
-        mView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        mView->scale(step, step);
-        mView->setTransformationAnchor(anchor);
-        // a free zoom, kept when the window changes size
-        mViewerMode = NORMAL_SIZE;
-        emit changed(this);
+        zoomBy(delta > 0 ? 1.25 : 0.8, true);
         return true;
     }
     // while aligning, the middle button drags the view around
@@ -612,6 +601,20 @@ void PreviewWidget::setViewerMode(PreviewWidget::ViewerMode viewer_mode) {
             fillToWindow();
             break;
     }
+}
+
+void PreviewWidget::zoomBy(qreal step, bool underMouse) {
+    const qreal next = getScaleFactor() * step;
+    if (next > 16.0 || next < 0.02) return;
+    mScene->setSceneRect(mPixmap->boundingRect());
+    const QGraphicsView::ViewportAnchor anchor = mView->transformationAnchor();
+    mView->setTransformationAnchor(underMouse ? QGraphicsView::AnchorUnderMouse
+                                              : QGraphicsView::AnchorViewCenter);
+    mView->scale(step, step);
+    mView->setTransformationAnchor(anchor);
+    // a free zoom, kept when the window changes size
+    mViewerMode = NORMAL_SIZE;
+    emit changed(this);
 }
 
 void PreviewWidget::zoomIn() {

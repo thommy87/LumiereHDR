@@ -1588,6 +1588,22 @@ FEHLER: Datei kann nicht gespeichert werden: %1</translation>
 <context>
     <name>EditingTools</name>
     <message>
+        <source>Zoom &amp;In</source>
+        <translation>&amp;Vergrößern</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;Out</source>
+        <translation>Ver&amp;kleinern</translation>
+    </message>
+    <message>
+        <source>Look closer (mouse wheel up)</source>
+        <translation>Näher heran (Mausrad nach oben)</translation>
+    </message>
+    <message>
+        <source>Look from further away (mouse wheel down)</source>
+        <translation>Weiter weg (Mausrad nach unten)</translation>
+    </message>
+    <message>
         <source>Remove &amp;ghosts automatically</source>
         <translation>&amp;Geister automatisch entfernen</translation>
     </message>

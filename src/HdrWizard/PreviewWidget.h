@@ -93,6 +93,9 @@ class PreviewWidget : public QWidget {
 
     void zoomIn();
     void zoomOut();
+    //! zooms by \a step (above 1 closer), around the pointer or the
+    //! middle of the view
+    void zoomBy(qreal step, bool underMouse = false);
 
     void fitToWindow();
     void fillToWindow();

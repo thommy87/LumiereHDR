@@ -29,6 +29,8 @@
 
 #include <QColorDialog>
 #include <QDebug>
+#include <QToolButton>
+#include <QBoxLayout>
 #include <QApplication>
 #include <QLabel>
 #include <QGridLayout>
@@ -233,6 +235,43 @@ EditingTools::EditingTools(HdrCreationManager *hcm, bool autoAg,
            "removal first"));
     m_previewWidget->setToolTip(
         tr("Mouse wheel: zoom, middle mouse button: move the view"));
+
+    // zoom buttons next to fit / fill / original size
+    if (QBoxLayout *navigation = m_Ui->fitButton->parentWidget()
+                                     ->findChild<QBoxLayout *>(
+                                         QStringLiteral("_2"))) {
+        const struct {
+            const char *icon;
+            QString text, tip;
+            qreal step;
+        } zooms[] = {{"zoom-in", tr("Zoom &In"), tr("Look closer (mouse wheel up)"),
+                      1.25},
+                     {"zoom-out", tr("Zoom &Out"),
+                      tr("Look from further away (mouse wheel down)"), 0.8}};
+        for (const auto &z : zooms) {
+            QToolButton *button = new QToolButton(this);
+            button->setIcon(QIcon::fromTheme(QLatin1String(z.icon)));
+            button->setText(z.text);
+            button->setToolTip(z.tip);
+            button->setToolButtonStyle(m_Ui->fitButton->toolButtonStyle());
+            button->setSizePolicy(m_Ui->fitButton->sizePolicy());
+            button->setAutoRaise(m_Ui->fitButton->autoRaise());
+            const qreal step = z.step;
+            connect(button, &QToolButton::clicked, this, [this, step] {
+                m_Ui->fitButton->setAutoExclusive(false);
+                m_Ui->fillButton->setAutoExclusive(false);
+                m_Ui->origSizeButton->setAutoExclusive(false);
+                m_Ui->fitButton->setChecked(false);
+                m_Ui->fillButton->setChecked(false);
+                m_Ui->origSizeButton->setChecked(false);
+                m_Ui->fitButton->setAutoExclusive(true);
+                m_Ui->fillButton->setAutoExclusive(true);
+                m_Ui->origSizeButton->setAutoExclusive(true);
+                m_previewWidget->zoomBy(step);
+            });
+            navigation->addWidget(button);
+        }
+    }
 
     m_Ui->autoAG_checkBox->setChecked(m_doAutoAntighosting);
     // the form only enables these on a click, not on the start value
