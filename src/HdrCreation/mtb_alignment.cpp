@@ -355,8 +355,12 @@ void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
         if (shiftX || shiftY) {
             PRINT_DEBUG("Shift for image " << i << " = (" << shiftX << ","
                                            << shiftY << ")");
+            // getExpShift answers in the convention of the Array2D shift
+            // (out(x) = in(x + dx)); the Frame shift moves content the
+            // other way, so the sign flips here. Using it unflipped, as the
+            // old code did, moved frames further away instead of back.
             FramePtr shiftedFrame(
-                pfs::shift(*framePtrList[i], shiftX, shiftY));
+                pfs::shift(*framePtrList[i], -shiftX, -shiftY));
             framePtrList[i]->swap(*shiftedFrame);
         }
     }
