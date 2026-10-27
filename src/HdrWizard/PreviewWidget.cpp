@@ -604,8 +604,11 @@ void PreviewWidget::setViewerMode(PreviewWidget::ViewerMode viewer_mode) {
 }
 
 void PreviewWidget::zoomBy(qreal step, bool underMouse) {
-    const qreal next = getScaleFactor() * step;
-    if (next > 16.0 || next < 0.02) return;
+    const qreal current = getScaleFactor();
+    // stop at the limits: the last step only goes as far as the limit
+    const qreal next = qBound<qreal>(0.02, current * step, 16.0);
+    if (qFuzzyCompare(next, current)) return;
+    step = next / current;
     mScene->setSceneRect(mPixmap->boundingRect());
     const QGraphicsView::ViewportAnchor anchor = mView->transformationAnchor();
     mView->setTransformationAnchor(underMouse ? QGraphicsView::AnchorUnderMouse
@@ -617,39 +620,12 @@ void PreviewWidget::zoomBy(qreal step, bool underMouse) {
     emit changed(this);
 }
 
-void PreviewWidget::zoomIn() {
-    // update the current view
-    switch (mViewerMode) {
-        case NORMAL_SIZE:
-            normalSize();
-            break;
-        case FILL_WINDOW:
-            normalSize();
-            break;
-        case FIT_WINDOW:
-            fillToWindow();
-            break;
-    }
+// Ctrl+wheel and touchpad pinching land here. Zoom in steps and stop at
+// the closest and furthest view, instead of cycling through fit, fill and
+// original size and jumping back at the end.
+void PreviewWidget::zoomIn() { zoomBy(1.25, true); }
 
-    emit changed(this);
-}
-
-void PreviewWidget::zoomOut() {
-    // update the current view
-    switch (mViewerMode) {
-        case NORMAL_SIZE:
-            fillToWindow();
-            break;
-        case FILL_WINDOW:
-            fitToWindow();
-            break;
-        case FIT_WINDOW:
-            fitToWindow();
-            break;
-    }
-
-    emit changed(this);
-}
+void PreviewWidget::zoomOut() { zoomBy(0.8, true); }
 
 void PreviewWidget::updateView() {
 #ifdef QT_DEBUG

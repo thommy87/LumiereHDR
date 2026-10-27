@@ -793,9 +793,17 @@ void MainWindow::createNewHdr(const QStringList &files) {
         emit load_success(wizard->getPfsFrameHDR(), wizard->getCaptionTEXT(),
                           wizard->getInputFilesNames(), true);
         // keep what was set in the preview, instead of starting over dark
-        if (inThisWindow)
+        if (inThisWindow) {
             wizard->applyPreviewLook(
                 qobject_cast<HdrViewer *>(m_tabwidget->currentWidget()));
+            // and show a finished picture right away, as other HDR programs
+            // do: the first preset (Natural) on the new HDR
+            const QList<QPair<QString, QString>> presets =
+                m_tonemapPanel->presets();
+            if (!presets.isEmpty())
+                m_tonemapPanel->applyPresetFile(presets.first().second,
+                                                presets.first().first);
+        }
     }
 }
 
