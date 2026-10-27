@@ -151,7 +151,7 @@ ADD_TEST(TestFloatRgb TestFloatRgb)
 TARGET_LINK_LIBRARIES(TestFloatRgb Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets)
 
 ADD_EXECUTABLE(TestMTB TestMTB.cpp)
-TARGET_LINK_LIBRARIES(TestMTB common pfs hdrcreation
+TARGET_LINK_LIBRARIES(TestMTB common hdrcreation pfs
     ${GTEST_BOTH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${LIBS})
