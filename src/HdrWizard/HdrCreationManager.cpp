@@ -33,6 +33,7 @@
 #include <QColor>
 #include <QDebug>
 #include <QFile>
+#include <memory>
 #include <QFileInfo>
 #include <QScopedPointer>
 #include <QtConcurrentFilter>
@@ -570,6 +571,16 @@ pfs::Frame *HdrCreationManager::doAntiGhosting(bool patches[][agGridSize],
     ph->setValue(0);
     emit progressStarted();
 
+    // automatic: take the good photo where something moved. The gradient
+    // blend below left hard block edges and squeezed the result between its
+    // extreme values, which made it far too dark.
+    if (!manualAg) {
+        pfs::Frame *merged = mergeWithoutGhosts(patches, h0);
+        ph->setValue(100);
+        emit progressFinished();
+        return merged;
+    }
+
     float cmax[3];
     float cmin[3];
     float Max, Min;
@@ -837,6 +848,103 @@ pfs::Frame *HdrCreationManager::doAntiGhosting(bool patches[][agGridSize],
               << std::endl;
 #endif
     return deghosted;
+}
+
+pfs::Frame *HdrCreationManager::mergeWithoutGhosts(bool patches[][agGridSize],
+                                                   int h0) {
+    std::unique_ptr<pfs::Frame> merged(createHdr());
+    if (h0 < 0 || h0 >= int(m_data.size())) return merged.release();
+
+    // the good photo on its own, through the same response (Debevec, so a
+    // self-calibrating method does not relearn it from one photo)
+    std::vector<FrameEnhanced> one;
+    one.push_back(FrameEnhanced(
+        m_data[h0].frame(), std::pow(2.f, m_data[h0].getEV() - m_evOffset)));
+    std::unique_ptr<pfs::Frame> single(
+        IFusionOperator::build(DEBEVEC)->computeFusion(*m_response, *m_weight,
+                                                       one));
+
+    const int width = int(merged->getWidth());
+    const int height = int(merged->getHeight());
+    const int gridX = std::max(1, width / agGridSize);
+    const int gridY = std::max(1, height / agGridSize);
+
+    // moving patches grown by one, as people and cars reach over edges
+    float grown[agGridSize][agGridSize];
+    for (int i = 0; i < agGridSize; ++i)
+        for (int j = 0; j < agGridSize; ++j) {
+            bool any = false;
+            for (int di = -1; di <= 1 && !any; ++di)
+                for (int dj = -1; dj <= 1 && !any; ++dj) {
+                    const int ii = i + di, jj = j + dj;
+                    any = ii >= 0 && jj >= 0 && ii < agGridSize &&
+                          jj < agGridSize && patches[ii][jj];
+                }
+            grown[i][j] = any ? 1.f : 0.f;
+        }
+
+    Channel *M[3], *S[3], *G[3];
+    merged->getXYZChannels(M[0], M[1], M[2]);
+    single->getXYZChannels(S[0], S[1], S[2]);
+    m_data[h0].frame()->getXYZChannels(G[0], G[1], G[2]);
+
+    // how much of the good photo to use: the patch grid read smoothly
+    // between patch centres, and only where that photo is neither black
+    // nor blown out
+    std::vector<float> share(size_t(width) * height);
+    for (int y = 0; y < height; ++y) {
+        float fy = (y + 0.5f) / gridY - 0.5f;
+        fy = std::min(std::max(fy, 0.f), float(agGridSize - 1));
+        const int j0 = std::min(int(fy), agGridSize - 2);
+        const float ay = std::min(fy - j0, 1.f);
+        for (int x = 0; x < width; ++x) {
+            float fx = (x + 0.5f) / gridX - 0.5f;
+            fx = std::min(std::max(fx, 0.f), float(agGridSize - 1));
+            const int i0 = std::min(int(fx), agGridSize - 2);
+            const float ax = std::min(fx - i0, 1.f);
+            const float moved =
+                (1 - ay) * ((1 - ax) * grown[i0][j0] + ax * grown[i0 + 1][j0]) +
+                ay * ((1 - ax) * grown[i0][j0 + 1] + ax * grown[i0 + 1][j0 + 1]);
+            const size_t k = size_t(y) * width + x;
+            const float brightest =
+                std::max((*G[0])(k), std::max((*G[1])(k), (*G[2])(k)));
+            const float trust =
+                std::min(std::max(std::min(brightest / 0.03f,
+                                           (0.97f - brightest) / 0.07f),
+                                  0.f),
+                         1.f);
+            share[k] = moved * trust;
+        }
+    }
+
+    // both are linear but scaled differently; match them where nothing
+    // moved and the good photo is well exposed
+    std::vector<float> ratios;
+    for (size_t k = 0; k < share.size(); k += 7) {
+        if (share[k] > 0.f) continue;
+        const float brightest =
+            std::max((*G[0])(k), std::max((*G[1])(k), (*G[2])(k)));
+        if (brightest < 0.1f || brightest > 0.9f) continue;
+        const float s = (*S[1])(k), m = (*M[1])(k);
+        if (s > 1e-9f && m > 1e-9f && std::isfinite(s) && std::isfinite(m))
+            ratios.push_back(m / s);
+    }
+    float scale = 1.f;
+    if (!ratios.empty()) {
+        std::nth_element(ratios.begin(), ratios.begin() + ratios.size() / 2,
+                         ratios.end());
+        scale = ratios[ratios.size() / 2];
+    }
+
+    for (int c = 0; c < 3; ++c)
+        for (size_t k = 0; k < share.size(); ++k) {
+            const float a = share[k];
+            if (a <= 0.f) continue;
+            const float s = scale * (*S[c])(k);
+            if (!std::isfinite(s)) continue;
+            (*M[c])(k) = (1.f - a) * (*M[c])(k) + a * s;
+        }
+    return merged.release();
 }
 
 void HdrCreationManager::getAgData(bool patches[][agGridSize], int &h0) {
