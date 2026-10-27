@@ -361,6 +361,12 @@ class MainWindow : public QMainWindow {
     // TM thread
     QThread *m_TMThread;
     TMWorker *m_TMWorker;
+    // one tone mapping at a time; while it runs only the newest request
+    // waits, older ones are dropped
+    bool m_tmBusy = false;
+    bool m_tmBusyLive = false;
+    TonemappingOptions *m_tmPending = nullptr;
+    void startPendingTonemap();
     TMOProgressIndicator *m_TMProgressBar;
 
     // Export queue

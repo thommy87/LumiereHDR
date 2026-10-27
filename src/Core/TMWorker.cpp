@@ -77,7 +77,11 @@ pfs::Frame *TMWorker::computeTonemap(/* const */ pfs::Frame *in_frame,
 #endif
 
     pfs::Frame *working_frame = preprocessFrame(in_frame, tm_options, m);
-    if (working_frame == nullptr) return nullptr;
+    if (working_frame == nullptr) {
+        // the window waits for an answer before it starts the next run
+        emit tonemapFailed(QStringLiteral("Canceled"));
+        return nullptr;
+    }
     try {
         tonemapFrame(working_frame, tm_options);
     } catch (...) {
@@ -177,6 +181,20 @@ void TMWorker::tonemapFrame(pfs::Frame *working_frame,
     delete tmEngine;
 }
 
+namespace {
+//! a cheap summary of the pixels, to notice a picture changed in place
+double frameFingerprint(const pfs::Frame &frame) {
+    double sum = double(frame.getWidth()) * 131 + frame.getHeight();
+    for (const pfs::Channel *channel : frame.getChannels()) {
+        const size_t size = channel->size();
+        const size_t stride = std::max<size_t>(1, size / 4096);
+        for (size_t i = 0; i < size; i += stride)
+            sum = sum * 1.0000001 + (*channel)(i);
+    }
+    return sum;
+}
+}  // namespace
+
 pfs::Frame *TMWorker::preprocessFrame(pfs::Frame *input_frame,
                                       TonemappingOptions *tm_options,
                                       InterpolationMethod m) {
@@ -193,8 +211,19 @@ pfs::Frame *TMWorker::preprocessFrame(pfs::Frame *input_frame,
                                  tm_options->selection_x_bottom_right,
                                  tm_options->selection_y_bottom_right);
     } else if (tm_options->xsize != tm_options->origxsize) {
-        // workingframe = "resize"
-        working_frame = pfs::resize(input_frame, tm_options->xsize, m);
+        // workingframe = "resize", from the kept copy when it still fits:
+        // same picture (also checked by content), same size, same method
+        const double fingerprint = frameFingerprint(*input_frame);
+        if (!m_reduced || m_reducedFrom != input_frame ||
+            m_reducedWidth != tm_options->xsize || m_reducedMethod != int(m) ||
+            m_reducedFingerprint != fingerprint) {
+            m_reduced.reset(pfs::resize(input_frame, tm_options->xsize, m));
+            m_reducedFrom = input_frame;
+            m_reducedWidth = tm_options->xsize;
+            m_reducedMethod = int(m);
+            m_reducedFingerprint = fingerprint;
+        }
+        working_frame = pfs::copy(m_reduced.get());
     } else {
         // workingframe = "full res"
         working_frame = pfs::copy(input_frame);

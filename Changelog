@@ -1,3 +1,9 @@
+Changes LumièreHDR 2.10.4
+FIX: live preview keeps up: only the newest change is computed, an
+     outdated preview is cut short instead of queuing behind
+FIX: the HDR reduced to the result size is kept between previews instead
+     of being scaled down again on every change
+
 Changes LumièreHDR 2.10.3
 NEW: after merging, the new HDR is shown tone mapped with the Natural preset
 FIX: zooming in the editing tools stops at the closest and furthest view
