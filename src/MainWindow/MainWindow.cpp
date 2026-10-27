@@ -2234,6 +2234,45 @@ void MainWindow::queueExportJob(int id) {
                               Qt::QueuedConnection, Q_ARG(ExportJobPtr, job));
 }
 
+void MainWindow::showUnedited() {
+    HdrViewer *hdr = qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
+    if (!hdr) return;
+    pfs::Frame *source = hdr->getFrame();
+    pfs::Channel *in[3];
+    source->getXYZChannels(in[0], in[1], in[2]);
+    if (!in[0] || !in[1] || !in[2]) return;
+
+    // the same mapping as the HDR tab's display, kept in floating point
+    pfs::Frame *picture =
+        new pfs::Frame(source->getWidth(), source->getHeight());
+    pfs::Channel *out[3];
+    picture->createXYZChannels(out[0], out[1], out[2]);
+    const auto map = pfs::utils::chain(
+        pfs::colorspace::Normalizer(hdr->getMinLuminanceValue(),
+                                    hdr->getMaxLuminanceValue()),
+        pfs::utils::chain(pfs::utils::CLAMP_F32,
+                          Remapper<float>(hdr->getLuminanceMappingMethod())));
+    for (int c = 0; c < 3; ++c)
+        std::transform(in[c]->begin(), in[c]->end(), out[c]->begin(), map);
+
+    TonemappingOptions *opts = new TonemappingOptions;
+    opts->operatorLabel = tr("Unedited");
+    opts->presetName = tr("Unedited");
+    opts->origxsize = opts->xsize = int(source->getWidth());
+    // shown as it is: no automatic levels
+    m_showingUnedited = true;
+    addLdrFrame(picture, opts);
+    m_showingUnedited = false;
+}
+
+void MainWindow::startPendingTonemap() {
+    m_tmBusy = false;
+    if (!m_tmPending) return;
+    TonemappingOptions *next = m_tmPending;
+    m_tmPending = nullptr;
+    tonemapImage(next);
+}
+
 void MainWindow::addLdrFrame(pfs::Frame *frame,
                              TonemappingOptions *tm_options) {
     // a live result that a newer change already replaced is not shown
