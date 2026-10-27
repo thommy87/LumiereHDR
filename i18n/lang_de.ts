@@ -1588,6 +1588,14 @@ FEHLER: Datei kann nicht gespeichert werden: %1</translation>
 <context>
     <name>EditingTools</name>
     <message>
+        <source>Turns the selected movable photo, clockwise for positive values</source>
+        <translation>Dreht das ausgewählte bewegliche Foto, bei positiven Werten im Uhrzeigersinn</translation>
+    </message>
+    <message>
+        <source>&amp;Rotation:</source>
+        <translation>&amp;Drehung:</translation>
+    </message>
+    <message>
         <location filename="../src/HdrWizard/EditingTools.cpp" line="546"/>
         <source>Maskable</source>
         <translation>Maskierbar</translation>

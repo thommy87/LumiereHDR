@@ -39,6 +39,8 @@
 class HistogramLDR;
 class PanIconWidget;
 
+class QDoubleSpinBox;
+
 namespace Ui {
 class EditingToolsDialog;
 }
@@ -71,6 +73,8 @@ class EditingTools : public QDialog {
     PreviewWidget *m_previewWidget;
     int m_additionalShiftValue;
     QList<QPair<int, int>> m_HV_offsets;
+    QList<double> m_angles;  // manual rotation of each photo, degrees
+    QDoubleSpinBox *m_rotationSB = nullptr;
     HistogramLDR *m_histogram;
     QSize m_previousPreviewWidgetSize;
     bool m_imagesSaved;
@@ -101,6 +105,7 @@ class EditingTools : public QDialog {
     void horizShiftChanged(int);
     void vertShiftChanged(int);
     void resetCurrent();
+    void rotationChanged(double degrees);
     void resetAll();
     void prevLeft();
     void nextLeft();

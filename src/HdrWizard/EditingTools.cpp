@@ -29,6 +29,10 @@
 
 #include <QColorDialog>
 #include <QDebug>
+#include <QApplication>
+#include <QLabel>
+#include <QGridLayout>
+#include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QWhatsThis>
@@ -109,6 +113,29 @@ EditingTools::EditingTools(HdrCreationManager *hcm, bool autoAg,
     m_antiGhostingMask->fill(qRgba(0, 0, 0, 0));
 
     m_expotimes = m_hcm->getExpotimes();
+
+    // fine rotation of single photos, next to the horizontal and vertical
+    // shift; the automatic alignment may leave a slight tilt
+    for (int h = 0; h < size; h++) m_angles.append(0.0);
+    m_rotationSB = new QDoubleSpinBox(this);
+    m_rotationSB->setRange(-5.0, 5.0);
+    m_rotationSB->setSingleStep(0.05);
+    m_rotationSB->setDecimals(2);
+    m_rotationSB->setSuffix(QStringLiteral("\u00B0"));
+    m_rotationSB->setToolTip(
+        tr("Turns the selected movable photo, clockwise for positive "
+           "values"));
+    if (QGridLayout *shiftGrid =
+            m_Ui->vertShiftSB->parentWidget()->findChild<QGridLayout *>(
+                QStringLiteral("_13"))) {
+        QLabel *label = new QLabel(tr("&Rotation:"), this);
+        label->setBuddy(m_rotationSB);
+        const int row = shiftGrid->rowCount();
+        shiftGrid->addWidget(label, row, 0);
+        shiftGrid->addWidget(m_rotationSB, row, 1);
+    }
+    connect(m_rotationSB, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &EditingTools::rotationChanged);
 
     // m_Ui->toolOptionsFrame->setVisible(false);
     m_Ui->maskColorButton->setVisible(false);
@@ -416,6 +443,11 @@ void EditingTools::updateMovable(int newidx) {
     m_Ui->horizShiftSB->blockSignals(true);
     m_Ui->horizShiftSB->setValue(m_HV_offsets[newidx].first);
     m_Ui->horizShiftSB->blockSignals(false);
+    if (m_rotationSB && newidx < m_angles.size()) {
+        m_rotationSB->blockSignals(true);
+        m_rotationSB->setValue(m_angles[newidx]);
+        m_rotationSB->blockSignals(false);
+    }
     m_Ui->vertShiftSB->blockSignals(true);
     m_Ui->vertShiftSB->setValue(m_HV_offsets[newidx].second);
     m_Ui->vertShiftSB->blockSignals(false);
@@ -459,9 +491,21 @@ void EditingTools::horizShiftChanged(int v) {
     m_previewWidget->updatePreviewImage();
 }
 
+void EditingTools::rotationChanged(double degrees) {
+    const int idx = m_Ui->movableListWidget->currentRow();
+    if (idx < 0 || idx >= m_angles.size()) return;
+    m_angles[idx] = degrees;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    m_hcm->rotateItem(idx, degrees);
+    QApplication::restoreOverrideCursor();
+    updateMovable(idx);
+    m_previewWidget->update();
+}
+
 void EditingTools::resetCurrent() {
     m_Ui->horizShiftSB->setValue(0);
     m_Ui->vertShiftSB->setValue(0);
+    if (m_rotationSB) m_rotationSB->setValue(0.0);
     //    m_previewWidget->updateVertShiftMovable(0);
     //    m_previewWidget->updateHorizShiftMovable(0);
 }
