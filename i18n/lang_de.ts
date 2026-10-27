@@ -1829,7 +1829,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/HdrWizard/EditingTools.ui" line="730"/>
         <source>Anti Ghosting</source>
-        <translation type="unfinished"/>
+        <translation>Geisterentfernung</translation>
     </message>
     <message>
         <location filename="../src/HdrWizard/EditingTools.ui" line="759"/>
@@ -2387,6 +2387,10 @@ ERROR: %2</source>
 <context>
     <name>HdrPreview</name>
     <message>
+        <source>Accept This HDR</source>
+        <translation>Dieses HDR übernehmen</translation>
+    </message>
+    <message>
         <location filename="../src/HdrWizard/HdrPreview.ui" line="14"/>
         <source>HDR Preview</source>
         <translation>HDR-Vorschau</translation>
@@ -2442,6 +2446,14 @@ ERROR: %2</source>
 </context>
 <context>
     <name>HdrWizard</name>
+    <message>
+        <source>&amp;Compute HDR</source>
+        <translation>HDR &amp;berechnen</translation>
+    </message>
+    <message>
+        <source>&amp;Accept This HDR</source>
+        <translation>Dieses HDR &amp;übernehmen</translation>
+    </message>
     <message>
         <source>Remove &amp;ghosts (moving people, cars, leaves...)</source>
         <translation>&amp;Geister entfernen (bewegte Personen, Autos, Blätter...)</translation>

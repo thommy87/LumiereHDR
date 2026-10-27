@@ -215,6 +215,10 @@ EditingTools::EditingTools(HdrCreationManager *hcm, bool autoAg,
     m_Ui->autoAG_checkBox->setChecked(m_doAutoAntighosting);
 
     setupConnections();
+
+    // start with both photos laid over each other; the difference view
+    // looks like a negative to anyone who does not know it
+    m_Ui->blendModeCB->setCurrentIndex(1);
 }  // end of constructor
 
 void EditingTools::setupConnections() {

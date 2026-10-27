@@ -85,6 +85,10 @@ class HdrWizard : public QDialog {
     //! \brief get the current PFS Frame
     pfs::Frame *getPfsFrameHDR() { pfs::Frame *toReturn = pfs::copy(m_pfsFrameHDR.get()); return toReturn; }
 
+    //! shows the new HDR in \a target the way it looked in the preview
+    //! (mapping and brightness range)
+    void applyPreviewLook(HdrViewer *target) const;
+
     //! \brief return the caption text
     QString getCaptionTEXT();
     QStringList getInputFilesNames();

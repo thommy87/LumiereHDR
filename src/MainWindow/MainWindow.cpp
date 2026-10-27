@@ -789,8 +789,13 @@ void MainWindow::createNewHdr(const QStringList &files) {
         new HdrWizard(this, files, m_inputFilesName, m_inputExpoTimes,
                       QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection())));
     if (wizard->exec() == QDialog::Accepted) {
+        const bool inThisWindow = !tm_status.is_hdr_ready;
         emit load_success(wizard->getPfsFrameHDR(), wizard->getCaptionTEXT(),
                           wizard->getInputFilesNames(), true);
+        // keep what was set in the preview, instead of starting over dark
+        if (inThisWindow)
+            wizard->applyPreviewLook(
+                qobject_cast<HdrViewer *>(m_tabwidget->currentWidget()));
     }
 }
 
