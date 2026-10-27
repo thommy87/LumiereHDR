@@ -28,8 +28,6 @@ env:
 jobs:
   linux:
     name: Linux (${{ matrix.name }})
-    # a pull request from a branch here was already built by its push
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -132,7 +130,6 @@ jobs:
 
   fuzz:
     name: Fuzz Radiance reader
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -182,7 +179,6 @@ jobs:
 
   windows:
     name: Windows (MSYS2 UCRT64)
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: windows-latest
     defaults:
       run:
