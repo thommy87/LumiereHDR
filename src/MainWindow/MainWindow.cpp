@@ -94,6 +94,7 @@
 
 #include <TransplantExif/TransplantExifDialog.h>
 #include <Viewers/HdrViewer.h>
+#include "MainWindow/ExportQueueDialog.h"
 #include <Libpfs/utils/clamp.h>
 #include <Libpfs/utils/chain.h>
 #include <Libpfs/colorspace/rgbremapper.h>
@@ -318,6 +319,7 @@ void MainWindow::init() {
         qRegisterMetaType<QVector<float>>("QVector<float>");
         qRegisterMetaType<pfs::Params>("pfs::Params");
         qRegisterMetaType<pfs::Params *>("pfs::Params*");
+        qRegisterMetaType<ExportJobPtr>("ExportJobPtr");
         qRegisterMetaType<InterpolationMethod>("InterpolationMethod");
     }
 
@@ -2076,6 +2078,26 @@ void MainWindow::setupQueue() {
     connect(m_QueueProgressBar, &TMOProgressIndicator::terminate, m_QueueWorker,
             &TMWorker::tonemapRequestTermination, Qt::DirectConnection);
 
+    m_exportQueue = new ExportQueueDialog(this);
+    connect(m_QueueWorker, &TMWorker::exportJobStarted, m_exportQueue,
+            &ExportQueueDialog::jobStarted);
+    connect(m_QueueWorker, &TMWorker::exportJobFinished, this,
+            [this](int id, const QString &file, int result) {
+                m_exportQueue->jobFinished(id, file, result);
+                // a written picture no longer needs its HDR kept
+                if (result == 0) m_exportJobs.remove(id);
+                m_tonemapPanel->setExportQueueSize(m_exportQueue->openJobs());
+            });
+    connect(m_exportQueue, &ExportQueueDialog::cancelRequested, this,
+            [this](int id) { m_QueueWorker->cancelExportJob(id); });
+    connect(m_exportQueue, &ExportQueueDialog::retryRequested, this,
+            &MainWindow::queueExportJob);
+    connect(m_tonemapPanel, &TonemappingPanel::showExportQueue, this, [this]() {
+        m_exportQueue->show();
+        m_exportQueue->raise();
+        m_exportQueue->activateWindow();
+    });
+
     // start thread waiting for signals (I/O requests)
     m_QueueThread->start();
 }
@@ -2098,7 +2120,6 @@ void MainWindow::exportBegin() {
 }
 
 void MainWindow::exportEnd() {
-    m_tonemapPanel->setExportQueueSize(--m_exportQueueSize);
     m_QueueProgressBar->hide();
     m_QueueProgressBar->reset();
 }
@@ -2177,65 +2198,40 @@ void MainWindow::tonemapImage(TonemappingOptions *opts) {
 
 void MainWindow::exportImage(TonemappingOptions *opts) {
     HdrViewer *hdr_viewer = qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
-    if (hdr_viewer) {
-        Params params = pfsadditions::FormatHelper::getParamsFromSettings(
-            KEY_FILEFORMAT_QUEUE, false);
-        QString hdrName = QFileInfo(getCurrentHDRName()).baseName();
+    if (!hdr_viewer) return;
 
-        QString inputfname;
-        if (!m_inputFilesName.isEmpty()) inputfname = m_outputFileNamePrefix;
+    ExportJobPtr job = std::make_shared<ExportJob>();
+    job->id = m_nextExportJob++;
+    job->hdr = hdr_viewer->getFrameShared();
+    job->options = *opts;
+    delete opts;
+    job->params = pfsadditions::FormatHelper::getParamsFromSettings(
+        KEY_FILEFORMAT_QUEUE, false);
+    job->hdrName = QFileInfo(getCurrentHDRName()).baseName();
+    if (!m_inputFilesName.isEmpty()) job->inputFileName = m_outputFileNamePrefix;
+    job->exportDir = LuminanceOptions().getExportDir();
+    job->expoTimes = m_inputExpoTimes;
+    job->method = m_interpolationMethod;
+    m_exportJobs.insert(job->id, job);
 
-        QString exportDir = LuminanceOptions().getExportDir();
-
-        m_tonemapPanel->setExportQueueSize(++m_exportQueueSize);
-
-        QMetaObject::invokeMethod(
-            m_QueueWorker, "computeTonemapAndExport", Qt::QueuedConnection,
-            Q_ARG(pfs::Frame *, hdr_viewer->getFrame()),
-            Q_ARG(TonemappingOptions *, opts), Q_ARG(pfs::Params, params),
-            Q_ARG(QString, exportDir), Q_ARG(QString, hdrName),
-            Q_ARG(QString, inputfname), Q_ARG(QVector<float>, m_inputExpoTimes),
-            Q_ARG(InterpolationMethod, m_interpolationMethod));
-    }
+    std::string format;
+    job->params.get("format", format);
+    QString look = job->options.presetName.isEmpty()
+                       ? job->options.operatorLabel
+                       : job->options.presetName;
+    m_exportQueue->addJob(job->id, job->hdrName, look,
+                          format == "ultrahdr" ? tr("Ultra HDR JPEG")
+                                               : QString::fromStdString(format)
+                                                     .toUpper());
+    queueExportJob(job->id);
 }
 
-void MainWindow::showUnedited() {
-    HdrViewer *hdr = qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
-    if (!hdr) return;
-    pfs::Frame *source = hdr->getFrame();
-    pfs::Channel *in[3];
-    source->getXYZChannels(in[0], in[1], in[2]);
-    if (!in[0] || !in[1] || !in[2]) return;
-
-    // the same mapping as the HDR tab's display, kept in floating point
-    pfs::Frame *picture =
-        new pfs::Frame(source->getWidth(), source->getHeight());
-    pfs::Channel *out[3];
-    picture->createXYZChannels(out[0], out[1], out[2]);
-    const auto map = pfs::utils::chain(
-        pfs::colorspace::Normalizer(hdr->getMinLuminanceValue(),
-                                    hdr->getMaxLuminanceValue()),
-        pfs::utils::chain(pfs::utils::CLAMP_F32,
-                          Remapper<float>(hdr->getLuminanceMappingMethod())));
-    for (int c = 0; c < 3; ++c)
-        std::transform(in[c]->begin(), in[c]->end(), out[c]->begin(), map);
-
-    TonemappingOptions *opts = new TonemappingOptions;
-    opts->operatorLabel = tr("Unedited");
-    opts->presetName = tr("Unedited");
-    opts->origxsize = opts->xsize = int(source->getWidth());
-    // shown as it is: no automatic levels
-    m_showingUnedited = true;
-    addLdrFrame(picture, opts);
-    m_showingUnedited = false;
-}
-
-void MainWindow::startPendingTonemap() {
-    m_tmBusy = false;
-    if (!m_tmPending) return;
-    TonemappingOptions *next = m_tmPending;
-    m_tmPending = nullptr;
-    tonemapImage(next);
+void MainWindow::queueExportJob(int id) {
+    const ExportJobPtr job = m_exportJobs.value(id);
+    if (!job) return;
+    m_tonemapPanel->setExportQueueSize(m_exportQueue->openJobs());
+    QMetaObject::invokeMethod(m_QueueWorker, "runExportJob",
+                              Qt::QueuedConnection, Q_ARG(ExportJobPtr, job));
 }
 
 void MainWindow::addLdrFrame(pfs::Frame *frame,

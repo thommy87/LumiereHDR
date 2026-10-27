@@ -221,6 +221,8 @@ class TonemappingPanel : public QWidget {
     //! the "Unedited" preset: take the HDR as the HDR tab shows it
     void uneditedRequested();
     void startExport(TonemappingOptions *);
+    //! show the export queue
+    void showExportQueue();
     void autoLevels(bool, float);
 
    private:

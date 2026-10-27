@@ -58,6 +58,9 @@ void FormatHelper::initConnection(QComboBox *comboBox,
 #ifdef HAVE_LIBWEBP
         comboBox->addItem(QObject::tr("WebP"), QVariant(28));
 #endif
+#ifdef HAVE_LIBUHDR
+        comboBox->addItem(QObject::tr("Ultra HDR JPEG"), QVariant(29));
+#endif
         comboBox->addItem(QObject::tr("BMP"), QVariant(23));
         comboBox->addItem(QObject::tr("PPM"), QVariant(24));
         comboBox->addItem(QObject::tr("PBM"), QVariant(25));
@@ -107,6 +110,8 @@ QString FormatHelper::getFileExtensionForFormat(int format) {
             return ("jxl");
         case 28:
             return ("webp");
+        case 29:
+            return ("jpg");
     }
     return QStringLiteral("tiff");
 }
@@ -153,6 +158,11 @@ pfs::Params FormatHelper::getParamsForFormat(int format) {
             params.set("format", std::string("webp"));
             params.set("quality", 90);
             break;
+        case 29:
+            // the HDR itself is added by whoever writes the picture
+            params.set("format", std::string("ultrahdr"));
+            params.set("quality", 95);
+            break;
         case 23:
         case 24:
         case 25:
@@ -188,7 +198,8 @@ void FormatHelper::buttonPressed() {
         case 22:
         case 26:
         case 27:
-        case 28: {
+        case 28:
+        case 29: {
             size_t quality;
             int qual = -1;
             if (m_params.get("quality", quality)) qual = quality;
@@ -216,7 +227,8 @@ void FormatHelper::updateButton(int format) {
                    || format == 22   // png
                    || format == 26   // avif
                    || format == 27   // jxl
-                   || format == 28;  // webp
+                   || format == 28   // webp
+                   || format == 29;  // ultra hdr
     m_settingsButton->setEnabled(enabled);
 }
 

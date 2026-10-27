@@ -36,6 +36,8 @@
 
 #include <QDockWidget>
 #include <QFutureWatcher>
+#include <QHash>
+#include <memory>
 #include <QMainWindow>
 #include <QMap>
 #include <QProgressBar>
@@ -367,6 +369,11 @@ class MainWindow : public QMainWindow {
     bool m_tmBusyLive = false;
     TonemappingOptions *m_tmPending = nullptr;
     void startPendingTonemap();
+    // the export queue: its window and every job, kept to try again
+    class ExportQueueDialog *m_exportQueue = nullptr;
+    QHash<int, std::shared_ptr<struct ExportJob>> m_exportJobs;
+    int m_nextExportJob = 1;
+    void queueExportJob(int id);
     //! the HDR exactly as the HDR tab shows it, as a picture to export
     void showUnedited();
     bool m_showingUnedited = false;

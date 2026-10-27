@@ -26,12 +26,17 @@
 #ifndef TMWORKER_H
 #define TMWORKER_H
 
+#include <QMetaType>
+#include <QMutex>
 #include <QObject>
+#include <QSet>
 #include <QString>
+#include <QVector>
 
 #include <memory>
 
 #include <Common/global.h>
+#include <Core/TonemappingOptions.h>
 #include <Libpfs/params.h>
 
 // Forward declaration
@@ -39,8 +44,22 @@ namespace pfs {
 class Frame;
 }
 
-class TonemappingOptions;
 class ProgressHelper;
+
+//! one picture of the export queue, with everything needed to make it again
+struct ExportJob {
+    int id = 0;
+    std::shared_ptr<pfs::Frame> hdr;  // kept alive while the job exists
+    TonemappingOptions options;
+    pfs::Params params;
+    QString exportDir;
+    QString hdrName;
+    QString inputFileName;
+    QVector<float> expoTimes;
+    InterpolationMethod method = BilinearInterp;
+};
+typedef std::shared_ptr<ExportJob> ExportJobPtr;
+Q_DECLARE_METATYPE(ExportJobPtr)
 
 class TMWorker : public QObject {
     Q_OBJECT
@@ -57,16 +76,18 @@ class TMWorker : public QObject {
     pfs::Frame *computeTonemap(/* const */ pfs::Frame *, TonemappingOptions *,
                                InterpolationMethod m);
 
-    void computeTonemapAndExport(/* const */ pfs::Frame *, TonemappingOptions *,
-                                 pfs::Params, QString exportDir,
-                                 QString hdrName, QString inputfname,
-                                 QVector<float> inputExpoTimes,
-                                 InterpolationMethod m);
+    //! makes and saves one picture of the export queue
+    void runExportJob(ExportJobPtr job);
 
     //!
     //! This function tonemap the input frame
     //!
     void tonemapFrame(pfs::Frame *, TonemappingOptions *);
+
+   public:
+    //! stops job \a id: skipped if still waiting, cut short if running.
+    //! Safe to call from any thread.
+    void cancelExportJob(int id);
 
    private:
     pfs::Frame *preprocessFrame(pfs::Frame *, TonemappingOptions *,
@@ -84,8 +105,16 @@ class TMWorker : public QObject {
     void tonemapSetValue(int);
     void tonemapRequestTermination(bool);
 
+    void exportJobStarted(int id);
+    //! \a result: 0 written, 1 failed, 2 cancelled
+    void exportJobFinished(int id, QString file, int result);
+
    private:
     ProgressHelper *m_Callback;
+
+    QMutex m_jobMutex;
+    QSet<int> m_canceledJobs;
+    int m_runningJob = -1;
 
     // the HDR reduced to the result size, kept for the next run: live
     // previews would otherwise scale the full photo down on every change

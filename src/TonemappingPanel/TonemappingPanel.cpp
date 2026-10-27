@@ -413,6 +413,17 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
     });
     m_Ui->horizontalLayout_38->addWidget(m_liveCheck);
 
+    // the export queue: what "Fast export" is making, cancel, try again
+    QToolButton *queueList = new QToolButton(this);
+    queueList->setText(tr("&Queue..."));
+    queueList->setToolTip(
+        tr("Shows the pictures sent to fast export: waiting, being made, "
+           "done or failed"));
+    connect(queueList, &QToolButton::clicked, this,
+            &TonemappingPanel::showExportQueue);
+    m_Ui->horizontalLayout_2->insertWidget(
+        m_Ui->horizontalLayout_2->indexOf(m_Ui->lblOpenQueue) + 1, queueList);
+
     m_presetLabel = new QLabel(tr("Preset: own settings"), this);
     QFont presetFont = m_presetLabel->font();
     presetFont.setBold(true);

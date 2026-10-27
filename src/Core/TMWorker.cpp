@@ -103,40 +103,67 @@ pfs::Frame *TMWorker::computeTonemap(/* const */ pfs::Frame *in_frame,
     return working_frame;
 }
 
-void TMWorker::computeTonemapAndExport(/* const */ pfs::Frame *in_frame,
-                                       TonemappingOptions *tm_options,
-                                       pfs::Params params, QString exportDir,
-                                       QString hdrName, QString inputfname,
-                                       QVector<float> inputExpoTimes,
-                                       InterpolationMethod m) {
-    pfs::Frame *working_frame = preprocessFrame(in_frame, tm_options, m);
-    if (working_frame == nullptr) return;
+void TMWorker::cancelExportJob(int id) {
+    QMutexLocker lock(&m_jobMutex);
+    m_canceledJobs.insert(id);
+    if (m_runningJob == id) m_Callback->cancel(true);
+}
+
+void TMWorker::runExportJob(ExportJobPtr job) {
+    {
+        QMutexLocker lock(&m_jobMutex);
+        if (m_canceledJobs.remove(job->id)) {
+            emit exportJobFinished(job->id, QString(), 2);
+            return;
+        }
+        m_runningJob = job->id;
+    }
+    emit exportJobStarted(job->id);
+    auto finish = [this, &job](const QString &file, int result) {
+        {
+            QMutexLocker lock(&m_jobMutex);
+            m_runningJob = -1;
+            if (m_canceledJobs.remove(job->id) && result == 1) result = 2;
+        }
+        emit exportJobFinished(job->id, file, result);
+    };
+
+    // the options are changed while working; the job keeps its own copy
+    TonemappingOptions options = job->options;
+    pfs::Frame *working_frame =
+        preprocessFrame(job->hdr.get(), &options, job->method);
+    if (working_frame == nullptr) {
+        finish(QString(), 1);
+        return;
+    }
     try {
-        tonemapFrame(working_frame, tm_options);
+        tonemapFrame(working_frame, &options);
     } catch (...) {
-        emit tonemapFailed(QStringLiteral("Tonemap failed!"));
         delete working_frame;
+        finish(QString(), 1);
         return;
     }
-
     if (m_Callback->canceled()) {
-        m_Callback->cancel(false);  // double check this
+        m_Callback->cancel(false);
         delete working_frame;
+        finish(QString(), 2);
         return;
     }
+    postprocessFrame(working_frame, &options);
 
-    postprocessFrame(working_frame, tm_options);
+    pfs::Params params = job->params;
+    std::string format;
+    params.get("format", format);
+    // Ultra HDR keeps the HDR next to the picture, for HDR screens
+    if (format == "ultrahdr") params.set("hdr_frame", job->hdr);
 
-    QDir dir(exportDir);
-
-    const QString firstPart = hdrName + "_" + tm_options->getPostfix();
+    QDir dir(job->exportDir);
+    const QString firstPart = job->hdrName + "_" + options.getPostfix();
     QString extension;
     if (!params.get("fileextension", extension))
         extension = QStringLiteral("tiff");
     extension = "." + extension;
-
     QString outputFilename;
-
     int idx = 1;
     do {
         outputFilename = firstPart +
@@ -146,23 +173,12 @@ void TMWorker::computeTonemapAndExport(/* const */ pfs::Frame *in_frame,
     } while (dir.exists(outputFilename));
 
     IOWorker io_worker;
-
-    if (io_worker.write_ldr_frame(working_frame, dir.filePath(outputFilename),
-                                  inputfname, inputExpoTimes, tm_options,
-                                  params)) {
-        // emit add_log_message( tr("[T%1] Successfully saved LDR file:
-        // %2").arg(m_thread_id).arg(QFileInfo(output_file_name).completeBaseName())
-        // );
-    } else {
-        // emit add_log_message( tr("[T%1] ERROR: Cannot save to file:
-        // %2").arg(m_thread_id).arg(QFileInfo(output_file_name).completeBaseName())
-        // );
-    }
-
-    delete tm_options;
-    // emit tonemapSuccess(working_frame, tm_options);
-    // return working_frame;
+    const QString path = dir.filePath(outputFilename);
+    const bool written =
+        io_worker.write_ldr_frame(working_frame, path, job->inputFileName,
+                                  job->expoTimes, &options, params);
     delete working_frame;
+    finish(written ? path : QString(), written ? 0 : 1);
 }
 
 void TMWorker::tonemapFrame(pfs::Frame *working_frame,
