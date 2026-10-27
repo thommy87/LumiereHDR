@@ -23,12 +23,15 @@
 #include <QScopedPointer>
 #include <QToolButton>
 
+#include <cmath>
+
 #include "Core/TMWorker.h"
 #include "Core/TonemappingOptions.h"
 #include "Fileformat/pfsoutldrimage.h"
 #include "Libpfs/frame.h"
 #include "Libpfs/manip/copy.h"
 #include "Libpfs/manip/resize.h"
+#include "Libpfs/utils/robustrange.h"
 #include "PreviewPanel/PreviewLabel.h"
 
 PresetStrip::PresetStrip(QWidget *parent) : QScrollArea(parent) {
@@ -84,6 +87,18 @@ void PresetStrip::updatePreviews(pfs::Frame *hdr) {
     QApplication::setOverrideCursor(Qt::WaitCursor);
     for (int i = 0; i < m_buttons.size(); ++i) {
         QIcon icon;
+        // "Unedited" (TonemappingPanel::uneditedPreset): the HDR as the HDR
+        // tab first shows it
+        if (m_presets[i].second == QLatin1String("unedited:")) {
+            float logMin = 0.f, logMax = 1.f;
+            if (const pfs::Array2Df *y = small->getChannel("Y"))
+                pfs::utils::robustWindow(*y, logMin, logMax);
+            QScopedPointer<QImage> image(fromLDRPFStoQImage(
+                small.data(), std::pow(10.f, logMin), std::pow(10.f, logMax),
+                MAP_GAMMA2_2));
+            m_buttons[i]->setIcon(QIcon(QPixmap::fromImage(*image)));
+            continue;
+        }
         try {
             QScopedPointer<TonemappingOptions> opts(
                 TMOptionsOperations::parseFile(m_presets[i].second));

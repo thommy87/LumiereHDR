@@ -3501,6 +3501,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Unedited</source>
+        <translation>Unbearbeitet</translation>
+    </message>
+    <message>
         <source>Size: %1 x %2 pixels</source>
         <translation>Größe: %1 x %2 Pixel</translation>
     </message>
@@ -5996,6 +6000,10 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 </context>
 <context>
     <name>TonemappingPanel</name>
+    <message>
+        <source>Unedited</source>
+        <translation>Unbearbeitet</translation>
+    </message>
     <message>
         <source>&amp;Live preview</source>
         <translation>&amp;Live-Vorschau</translation>

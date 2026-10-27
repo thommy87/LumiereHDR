@@ -94,6 +94,10 @@
 
 #include <TransplantExif/TransplantExifDialog.h>
 #include <Viewers/HdrViewer.h>
+#include <Libpfs/utils/clamp.h>
+#include <Libpfs/utils/chain.h>
+#include <Libpfs/colorspace/rgbremapper.h>
+#include <Libpfs/colorspace/normalizer.h>
 #include <Viewers/LdrViewer.h>
 #include <Viewers/LuminanceRangeWidget.h>
 
@@ -463,6 +467,8 @@ void MainWindow::createCentralWidget() {
             &MainWindow::tonemapImage);
     connect(m_tonemapPanel, &TonemappingPanel::startExport, this,
             &MainWindow::exportImage);
+    connect(m_tonemapPanel, &TonemappingPanel::uneditedRequested, this,
+            &MainWindow::showUnedited);
     connect(this, &MainWindow::updatedHDR, m_tonemapPanel,
             &TonemappingPanel::updatedHDR);
     connect(this, &QObject::destroyed, m_PreviewPanel, &QObject::deleteLater);
@@ -798,11 +804,12 @@ void MainWindow::createNewHdr(const QStringList &files) {
                 qobject_cast<HdrViewer *>(m_tabwidget->currentWidget()));
             // and show a finished picture right away, as other HDR programs
             // do: the first preset (Natural) on the new HDR
-            const QList<QPair<QString, QString>> presets =
-                m_tonemapPanel->presets();
-            if (!presets.isEmpty())
-                m_tonemapPanel->applyPresetFile(presets.first().second,
-                                                presets.first().first);
+            for (const auto &preset : m_tonemapPanel->presets()) {
+                if (preset.second == TonemappingPanel::uneditedPreset())
+                    continue;
+                m_tonemapPanel->applyPresetFile(preset.second, preset.first);
+                break;
+            }
         }
     }
 }
@@ -2192,6 +2199,37 @@ void MainWindow::exportImage(TonemappingOptions *opts) {
     }
 }
 
+void MainWindow::showUnedited() {
+    HdrViewer *hdr = qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
+    if (!hdr) return;
+    pfs::Frame *source = hdr->getFrame();
+    pfs::Channel *in[3];
+    source->getXYZChannels(in[0], in[1], in[2]);
+    if (!in[0] || !in[1] || !in[2]) return;
+
+    // the same mapping as the HDR tab's display, kept in floating point
+    pfs::Frame *picture =
+        new pfs::Frame(source->getWidth(), source->getHeight());
+    pfs::Channel *out[3];
+    picture->createXYZChannels(out[0], out[1], out[2]);
+    const auto map = pfs::utils::chain(
+        pfs::colorspace::Normalizer(hdr->getMinLuminanceValue(),
+                                    hdr->getMaxLuminanceValue()),
+        pfs::utils::chain(pfs::utils::CLAMP_F32,
+                          Remapper<float>(hdr->getLuminanceMappingMethod())));
+    for (int c = 0; c < 3; ++c)
+        std::transform(in[c]->begin(), in[c]->end(), out[c]->begin(), map);
+
+    TonemappingOptions *opts = new TonemappingOptions;
+    opts->operatorLabel = tr("Unedited");
+    opts->presetName = tr("Unedited");
+    opts->origxsize = opts->xsize = int(source->getWidth());
+    // shown as it is: no automatic levels
+    m_showingUnedited = true;
+    addLdrFrame(picture, opts);
+    m_showingUnedited = false;
+}
+
 void MainWindow::startPendingTonemap() {
     m_tmBusy = false;
     if (!m_tmPending) return;
@@ -2203,12 +2241,12 @@ void MainWindow::startPendingTonemap() {
 void MainWindow::addLdrFrame(pfs::Frame *frame,
                              TonemappingOptions *tm_options) {
     // a live result that a newer change already replaced is not shown
-    if (m_tmBusyLive && m_tmPending) {
+    if (!m_showingUnedited && m_tmBusyLive && m_tmPending) {
         delete frame;
         startPendingTonemap();
         return;
     }
-    if (m_tonemapPanel->doAutoLevels()) {
+    if (m_tonemapPanel->doAutoLevels() && !m_showingUnedited) {
         float threshold, minL, maxL, gammaL;
         threshold = m_tonemapPanel->getAutoLevelsThreshold();
         QScopedPointer<QImage> temp_qimage(fromLDRPFStoQImage(frame));
@@ -2257,7 +2295,7 @@ void MainWindow::addLdrFrame(pfs::Frame *frame,
     }
     // a replaced result does not change the tab
     updateHistogram();
-    startPendingTonemap();
+    if (!m_showingUnedited) startPendingTonemap();
 }
 
 void MainWindow::tonemapFailed(const QString &error_msg) {
