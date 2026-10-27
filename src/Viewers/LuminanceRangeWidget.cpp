@@ -42,6 +42,7 @@
 #include <algorithm>
 
 #include <Libpfs/array2d.h>
+#include <Libpfs/utils/robustrange.h>
 
 #include "Histogram.h"
 
@@ -266,39 +267,7 @@ void LuminanceRangeWidget::setHistogramImage(const pfs::Array2Df *image) {
 
 void LuminanceRangeWidget::fitToDynamicRange() {
     if (histogramImage != nullptr) {
-        // the brightest and darkest few pixels (lamps, sensor noise) would
-        // decide the window and leave the picture far too dark, so take
-        // the 0.1 and 99.5 percent points instead
-        std::vector<float> values;
-        const size_t size = histogramImage->getRows() * histogramImage->getCols();
-        const size_t stride = std::max<size_t>(1, size / 200000);
-        values.reserve(size / stride + 1);
-        for (size_t i = 0; i < size; i += stride) {
-            const float v = (*histogramImage)(i);
-            if (std::isfinite(v)) values.push_back(v);
-        }
-        float min = 0.000001f, max = 1.f;
-        if (!values.empty()) {
-            const size_t lo = values.size() / 1000;
-            const size_t hi = values.size() - 1 - values.size() / 200;
-            std::nth_element(values.begin(), values.begin() + lo, values.end());
-            min = values[lo];
-            std::nth_element(values.begin(), values.begin() + hi, values.end());
-            max = values[hi];
-        }
-        if (max <= 0.000001f) max = 1.f;
-
-        if (min <= 0.000001f)
-            min = 0.000001f;  // If data contains negative values
-
-        windowMin = log10(min);
-        windowMax = log10(max);
-
-        if (windowMax - windowMin < 0.5) {  // Window too small
-            float m = (windowMin + windowMax) / 2.f;
-            windowMax = m + 0.25;
-            windowMin = m - 0.25;
-        }
+        pfs::utils::robustWindow(*histogramImage, windowMin, windowMax);
         update();
         emit updateRangeWindow();
     }

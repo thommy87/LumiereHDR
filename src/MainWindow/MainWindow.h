@@ -367,6 +367,9 @@ class MainWindow : public QMainWindow {
     bool m_tmBusyLive = false;
     TonemappingOptions *m_tmPending = nullptr;
     void startPendingTonemap();
+    //! the HDR exactly as the HDR tab shows it, as a picture to export
+    void showUnedited();
+    bool m_showingUnedited = false;
     TMOProgressIndicator *m_TMProgressBar;
 
     // Export queue

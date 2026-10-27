@@ -190,6 +190,8 @@ class TonemappingPanel : public QWidget {
     ~TonemappingPanel();
     void setSizes(int, int);
     bool replaceLdr();
+    //! file name of the "Unedited" preset, which has no settings file
+    static QString uneditedPreset() { return QStringLiteral("unedited:"); }
     bool lastRunWasLive() const { return m_lastRunWasLive; }
     bool doAutoLevels();
     float getAutoLevelsThreshold();
@@ -216,6 +218,8 @@ class TonemappingPanel : public QWidget {
     //! the preset now applied; empty once a setting is changed by hand
     void currentPresetChanged(const QString &name);
     void startTonemapping(TonemappingOptions *);
+    //! the "Unedited" preset: take the HDR as the HDR tab shows it
+    void uneditedRequested();
     void startExport(TonemappingOptions *);
     void autoLevels(bool, float);
 

@@ -1,3 +1,7 @@
+Changes LumièreHDR 2.10.5
+NEW: preset "Unedited": the merged HDR exactly as the HDR tab shows it,
+     as a picture to export as JPEG, WebP and the other image formats
+
 Changes LumièreHDR 2.10.4
 FIX: live preview keeps up: only the newest change is computed, an
      outdated preview is cut short instead of queuing behind

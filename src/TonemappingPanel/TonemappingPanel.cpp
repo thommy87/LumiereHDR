@@ -1369,6 +1369,8 @@ QString userPresetDir() {
 
 QList<QPair<QString, QString>> TonemappingPanel::presets() const {
     QList<QPair<QString, QString>> list;
+    // the HDR as it is, for when the merged picture needs nothing more
+    list.append(qMakePair(tr("Unedited"), uneditedPreset()));
     for (const BuiltinPreset &preset : kBuiltinPresets)
         list.append(qMakePair(
             tr(preset.name),
@@ -1409,6 +1411,13 @@ void TonemappingPanel::fillPresetMenu() {
 
 void TonemappingPanel::applyPreset(const QString &fileName,
                                    const QString &name) {
+    if (fileName == uneditedPreset()) {
+        m_currentPreset = name;
+        m_presetLabel->setText(tr("Preset: %1").arg(name));
+        emit currentPresetChanged(name);
+        emit uneditedRequested();
+        return;
+    }
     m_applyingPreset = true;
     tmoSettingsFilename = fileName;
     fromTxt2Gui();
