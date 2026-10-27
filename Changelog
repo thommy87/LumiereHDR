@@ -1,3 +1,14 @@
+Changes LumièreHDR 2.10.2
+FIX: alignment works from the best exposed photo outwards, each photo
+     against its neighbour; no more photos thrown off
+FIX: empty borders after shifting or turning are cut away (no more pink
+     corners)
+FIX: automatic ghost removal blends softly, without block edges
+FIX: HDR preview and main window start at a sensible brightness
+NEW: zoom buttons, wheel zoom and middle-button panning in the editing tools
+NEW: editing tools open in the overlay view; clearer ghost section
+FIX: wizard buttons translated
+
 Changes LumièreHDR 2.10.1
 FIX: automatic alignment no longer turns photos by chance; it rotates only
      when the evidence is clear
