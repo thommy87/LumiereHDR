@@ -40,6 +40,7 @@ class HdrPreview : public QDialog {
     ~HdrPreview();
 
     void setFrame(std::shared_ptr<pfs::Frame> frame) {m_viewer->setFrameShared(frame); }
+    HdrViewer *viewer() const { return m_viewer.data(); }
 
     protected:
     QScopedPointer<Ui::HdrPreview> m_Ui;

@@ -150,6 +150,9 @@ class HdrCreationManager : public QObject {
     pfs::Frame *doAntiGhosting(bool patches[][agGridSize], int h0,
                                bool manualAg, ProgressHelper *ph);
     void getAgData(bool patches[][agGridSize], int &h0);
+    //! the merged HDR, with the photo \a h0 alone where something moved
+    //! (\a patches), blended softly into the rest
+    pfs::Frame *mergeWithoutGhosts(bool patches[][agGridSize], int h0);
     void setPatches(bool patches[][agGridSize]);
 
     float getEVOffset() const;

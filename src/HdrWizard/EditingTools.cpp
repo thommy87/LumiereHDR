@@ -29,6 +29,10 @@
 
 #include <QColorDialog>
 #include <QDebug>
+#include <algorithm>
+#include <cmath>
+#include <QToolButton>
+#include <QBoxLayout>
 #include <QApplication>
 #include <QLabel>
 #include <QGridLayout>
@@ -212,9 +216,81 @@ EditingTools::EditingTools(HdrCreationManager *hcm, bool autoAg,
         ->addWidget(m_histogram);
     m_previewWidget->setFocus();
 
+    // ghost removal in plain words; the paper it comes from moves into the
+    // tooltip
+    m_Ui->label_6->hide();
+    m_Ui->label_8->hide();
+    m_Ui->autoAG_checkBox->setText(tr("Remove &ghosts automatically"));
+    m_Ui->autoAG_checkBox->setToolTip(
+        tr("Where something moved between the photos (people, cars, "
+           "leaves...), only one photo is used there, so nothing appears "
+           "twice. Method by O. Gallo and others, \"Artifact-free High "
+           "Dynamic Range Imaging\"."));
+    m_Ui->label_2->setText(tr("Moving areas:"));
+    m_Ui->label_5->setText(tr("Detection threshold"));
+    m_Ui->recomputePatches_pushButton->setText(tr("Show &moving areas"));
+    m_Ui->recomputePatches_pushButton->setToolTip(
+        tr("Marks the parts of the picture where ghosts will be removed"));
+    m_Ui->antighostToolButton->setText(tr("Mask by &hand"));
+    m_Ui->antighostToolButton->setToolTip(
+        tr("Paint the areas with ghosts yourself; switch off the automatic "
+           "removal first"));
+    m_previewWidget->setToolTip(
+        tr("Mouse wheel: zoom, middle mouse button: move the view"));
+
+    // zoom buttons next to fit / fill / original size
+    if (QBoxLayout *navigation = m_Ui->fitButton->parentWidget()
+                                     ->findChild<QBoxLayout *>(
+                                         QStringLiteral("_2"))) {
+        const struct {
+            const char *icon;
+            QString text, tip;
+            qreal step;
+        } zooms[] = {{"zoom-in", tr("Zoom &In"), tr("Look closer (mouse wheel up)"),
+                      1.25},
+                     {"zoom-out", tr("Zoom &Out"),
+                      tr("Look from further away (mouse wheel down)"), 0.8}};
+        for (const auto &z : zooms) {
+            QToolButton *button = new QToolButton(this);
+            button->setIcon(QIcon::fromTheme(QLatin1String(z.icon)));
+            button->setText(z.text);
+            button->setToolTip(z.tip);
+            button->setToolButtonStyle(m_Ui->fitButton->toolButtonStyle());
+            button->setSizePolicy(m_Ui->fitButton->sizePolicy());
+            button->setAutoRaise(m_Ui->fitButton->autoRaise());
+            const qreal step = z.step;
+            connect(button, &QToolButton::clicked, this, [this, step] {
+                m_Ui->fitButton->setAutoExclusive(false);
+                m_Ui->fillButton->setAutoExclusive(false);
+                m_Ui->origSizeButton->setAutoExclusive(false);
+                m_Ui->fitButton->setChecked(false);
+                m_Ui->fillButton->setChecked(false);
+                m_Ui->origSizeButton->setChecked(false);
+                m_Ui->fitButton->setAutoExclusive(true);
+                m_Ui->fillButton->setAutoExclusive(true);
+                m_Ui->origSizeButton->setAutoExclusive(true);
+                m_previewWidget->zoomBy(step);
+            });
+            navigation->addWidget(button);
+        }
+    }
+
     m_Ui->autoAG_checkBox->setChecked(m_doAutoAntighosting);
+    // the form only enables these on a click, not on the start value
+    for (QWidget *w : {static_cast<QWidget *>(m_Ui->label_2),
+                       static_cast<QWidget *>(m_Ui->totalPatches_lineEdit),
+                       static_cast<QWidget *>(m_Ui->label_5),
+                       static_cast<QWidget *>(m_Ui->threshold_horizontalSlider),
+                       static_cast<QWidget *>(m_Ui->threshold_doubleSpinBox),
+                       static_cast<QWidget *>(
+                           m_Ui->recomputePatches_pushButton)})
+        w->setEnabled(m_doAutoAntighosting);
 
     setupConnections();
+
+    // start with both photos laid over each other; the difference view
+    // looks like a negative to anyone who does not know it
+    m_Ui->blendModeCB->setCurrentIndex(1);
 }  // end of constructor
 
 void EditingTools::setupConnections() {
@@ -404,11 +480,44 @@ void EditingTools::computeAgMask() {
     }
 }
 
+void EditingTools::cropEmptyBorders() {
+    // shifting and turning photos by hand leaves borders without picture;
+    // merged they turn into coloured blotches, so all photos lose them
+    const QSize full = m_hcm->getData()[0].qimage().size();
+    int left = 0, top = 0, right = 0, bottom = 0;
+    const int count = std::min(m_HV_offsets.size(), m_angles.size());
+    for (int i = 0; i < count; ++i) {
+        const double s =
+            std::fabs(std::sin(m_angles[i] * 3.14159265358979 / 180.0));
+        const int turnX = int(std::ceil(full.height() / 2.0 * s)) + (s ? 1 : 0);
+        const int turnY = int(std::ceil(full.width() / 2.0 * s)) + (s ? 1 : 0);
+        const int dx = m_HV_offsets[i].first, dy = m_HV_offsets[i].second;
+        // a positive shift moves the picture right or down
+        left = std::max(left, turnX + std::max(dx, 0));
+        right = std::max(right, turnX + std::max(-dx, 0));
+        top = std::max(top, turnY + std::max(dy, 0));
+        bottom = std::max(bottom, turnY + std::max(-dy, 0));
+    }
+    if (!left && !top && !right && !bottom) return;
+    const QRect ca(left, top, full.width() - left - right,
+                   full.height() - top - bottom);
+    if (ca.width() < full.width() / 2 || ca.height() < full.height() / 2)
+        return;
+    QImage *tmp = m_previewWidget->getMask();
+    delete m_antiGhostingMasksList[m_currentAgMaskIndex];
+    m_antiGhostingMasksList.replace(m_currentAgMaskIndex, tmp);
+    cropAgMasks(ca);
+    m_hcm->cropItems(ca);
+}
+
 void EditingTools::nextClicked() {
     m_Ui->Next_Finishbutton->setEnabled(false);
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    if (!m_imagesSaved) m_hcm->applyShiftsToItems(m_HV_offsets);
+    if (!m_imagesSaved) {
+        m_hcm->applyShiftsToItems(m_HV_offsets);
+        cropEmptyBorders();
+    }
     if (m_doAutoAntighosting) {
         QStringList::ConstIterator it = m_fileList.begin();
         while (it != m_fileList.constEnd()) {

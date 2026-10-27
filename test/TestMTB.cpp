@@ -2,6 +2,7 @@
 
 #include <HdrCreation/mtb_alignment.h>
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 
@@ -68,4 +69,42 @@ TEST(TestMTB, RotatedAndShiftedBracketIsAligned) {
     EXPECT_LT(after, before * 0.3);
     EXPECT_LT(after, 0.08);
     EXPECT_LT(afterBright, 0.08);
+}
+
+namespace {
+//! like makeScene, but a camera clips what is too bright
+pfs::FramePtr makeClippedScene(size_t w, size_t h, float gain) {
+    pfs::FramePtr frame = makeScene(w, h, gain);
+    for (pfs::Channel *channel : frame->getChannels())
+        for (float &v : *channel) v = std::min(v, 1.0f);
+    return frame;
+}
+}  // namespace
+
+TEST(TestMTB, WideBracketOuterPhotosAreAligned) {
+    const size_t w = 480, h = 320;
+    // five photos two stops apart; the darkest and the brightest moved
+    const float gains[] = {0.25f, 0.5f, 1.0f, 2.0f, 4.0f};
+    std::vector<pfs::FramePtr> frames, originals;
+    for (float g : gains) {
+        frames.push_back(makeClippedScene(w, h, g));
+        originals.push_back(makeClippedScene(w, h, g));
+    }
+    pfs::FramePtr darkMoved(pfs::shift(*frames[0], 6, -3));
+    frames[0]->swap(*darkMoved);
+    pfs::FramePtr brightMoved(pfs::shift(*frames[4], -5, 4));
+    frames[4]->swap(*brightMoved);
+    const double beforeDark = centreDifference(*frames[0], *originals[0], 1, 1);
+    const double beforeBright =
+        centreDifference(*frames[4], *originals[4], 1, 1);
+
+    libhdr::mtb_alignment(frames);
+
+    EXPECT_LT(centreDifference(*frames[0], *originals[0], 1, 1),
+              beforeDark * 0.2);
+    EXPECT_LT(centreDifference(*frames[4], *originals[4], 1, 1),
+              beforeBright * 0.2);
+    // the photos that were in place stay there
+    for (size_t i = 1; i < 4; ++i)
+        EXPECT_LT(centreDifference(*frames[i], *originals[i], 1, 1), 1e-6);
 }

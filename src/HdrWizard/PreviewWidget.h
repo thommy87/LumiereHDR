@@ -93,6 +93,9 @@ class PreviewWidget : public QWidget {
 
     void zoomIn();
     void zoomOut();
+    //! zooms by \a step (above 1 closer), around the pointer or the
+    //! middle of the view
+    void zoomBy(qreal step, bool underMouse = false);
 
     void fitToWindow();
     void fillToWindow();
@@ -241,6 +244,9 @@ class PreviewWidget : public QWidget {
 
     enum { BRUSH, PATH } m_drawingMode;
     enum { EditingMode, AntighostingMode, ViewPatches } m_mode;
+    // dragging the view with the middle mouse button
+    bool m_panning = false;
+    QPoint m_panLast;
 };
 
 #endif

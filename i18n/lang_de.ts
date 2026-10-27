@@ -1588,6 +1588,58 @@ FEHLER: Datei kann nicht gespeichert werden: %1</translation>
 <context>
     <name>EditingTools</name>
     <message>
+        <source>Zoom &amp;In</source>
+        <translation>&amp;Vergrößern</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;Out</source>
+        <translation>Ver&amp;kleinern</translation>
+    </message>
+    <message>
+        <source>Look closer (mouse wheel up)</source>
+        <translation>Näher heran (Mausrad nach oben)</translation>
+    </message>
+    <message>
+        <source>Look from further away (mouse wheel down)</source>
+        <translation>Weiter weg (Mausrad nach unten)</translation>
+    </message>
+    <message>
+        <source>Remove &amp;ghosts automatically</source>
+        <translation>&amp;Geister automatisch entfernen</translation>
+    </message>
+    <message>
+        <source>Where something moved between the photos (people, cars, leaves...), only one photo is used there, so nothing appears twice. Method by O. Gallo and others, &quot;Artifact-free High Dynamic Range Imaging&quot;.</source>
+        <translation>Wo sich zwischen den Fotos etwas bewegt hat (Leute, Autos, Blätter …), wird dort nur ein Foto verwendet, damit nichts doppelt erscheint. Verfahren von O. Gallo und anderen, „Artifact-free High Dynamic Range Imaging“.</translation>
+    </message>
+    <message>
+        <source>Moving areas:</source>
+        <translation>Bewegte Bereiche:</translation>
+    </message>
+    <message>
+        <source>Detection threshold</source>
+        <translation>Erkennungsschwelle</translation>
+    </message>
+    <message>
+        <source>Show &amp;moving areas</source>
+        <translation>Bewegte Bereiche &amp;zeigen</translation>
+    </message>
+    <message>
+        <source>Marks the parts of the picture where ghosts will be removed</source>
+        <translation>Markiert die Bildteile, in denen Geister entfernt werden</translation>
+    </message>
+    <message>
+        <source>Mask by &amp;hand</source>
+        <translation>Von &amp;Hand maskieren</translation>
+    </message>
+    <message>
+        <source>Paint the areas with ghosts yourself; switch off the automatic removal first</source>
+        <translation>Bereiche mit Geistern selbst einzeichnen; dazu zuerst die automatische Entfernung ausschalten</translation>
+    </message>
+    <message>
+        <source>Mouse wheel: zoom, middle mouse button: move the view</source>
+        <translation>Mausrad: zoomen, mittlere Maustaste: Ansicht verschieben</translation>
+    </message>
+    <message>
         <source>Turns the selected movable photo, clockwise for positive values</source>
         <translation>Dreht das ausgewählte bewegliche Foto, bei positiven Werten im Uhrzeigersinn</translation>
     </message>
@@ -1829,7 +1881,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/HdrWizard/EditingTools.ui" line="730"/>
         <source>Anti Ghosting</source>
-        <translation type="unfinished"/>
+        <translation>Geisterentfernung</translation>
     </message>
     <message>
         <location filename="../src/HdrWizard/EditingTools.ui" line="759"/>
@@ -2387,6 +2439,10 @@ ERROR: %2</source>
 <context>
     <name>HdrPreview</name>
     <message>
+        <source>Accept This HDR</source>
+        <translation>Dieses HDR übernehmen</translation>
+    </message>
+    <message>
         <location filename="../src/HdrWizard/HdrPreview.ui" line="14"/>
         <source>HDR Preview</source>
         <translation>HDR-Vorschau</translation>
@@ -2442,6 +2498,14 @@ ERROR: %2</source>
 </context>
 <context>
     <name>HdrWizard</name>
+    <message>
+        <source>&amp;Compute HDR</source>
+        <translation>HDR &amp;berechnen</translation>
+    </message>
+    <message>
+        <source>&amp;Accept This HDR</source>
+        <translation>Dieses HDR &amp;übernehmen</translation>
+    </message>
     <message>
         <source>Remove &amp;ghosts (moving people, cars, leaves...)</source>
         <translation>&amp;Geister entfernen (bewegte Personen, Autos, Blätter...)</translation>

@@ -60,6 +60,7 @@
 #include "Common/config.h"
 #include "Common/global.h"
 #include "HdrWizard/EditingTools.h"
+#include "Viewers/LuminanceRangeWidget.h"
 #include "HdrWizard/HdrCreationManager.h"
 #include "OsIntegration/osintegration.h"
 #include "arch/freebsd/math.h"
@@ -823,6 +824,15 @@ void HdrWizard::createHdrFinished() {
     if (m_hdrPreview->exec() == QDialog::Accepted) {
         accept();
     }
+}
+
+void HdrWizard::applyPreviewLook(HdrViewer *target) const {
+    HdrViewer *preview = m_hdrPreview->viewer();
+    if (!target || !preview) return;
+    target->setLumMappingMethod(preview->getLumMappingMethod());
+    const float low = preview->lumRange()->getRangeWindowMin();
+    const float high = preview->lumRange()->getRangeWindowMax();
+    if (low < high) target->lumRange()->setRangeWindowMinMax(low, high);
 }
 
 void HdrWizard::currentPageChangedInto(int newindex) {

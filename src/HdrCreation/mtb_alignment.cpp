@@ -25,9 +25,12 @@
 
 #include <iso646.h>
 #include <boost/lexical_cast.hpp>
+#include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include <Common/global.h>
@@ -273,6 +276,32 @@ double estimateRotation(const Array2D8u &ref, int refMedian,
     return best;
 }
 
+//! share of the pixels both bitmaps are sure about that differ, after
+//! moving \a img by \a dx, \a dy (Array2D shift convention)
+double mismatch(const Array2D8u &ref, int refMedian, const Array2D8u &img,
+                int imgMedian, int noise, int dx, int dy) {
+    Array2Db refBits(ref.getCols(), ref.getRows());
+    Array2Db refMask(ref.getCols(), ref.getRows());
+    Array2Db imgBits(img.getCols(), img.getRows());
+    Array2Db imgMask(img.getCols(), img.getRows());
+    setThreshold(ref, refMedian, noise, refBits, refMask);
+    setThreshold(img, imgMedian, noise, imgBits, imgMask);
+    Array2Db movedBits(img.getCols(), img.getRows());
+    Array2Db movedMask(img.getCols(), img.getRows());
+    pfs::shift(imgBits, dx, dy, movedBits);
+    pfs::shift(imgMask, dx, dy, movedMask);
+    long differ = 0, counted = 0;
+    // iterators, as Array2D<bool> sits on a std::vector<bool>
+    Array2Db::const_iterator rb = refBits.begin(), rm = refMask.begin();
+    Array2Db::const_iterator mb = movedBits.begin(), mm = movedMask.begin();
+    for (; rb != refBits.end(); ++rb, ++rm, ++mb, ++mm) {
+        if (!*rm || !*mm) continue;
+        ++counted;
+        if (*rb != *mb) ++differ;
+    }
+    return counted ? double(differ) / counted : 1.0;
+}
+
 }  // namespace
 
 void rotateFrame(pfs::Frame &frame, double degrees) {
@@ -343,8 +372,9 @@ void mtbalign(const pfs::Frame &image1, const pfs::Frame &image2,
 static const double quantile = 0.5;
 static const int noise = 4;
 
-void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
-    if (framePtrList.size() <= 1) return;
+AlignmentMargins mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
+    AlignmentMargins margins;
+    if (framePtrList.size() <= 1) return margins;
 
     int width = framePtrList[0]->getWidth();
     int height = framePtrList[0]->getHeight();
@@ -354,29 +384,72 @@ void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
     PRINT_DEBUG("width=" << width << ", height=" << height
                          << ", shift_bits=" << shift_bits);
 
-    // every frame is aligned to the middle one directly, so that errors do
-    // not add up along the series
-    const size_t reference = framePtrList.size() / 2;
-    Array2D8u referenceLum;
-    const int referenceMedian =
-        getLum(*framePtrList[reference], referenceLum, quantile);
+    // the middle photo stays in place; every other photo is aligned to its
+    // neighbour towards the middle, which is already in place. Neighbours
+    // differ least in exposure, so their bitmaps agree; the darkest and the
+    // brightest photo compared with the middle one directly often do not,
+    // and then got thrown off by dozens of pixels.
+    const size_t count = framePtrList.size();
+    // the photos from darkest to brightest (they may come in any order),
+    // by their average brightness
+    std::vector<double> brightness(count);
+    for (size_t i = 0; i < count; ++i) {
+        Array2D8u probe;
+        getLum(*framePtrList[i], probe, quantile);
+        double sum = 0;
+        for (const uint8_t v : probe) sum += v;
+        brightness[i] = probe.size() ? sum / probe.size() : 0;
+    }
+    std::vector<size_t> sorted(count);
+    for (size_t i = 0; i < count; ++i) sorted[i] = i;
+    std::stable_sort(sorted.begin(), sorted.end(), [&](size_t a, size_t b) {
+        return brightness[a] < brightness[b];
+    });
+    // the anchor is the best exposed one, closest to mid grey; a series
+    // with many dark photos has it off centre
+    size_t middle = count / 2;
+    for (size_t r = 0; r < count; ++r)
+        if (std::fabs(brightness[sorted[r]] - 128) <
+            std::fabs(brightness[sorted[middle]] - 128))
+            middle = r;
+    // from the anchor outwards, each photo next to an aligned one
+    std::vector<std::pair<size_t, size_t>> steps;  // photo, neighbour
+    for (size_t r = middle; r-- > 0;) steps.push_back({sorted[r], sorted[r + 1]});
+    for (size_t r = middle + 1; r < count; ++r)
+        steps.push_back({sorted[r], sorted[r - 1]});
 
-    for (size_t i = 0; i < framePtrList.size(); ++i) {
-        if (i == reference) continue;
+    for (const auto &step : steps) {
+        const size_t i = step.first, neighbour = step.second;
+        Array2D8u referenceLum;
+        const int referenceMedian =
+            getLum(*framePtrList[neighbour], referenceLum, quantile);
         Array2D8u lum;
         int median = getLum(*framePtrList[i], lum, quantile);
 
         const double degrees =
             estimateRotation(referenceLum, referenceMedian, lum, median, noise);
+        int turnX = 0, turnY = 0;  // corners a rotation leaves empty
         if (degrees != 0.0) {
             PRINT_DEBUG("Rotating image " << i << " by " << degrees);
             rotateFrame(*framePtrList[i], degrees);
             median = getLum(*framePtrList[i], lum, quantile);
+            const double s = std::fabs(std::sin(degrees * kPi / 180.0));
+            turnX = int(std::ceil(height / 2.0 * s)) + 1;
+            turnY = int(std::ceil(width / 2.0 * s)) + 1;
         }
 
         int shiftX = 0, shiftY = 0;
         getExpShift(referenceLum, referenceMedian, lum, median, noise,
                     shift_bits, shiftX, shiftY);
+        // keep the photo where it is unless the shift matches clearly better
+        if ((shiftX || shiftY) &&
+            mismatch(referenceLum, referenceMedian, lum, median, noise, shiftX,
+                     shiftY) >
+                0.95 * mismatch(referenceLum, referenceMedian, lum, median,
+                               noise, 0, 0)) {
+            PRINT_DEBUG("Shift for image " << i << " rejected");
+            shiftX = shiftY = 0;
+        }
         if (shiftX || shiftY) {
             PRINT_DEBUG("Shift for image " << i << " = (" << shiftX << ","
                                            << shiftY << ")");
@@ -388,6 +461,12 @@ void mtb_alignment(std::vector<pfs::FramePtr> &framePtrList) {
                 pfs::shift(*framePtrList[i], -shiftX, -shiftY));
             framePtrList[i]->swap(*shiftedFrame);
         }
+        // out(x) = in(x + shiftX): a positive shift empties the right edge
+        margins.left = std::max(margins.left, turnX + std::max(0, -shiftX));
+        margins.right = std::max(margins.right, turnX + std::max(0, shiftX));
+        margins.top = std::max(margins.top, turnY + std::max(0, -shiftY));
+        margins.bottom = std::max(margins.bottom, turnY + std::max(0, shiftY));
     }
+    return margins;
 }
 }
