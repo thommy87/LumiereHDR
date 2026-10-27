@@ -9,10 +9,13 @@ name: Release
 on:
   push:
     tags: ["v*"]
+    # a new version number on master releases it without a hand-made tag
     # dry run on work branches that change the packaging (paths are not
     # checked for tag pushes)
-    branches: ["phase-*/**"]
-    paths: [".github/workflows/release.yml", "build_files/windows/**"]
+    branches: ["phase-*/**", master]
+    paths:
+      [".github/workflows/release.yml", "build_files/windows/**",
+       "build_files/Modules/Version.cmake"]
   # dry run of the packaging whenever the release workflow itself changes
   pull_request:
     paths: [".github/workflows/release.yml", "build_files/windows/**"]
@@ -23,9 +26,49 @@ permissions:
   actions: read
 
 jobs:
+  decide:
+    name: Version
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      release: ${{ steps.version.outputs.release }}
+      build: ${{ steps.version.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          part() { sed -n "s/^SET(LHDR_VERSION_$1 \"\([0-9]*\)\")/\1/p" build_files/Modules/Version.cmake; }
+          release=0; build=1
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"; release=1
+          elif [ "$GITHUB_REF" = refs/heads/master ]; then
+            tag="v$(part MAJOR).$(part MINOR).$(part PATCH)"
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null ||
+               gh release view "$tag" >/dev/null 2>&1; then
+              echo "$tag is released already, nothing to do"; build=0
+            else
+              release=1
+            fi
+          else
+            tag=""
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag release=$release build=$build"
+
   windows:
     name: Windows package
+    needs: decide
+    if: needs.decide.outputs.build == '1'
     runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ needs.decide.outputs.tag }}
+      IS_RELEASE: ${{ needs.decide.outputs.release }}
     defaults:
       run:
         shell: msys2 {0}
@@ -56,8 +99,8 @@ jobs:
 
       - name: Assemble package
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          [ "$GITHUB_REF_TYPE" = tag ] || version="0.0.0-${GITHUB_SHA::7}"
+          version="${RELEASE_TAG#v}"
+          [ "$IS_RELEASE" = 1 ] || version="0.0.0-${GITHUB_SHA::7}"
           dist="LumiereHDR-${version}-windows-x64"
           echo "DIST=$dist" >> "$GITHUB_ENV"
           mkdir -p "$dist/i18n"
@@ -91,7 +134,7 @@ jobs:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           project-slug: LumiereHDR
-          signing-policy-slug: ${{ github.ref_type == 'tag' && 'release-signing' || 'test-signing' }}
+          signing-policy-slug: ${{ env.IS_RELEASE == '1' && 'release-signing' || 'test-signing' }}
           artifact-configuration-slug: windows-zip
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
@@ -108,8 +151,8 @@ jobs:
             cp signed/*.zip "$DIST.zip"
             rm -rf "$DIST" && unzip -q "$DIST.zip"
           fi
-          version="${GITHUB_REF_NAME#v}"
-          [ "$GITHUB_REF_TYPE" = tag ] || version="0.0.0"
+          version="${RELEASE_TAG#v}"
+          [ "$IS_RELEASE" = 1 ] || version="0.0.0"
           echo "VERSION_NUMERIC=${version%%-*}" >> "$GITHUB_ENV"
 
       - name: Build installer
@@ -138,7 +181,7 @@ jobs:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           project-slug: LumiereHDR
-          signing-policy-slug: ${{ github.ref_type == 'tag' && 'release-signing' || 'test-signing' }}
+          signing-policy-slug: ${{ env.IS_RELEASE == '1' && 'release-signing' || 'test-signing' }}
           artifact-configuration-slug: windows-installer
           github-artifact-id: ${{ steps.upload-installer.outputs.artifact-id }}
           wait-for-completion: true
@@ -146,10 +189,10 @@ jobs:
           output-artifact-directory: installer-signed
 
       - name: Draft GitHub release
-        if: github.ref_type == 'tag'
+        if: env.IS_RELEASE == '1'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           setup=$(ls installer-signed/*.exe 2>/dev/null || ls installer/*.exe)
-          gh release create "$GITHUB_REF_NAME" "$DIST.zip" $setup --draft             --title "LumièreHDR ${GITHUB_REF_NAME#v}"             --notes "Windows x64: installer (setup.exe) or portable zip. Code signing policy: see CODE_SIGNING_POLICY.md."
+          gh release create "$RELEASE_TAG" "$DIST.zip" $setup --draft --target "$GITHUB_SHA"             --title "LumièreHDR ${RELEASE_TAG#v}"             --notes "Windows x64: installer (setup.exe) or portable zip. Code signing policy: see CODE_SIGNING_POLICY.md."

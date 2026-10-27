@@ -28,6 +28,8 @@ env:
 jobs:
   linux:
     name: Linux (${{ matrix.name }})
+    # a pull request from a branch here was already built by its push
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -79,9 +81,17 @@ jobs:
             sudo apt-get install -y --no-install-recommends $pkgs
           fi
           sudo chown -R "$USER" ~/apt-cache
+      - name: Compiler cache
+        # only what changed is compiled again; same compilers, same checks
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: linux-${{ matrix.name }}
+          max-size: 500M
       - name: Configure
         run: >
           cmake -S . -B build -G Ninja
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DCMAKE_C_COMPILER=${{ matrix.cc }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
@@ -122,6 +132,7 @@ jobs:
 
   fuzz:
     name: Fuzz Radiance reader
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -171,6 +182,7 @@ jobs:
 
   windows:
     name: Windows (MSYS2 UCRT64)
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: windows-latest
     defaults:
       run:
@@ -186,15 +198,30 @@ jobs:
             qt6-base:p qt6-tools:p qt6-svg:p qt6-5compat:p qt6-translations:p
             boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
             cfitsio:p libraw:p fftw:p lcms2:p eigen3:p gtest:p
-            libavif:p libjxl:p libwebp:p libultrahdr:p
+            libavif:p libjxl:p libwebp:p libultrahdr:p ccache:p
+      - name: Compiler cache
+        # only what changed is compiled again; same compiler, same checks
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ccache-windows-${{ github.sha }}
+          restore-keys: ccache-windows-
       - name: Configure
+        env:
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
         run: >
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DENABLE_UNIT_TEST=ON
       - name: Build
+        env:
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
+          CCACHE_MAXSIZE: 500M
         run: |
           set -o pipefail
           cmake --build build --parallel -- -k 0 2>&1 | tee build.log
+          ccache -s
       - name: Summarize build errors
         if: failure()
         run: |
