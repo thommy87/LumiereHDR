@@ -19,6 +19,11 @@
 #define NOMINMAX
 #endif
 
+// before anything else: a "using namespace std" in a later header would
+// make the Windows headers' byte clash with std::byte
+#include <d3d11.h>
+#include <dxgi1_6.h>
+
 #include "Viewers/HdrDisplayWindow.h"
 
 #include <QHBoxLayout>
@@ -32,9 +37,6 @@
 
 #include <Libpfs/frame.h>
 #include <Libpfs/manip/resize.h>
-
-#include <d3d11.h>
-#include <dxgi1_6.h>
 
 namespace {
 //! Releases a COM pointer when it goes out of use
