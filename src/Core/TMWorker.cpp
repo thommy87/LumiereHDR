@@ -282,6 +282,17 @@ void TMWorker::postprocessFrame(pfs::Frame *working_frame, TonemappingOptions *t
         applyBrightnessContrast(working_frame, tm_options->postbrightness,
                                 tm_options->postcontrast);
     }
+    if (tm_options->postwarmth != 0.f) {
+        // warmer: a little more red and less blue, as a white balance shift
+        pfs::Channel *r, *g, *b;
+        working_frame->getXYZChannels(r, g, b);
+        if (r && b) {
+            const float w = tm_options->postwarmth;
+            const float red = 1.f + 0.18f * w, blue = 1.f - 0.18f * w;
+            for (float &v : *r) v = std::min(v * red, 1.f);
+            for (float &v : *b) v = std::min(v * blue, 1.f);
+        }
+    }
     if (tm_options->postsaturation != 1.0) {
         pfs::applySaturation(working_frame, tm_options->postsaturation);
     }

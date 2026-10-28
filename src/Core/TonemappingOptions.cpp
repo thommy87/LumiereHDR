@@ -132,6 +132,7 @@ void TonemappingOptions::setDefaultParameters() {
     postsaturation = 1.0f;
     postbrightness = 0.0f;
     postcontrast = 0.0f;
+    postwarmth = 0.0f;
     tonemapSelection = false;
     tmoperator = mantiuk06;
 
@@ -348,6 +349,8 @@ const QString TonemappingOptions::getPostfix() {
         postfix += QStringLiteral("_brightness_%1").arg(postbrightness);
     if (postcontrast != 0.f)
         postfix += QStringLiteral("_contrast_%1").arg(postcontrast);
+    if (postwarmth != 0.f)
+        postfix += QStringLiteral("_warmth_%1").arg(postwarmth);
     return postfix;
 }
 
@@ -553,6 +556,9 @@ const QString TonemappingOptions::getCaption(bool includePregamma,
     if (postcontrast != 0.f)
         caption += separator +
                    QString(QObject::tr("Contrast=%1")).arg(postcontrast);
+    if (postwarmth != 0.f)
+        caption += separator +
+                   QString(QObject::tr("Warmth=%1")).arg(postwarmth);
     return caption;
 }
 
@@ -762,6 +768,8 @@ TonemappingOptions *TMOptionsOperations::parseFile(const QString &fname) {
             toreturn->postbrightness = value.toFloat();
         } else if (field == QLatin1String("POSTCONTRAST")) {
             toreturn->postcontrast = value.toFloat();
+        } else if (field == QLatin1String("POSTWARMTH")) {
+            toreturn->postwarmth = value.toFloat();
         } else {
             delete toreturn;
             throw(QApplication::tr(

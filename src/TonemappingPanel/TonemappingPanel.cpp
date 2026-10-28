@@ -379,6 +379,12 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
             tr("Raises or lowers the contrast of the result around mid "
                "grey. The same for every operator."),
             m_postcontrastSlider);
+        postwarmthGang = addRow(
+            grid->rowCount(), tr("&Warmth"), -100.f, 100.f, 0,
+            QStringLiteral(" %"),
+            tr("Warmer (more yellow-red) or cooler (more blue), like a white "
+               "balance shift. The same for every operator."),
+            m_postwarmthSlider);
         m_Ui->processingToolBox->setItemText(0, tr("Basics"));
         m_Ui->label_10->setText(tr("Sat&uration"));
     }
@@ -1057,6 +1063,7 @@ void TonemappingPanel::fillToneMappingOptions(bool exportMode) {
     m_toneMappingOptions->postsaturation = postsaturationGang->v();
     m_toneMappingOptions->postbrightness = postbrightnessGang->v();
     m_toneMappingOptions->postcontrast = postcontrastGang->v() / 100.f;
+    m_toneMappingOptions->postwarmth = postwarmthGang->v() / 100.f;
     // toneMappingOptions->tonemapSelection = checkBoxSelection->isChecked();
     // toneMappingOptions->tonemapOriginal = checkBoxOriginal->isChecked();
     switch (m_currentTmoOperator) {
@@ -1369,6 +1376,7 @@ const BuiltinPreset kBuiltinPresets[] = {
     {"soft", QT_TRANSLATE_NOOP("TonemappingPanel", "Soft")},
     {"detail", QT_TRANSLATE_NOOP("TonemappingPanel", "Strong detail")},
     {"dramatic", QT_TRANSLATE_NOOP("TonemappingPanel", "Dramatic")},
+    {"vintage", QT_TRANSLATE_NOOP("TonemappingPanel", "Vintage")},
     {"blackwhite", QT_TRANSLATE_NOOP("TonemappingPanel", "Black and white")},
 };
 
@@ -1670,6 +1678,7 @@ void TonemappingPanel::fromGui2Txt(QString destination) {
     out << "POSTGAMMA=" << postgammaGang->v() << Qt::endl;
     out << "POSTBRIGHTNESS=" << postbrightnessGang->v() << Qt::endl;
     out << "POSTCONTRAST=" << postcontrastGang->v() / 100.f << Qt::endl;
+    out << "POSTWARMTH=" << postwarmthGang->v() / 100.f << Qt::endl;
     file.close();
 }
 
@@ -1687,6 +1696,7 @@ void TonemappingPanel::fromTxt2Gui() {
     QString tmo;  // Hack, same parameter "RANGE" in durand and reinhard02
     postbrightnessGang->setDefault();
     postcontrastGang->setDefault();
+    postwarmthGang->setDefault();
 
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -1903,6 +1913,9 @@ void TonemappingPanel::fromTxt2Gui() {
         } else if (field == QLatin1String("POSTCONTRAST")) {
             m_postcontrastSlider->setValue(
                 postcontrastGang->v2p(100.f * value.toFloat()));
+        } else if (field == QLatin1String("POSTWARMTH")) {
+            m_postwarmthSlider->setValue(
+                postwarmthGang->v2p(100.f * value.toFloat()));
         }
     }
 }
