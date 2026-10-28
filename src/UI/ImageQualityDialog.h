@@ -47,6 +47,12 @@ class ImageQualityDialog : public QDialog {
 
     int getQuality(void) const;
 
+    //! a tick box under the quality, e.g. "Ultra HDR" for JPEG, with a line
+    //! of explanation; its last choice per \a key is remembered
+    void offerHdr(const QString &key, const QString &label,
+                  const QString &explanation, bool defaultOn);
+    bool hdrChosen() const;
+
    protected slots:
     void on_getSizeButton_clicked();
     void reset(int);
@@ -57,6 +63,8 @@ class ImageQualityDialog : public QDialog {
 
     QScopedPointer<Ui::ImgQualityDialog> m_ui;
     QScopedPointer<LuminanceOptions> m_options;
+    class QCheckBox *m_hdr = nullptr;
+    QString m_hdrKey;
 };
 
 #endif  // IMAGEQUALITYDIALOG_H

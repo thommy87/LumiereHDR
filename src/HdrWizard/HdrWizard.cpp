@@ -262,11 +262,13 @@ void HdrWizard::loadImagesButtonClicked() {
         "All formats (*.jpeg *.jpg *.tiff *.tif *.crw *.cr2 *.cr3 *.nef *.dng *.mrw "
         "*.orf *.kdc *.dcr *.arw *.raf *.ptx *.pef *.x3f *.raw *.sr2 *.rw2 "
         "*.3fr *.mef *.mos *.erf *.nrw *.srw");
+    filetypes += QStringLiteral(" *.avif *.jxl *.webp *.AVIF *.JXL *.WEBP ");
     filetypes += tr(
         "*.JPEG *.JPG *.TIFF *.TIF *.CRW *.CR2 *.CR2 *.NEF *.DNG *.MRW *.ORF *.KDC "
         "*.DCR *.ARW *.RAF *.PTX *.PEF *.X3F *.RAW *.SR2 *.RW2 *.3FR *.MEF "
         "*.MOS *.ERF *.NRW *.SRW);;");
     filetypes += tr("JPEG (*.jpeg *.jpg *.JPEG *.JPG);;");
+    filetypes += tr("AVIF, JPEG XL, WebP (*.avif *.jxl *.webp *.AVIF *.JXL *.WEBP);;");
     filetypes += tr("TIFF Images (*.tiff *.tif *.TIFF *.TIF);;");
     filetypes +=
         tr("RAW Images (*.crw *.cr2 *.cr3 *.nef *.dng *.mrw *.orf *.kdc *.dcr *.arw "

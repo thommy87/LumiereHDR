@@ -16,12 +16,14 @@
 
 #include "jxlwriter.h"
 
+#include <cmath>
 #include <cstdio>
 #include <memory>
 
 #include <jxl/encode.h>
 #include <jxl/thread_parallel_runner.h>
 
+#include <Libpfs/io/hdrencoding.h>
 #include <Libpfs/io/rgb8buffer.h>
 
 namespace pfs {
@@ -113,6 +115,92 @@ bool JxlWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
         ok = (std::fclose(f) == 0) && ok;
         if (!ok) throw WriteException("JPEG XL: cannot write " + filename());
     }
+    return true;
+}
+
+JxlHdrWriter::JxlHdrWriter(const std::string &filename)
+    : FrameWriter(filename) {}
+
+bool JxlHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
+    Rgb8WriterParams p;
+    p.parse(params);
+    const bool lossless = p.quality_ >= 100;
+    const std::vector<float> nits = hdr::nitsToWrite(frame, params);
+
+    // 16-bit PQ samples
+    std::vector<uint16_t> pixels(nits.size());
+    for (size_t i = 0; i < nits.size(); ++i)
+        pixels[i] = uint16_t(std::lround(hdr::pqEncode(nits[i]) * 65535.f));
+
+    std::unique_ptr<JxlEncoder, decltype(&JxlEncoderDestroy)> encoder(
+        JxlEncoderCreate(nullptr), &JxlEncoderDestroy);
+    std::unique_ptr<void, decltype(&JxlThreadParallelRunnerDestroy)> runner(
+        JxlThreadParallelRunnerCreate(
+            nullptr, JxlThreadParallelRunnerDefaultNumWorkerThreads()),
+        &JxlThreadParallelRunnerDestroy);
+    if (!encoder || !runner)
+        throw WriteException("JPEG XL: cannot create the encoder");
+    if (JxlEncoderSetParallelRunner(encoder.get(), JxlThreadParallelRunner,
+                                    runner.get()) != JXL_ENC_SUCCESS)
+        throw WriteException("JPEG XL: cannot set up threads");
+
+    JxlBasicInfo info;
+    JxlEncoderInitBasicInfo(&info);
+    info.xsize = frame.getWidth();
+    info.ysize = frame.getHeight();
+    info.bits_per_sample = 16;
+    info.num_color_channels = 3;
+    // PQ reaches 10000 nits
+    info.intensity_target = 10000.f;
+    info.uses_original_profile = lossless ? JXL_TRUE : JXL_FALSE;
+    if (JxlEncoderSetBasicInfo(encoder.get(), &info) != JXL_ENC_SUCCESS)
+        throw WriteException("JPEG XL: invalid image size");
+
+    JxlColorEncoding color = {};
+    color.color_space = JXL_COLOR_SPACE_RGB;
+    color.white_point = JXL_WHITE_POINT_D65;
+    color.primaries = JXL_PRIMARIES_2100;
+    color.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
+    color.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
+    if (JxlEncoderSetColorEncoding(encoder.get(), &color) != JXL_ENC_SUCCESS)
+        throw WriteException("JPEG XL: cannot set Rec. 2100 PQ");
+
+    JxlEncoderFrameSettings *settings =
+        JxlEncoderFrameSettingsCreate(encoder.get(), nullptr);
+    if (lossless) {
+        JxlEncoderSetFrameLossless(settings, JXL_TRUE);
+    } else {
+        JxlEncoderSetFrameDistance(settings,
+                                   distanceFromQuality(float(p.quality_)));
+    }
+
+    const JxlPixelFormat format = {3, JXL_TYPE_UINT16, JXL_NATIVE_ENDIAN, 0};
+    if (JxlEncoderAddImageFrame(settings, &format, pixels.data(),
+                                pixels.size() * sizeof(uint16_t)) !=
+        JXL_ENC_SUCCESS)
+        throw WriteException("JPEG XL: cannot add the image");
+    JxlEncoderCloseInput(encoder.get());
+
+    std::vector<uint8_t> output(64 * 1024);
+    uint8_t *next = output.data();
+    size_t avail = output.size();
+    JxlEncoderStatus status;
+    while ((status = JxlEncoderProcessOutput(encoder.get(), &next, &avail)) ==
+           JXL_ENC_NEED_MORE_OUTPUT) {
+        const size_t used = next - output.data();
+        output.resize(output.size() * 2);
+        next = output.data() + used;
+        avail = output.size() - used;
+    }
+    if (status != JXL_ENC_SUCCESS)
+        throw WriteException("JPEG XL: encoding failed");
+    output.resize(next - output.data());
+
+    FILE *f = std::fopen(filename().c_str(), "wb");
+    if (f == nullptr) throw InvalidFile("Cannot open file " + filename());
+    bool ok = std::fwrite(output.data(), 1, output.size(), f) == output.size();
+    ok = (std::fclose(f) == 0) && ok;
+    if (!ok) throw WriteException("JPEG XL: cannot write " + filename());
     return true;
 }
 

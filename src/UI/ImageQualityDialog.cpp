@@ -26,7 +26,12 @@
 #include "UI/ImageQualityDialog.h"
 #include "UI/ui_ImageQualityDialog.h"
 
+#include <QBoxLayout>
 #include <QBuffer>
+#include <QCheckBox>
+#include <QLabel>
+
+#include <algorithm>
 #include <QByteArray>
 #include <QDebug>
 #include <QImage>
@@ -87,7 +92,28 @@ ImageQualityDialog::~ImageQualityDialog() {
     if (m_frame) {
         m_options->setValue(IMAGE_QUALITY_KEY, getQuality());
     }
+    if (m_hdr && result() == QDialog::Accepted)
+        m_options->setValue(m_hdrKey, m_hdr->isChecked());
 }
+
+void ImageQualityDialog::offerHdr(const QString &key, const QString &label,
+                                  const QString &explanation, bool defaultOn) {
+    m_hdrKey = QStringLiteral("SaveHdr/") + key;
+    m_hdr = new QCheckBox(label, this);
+    m_hdr->setChecked(m_options->value(m_hdrKey, defaultOn).toBool());
+    QLabel *line = new QLabel(explanation, this);
+    line->setWordWrap(true);
+    line->setEnabled(false);  // secondary text colour
+    line->setContentsMargins(22, 0, 0, 0);
+    if (QBoxLayout *box = qobject_cast<QBoxLayout *>(layout())) {
+        // above the buttons
+        const int at = std::max(0, box->count() - 1);
+        box->insertWidget(at, line);
+        box->insertWidget(at, m_hdr);
+    }
+}
+
+bool ImageQualityDialog::hdrChosen() const { return m_hdr && m_hdr->isChecked(); }
 
 int ImageQualityDialog::getQuality(void) const {
     return m_ui->spinBox->value();

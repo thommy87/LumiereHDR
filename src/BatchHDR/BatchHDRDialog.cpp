@@ -214,6 +214,9 @@ void BatchHDRDialog::scanInputFolder() {
     QStringList filters;
     filters << QStringLiteral("*.jpg")
             << QStringLiteral("*.jpeg")
+            << QStringLiteral("*.avif")
+            << QStringLiteral("*.jxl")
+            << QStringLiteral("*.webp")
             << QStringLiteral("*.tiff")
             << QStringLiteral("*.tif")
             << QStringLiteral("*.crw")

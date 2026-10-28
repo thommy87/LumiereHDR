@@ -181,7 +181,9 @@ bool IOWorker::write_ldr_frame(pfs::Frame *ldr_input, const QString &filename,
     params.get("format", writerFormat);
     // copying EXIF rewrites the JPEG and could lose the gain map
     if (status) {
-      if (writerFormat != "ultrahdr") {
+      // HDR AVIF and JPEG XL keep their own colour description too
+      if (writerFormat != "ultrahdr" && writerFormat != "avif_hdr" &&
+          writerFormat != "jxl_hdr") {
         // this come from an existing HDR file, we do not have exif data
         // let's write our own tags only
         if (inputFileName == "FromHdrFile") {

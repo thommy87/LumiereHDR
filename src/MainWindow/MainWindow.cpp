@@ -133,8 +133,7 @@
 
 namespace {
 QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
-                                     QWidget *parent = 0,
-                                     bool *ultraHdr = nullptr) {
+                                     QWidget *parent = 0) {
     QString filetypes = QObject::tr("All LDR formats");
     filetypes += QLatin1String(
         " (*.jpg *.jpeg *.png *.ppm *.pbm *.bmp *.JPG *.JPEG *.PNG *.PPM *.PBM "
@@ -150,11 +149,6 @@ QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
 #endif
         ");;");
     filetypes += QLatin1String("JPEG (*.jpg *.jpeg *.JPG *.JPEG);;");
-#ifdef HAVE_LIBUHDR
-    const QString ultraHdrFilter =
-        QObject::tr("Ultra HDR JPEG, brighter on HDR screens (*.jpg *.JPG)");
-    if (ultraHdr) filetypes += ultraHdrFilter + QStringLiteral(";;");
-#endif
 #ifdef HAVE_LIBAVIF
     filetypes += QLatin1String("AVIF (*.avif *.AVIF);;");
 #endif
@@ -176,12 +170,6 @@ QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
         LuminanceOptions().getDefaultPathLdrOut() + QDir::separator() +
             qfi.completeBaseName() + "." + qfi.suffix(),
         filetypes, &selectedFilter);
-    if (ultraHdr) {
-        *ultraHdr = false;
-#ifdef HAVE_LIBUHDR
-        *ultraHdr = selectedFilter == ultraHdrFilter;
-#endif
-    }
 
     if (!outputFilename.isEmpty()) {
         QFileInfo qfi(outputFilename);
@@ -200,6 +188,8 @@ QString getHdrFileNameFromSaveDialog(const QString &suggestedFileName,
 
     QStringList validHdrExtensions;
     validHdrExtensions << "exr"
+                       << "avif"
+                       << "jxl"
                        << "hdr"
                        << "tif"
                        << "tiff"
@@ -212,6 +202,12 @@ QString getHdrFileNameFromSaveDialog(const QString &suggestedFileName,
     filetypes += QLatin1String("HDR TIFF (*.tiff *.tif *.TIFF *.TIT);;");
     filetypes += QLatin1String("Radiance RGBE (*.hdr *.pic *.HDR *.PIC);;");
     filetypes += QLatin1String("PFS Stream (*.pfs *.PFS);;");
+#ifdef HAVE_LIBAVIF
+    filetypes += QLatin1String("AVIF (*.avif *.AVIF);;");
+#endif
+#ifdef HAVE_LIBJXL
+    filetypes += QLatin1String("JPEG XL (*.jxl *.JXL);;");
+#endif
 
     QFileInfo qfi(suggestedFileName);
 
@@ -826,6 +822,7 @@ void MainWindow::on_fileOpenAction_triggered() {
     filetypes += QLatin1String(");;");
     filetypes += QLatin1String("OpenEXR (*.exr *.EXR);;");
     filetypes += QLatin1String("Radiance RGBE (*.hdr *.pic *.HDR *.PIC);;");
+    filetypes += tr("HDR AVIF, HDR JPEG XL (*.avif *.jxl *.AVIF *.JXL);;");
     filetypes += QLatin1String("TIFF images (*.TIFF *.TIF *.tiff *.tif);;");
 #if HAVE_CFITSIO
     filetypes += QLatin1String("FITS (*.fit *.FIT *.fits *.FITS);;");
@@ -923,6 +920,25 @@ void MainWindow::on_fileSaveAsAction_triggered() {
         QString format = qfi.suffix();
 
         pfs::Params p;
+        // AVIF and JPEG XL can stay HDR (PQ, Rec. 2020): a tick box, on
+        // by default, says so; off, they are saved as the HDR tab shows them
+        const QString lower = format.toLower();
+        if (lower == QLatin1String("avif") || lower == QLatin1String("jxl")) {
+            ImageQualityDialog quality(nullptr, lower, 90, this);
+            quality.setWindowTitle(tr("Save as %1").arg(format.toUpper()));
+            quality.offerHdr(QStringLiteral("hdr-") + lower, tr("HDR"),
+                             tr("Saves the full brightness range: highlights "
+                                "glow on HDR screens (TV, monitor, Android, "
+                                "Chrome). Without it the picture is saved as "
+                                "the HDR tab shows it."),
+                             true);
+            if (quality.exec() == QDialog::Rejected) return;
+            p.set("quality", (size_t)quality.getQuality());
+            if (quality.hdrChosen())
+                p.set("format", std::string(lower == QLatin1String("avif")
+                                                ? "avif_hdr"
+                                                : "jxl_hdr"));
+        }
         if (format == QLatin1String("tif") || format == QLatin1String("tiff")) {
             TiffModeDialog t(true, -1, this);
             if (t.exec() == QDialog::Rejected) return;
@@ -961,11 +977,8 @@ void MainWindow::on_fileSaveAsAction_triggered() {
         // QString outputFilename = getLdrFileNameFromSaveDialog(ldr_name + "_"
         // +
         // l_v->getFileNamePostFix() + ".jpg", this);
-        // Ultra HDR needs the HDR image behind the result
-        bool ultraHdr = false;
-        const bool canUltraHdr = tm_status.curr_tm_frame != nullptr;
-        QString outputFilename = getLdrFileNameFromSaveDialog(
-            proposedFileName, this, canUltraHdr ? &ultraHdr : nullptr);
+        QString outputFilename =
+            getLdrFileNameFromSaveDialog(proposedFileName, this);
 
         if (outputFilename.isEmpty()) return;
 
@@ -977,14 +990,6 @@ void MainWindow::on_fileSaveAsAction_triggered() {
         }
 
         pfs::Params p;
-        if (ultraHdr) {
-            if (format != QLatin1String("jpg") &&
-                format != QLatin1String("jpeg"))
-                outputFilename += QLatin1String(".jpg");
-            format = QStringLiteral("jpg");
-            p.set("format", std::string("ultrahdr"));
-            p.set("hdr_frame", tm_status.curr_tm_frame->getFrameShared());
-        }
         if (format == QLatin1String("png") || format == QLatin1String("jpg") ||
             format == QLatin1String("jpeg") || format == QLatin1String("avif") ||
             format == QLatin1String("jxl") || format == QLatin1String("webp")) {
@@ -992,9 +997,40 @@ void MainWindow::on_fileSaveAsAction_triggered() {
                                                 this);
             savedFileQuality.setWindowTitle(QObject::tr("Save as...") +
                                             format.toUpper());
+            // the HDR behind the result lets the highlights glow on HDR
+            // screens; offered as a tick box for the formats that can
+            const bool isJpeg = format == QLatin1String("jpg") ||
+                                format == QLatin1String("jpeg");
+            const bool hasHdr = tm_status.curr_tm_frame != nullptr;
+            const char *hdrFormat = nullptr;
+#ifdef HAVE_LIBUHDR
+            if (hasHdr && isJpeg) {
+                savedFileQuality.offerHdr(
+                    QStringLiteral("ultrahdr"), tr("Ultra HDR"),
+                    tr("Highlights glow on HDR screens (iPhone, Android, "
+                       "HDR monitors); elsewhere it is a normal JPEG."),
+                    false);
+                hdrFormat = "ultrahdr";
+            }
+#endif
+            if (hasHdr && (format == QLatin1String("avif") ||
+                           format == QLatin1String("jxl"))) {
+                savedFileQuality.offerHdr(
+                    QStringLiteral("result-hdr-") + format, tr("HDR"),
+                    tr("Your edit with glowing highlights on HDR screens "
+                       "(TV, monitor, Android, Chrome); on normal screens it "
+                       "depends on the viewer."),
+                    false);
+                hdrFormat = format == QLatin1String("avif") ? "avif_hdr"
+                                                            : "jxl_hdr";
+            }
             if (savedFileQuality.exec() == QDialog::Rejected) return;
 
             p.set("quality", (size_t)savedFileQuality.getQuality());
+            if (hdrFormat && savedFileQuality.hdrChosen()) {
+                p.set("format", std::string(hdrFormat));
+                p.set("hdr_frame", tm_status.curr_tm_frame->getFrameShared());
+            }
         }
 
         if (format == QLatin1String("tif") || format == QLatin1String("tiff")) {
@@ -2220,9 +2256,11 @@ void MainWindow::exportImage(TonemappingOptions *opts) {
                        ? job->options.operatorLabel
                        : job->options.presetName;
     m_exportQueue->addJob(job->id, job->hdrName, look,
-                          format == "ultrahdr" ? tr("Ultra HDR JPEG")
-                                               : QString::fromStdString(format)
-                                                     .toUpper());
+                          format == "ultrahdr"   ? tr("Ultra HDR JPEG")
+                          : format == "avif_hdr" ? tr("HDR AVIF")
+                          : format == "jxl_hdr"  ? tr("HDR JPEG XL")
+                                                 : QString::fromStdString(format)
+                                                       .toUpper());
     queueExportJob(job->id);
 }
 

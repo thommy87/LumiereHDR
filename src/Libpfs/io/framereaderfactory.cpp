@@ -66,6 +66,15 @@ bool FrameReaderFactory::isSupported(const std::string &format) {
 #ifdef HAVE_CFITSIO
 #include <Libpfs/io/fitsreader.h>
 #endif
+#ifdef HAVE_LIBAVIF
+#include <Libpfs/io/avifreader.h>
+#endif
+#ifdef HAVE_LIBJXL
+#include <Libpfs/io/jxlreader.h>
+#endif
+#ifdef HAVE_LIBWEBP
+#include <Libpfs/io/webpreader.h>
+#endif
 
 namespace pfs {
 namespace io {
@@ -80,6 +89,16 @@ FrameReaderFactory::FrameReaderCreatorMap FrameReaderFactory::sm_registry =
     // LDR formats
     ("jpeg", creator<JpegReader>)
     ("jpg", creator<JpegReader>)
+#ifdef HAVE_LIBAVIF
+    // normal photos, or HDR (PQ, HLG)
+    ("avif", creator<AvifReader>)
+#endif
+#ifdef HAVE_LIBJXL
+    ("jxl", creator<JxlReader>)
+#endif
+#ifdef HAVE_LIBWEBP
+    ("webp", creator<WebpReader>)
+#endif
     // HDR formats
     ("pfs", creator<PfsReader>)
     ("exr", creator<EXRReader>)

@@ -102,9 +102,11 @@ FrameWriterFactory::FrameWriterCreatorMap FrameWriterFactory::sm_registry =
         "jpg", creator<JpegWriter>)("png", creator<PngWriter>)
 #ifdef HAVE_LIBAVIF
     ("avif", creator<AvifWriter>)
+    ("avif_hdr", creator<AvifHdrWriter>)
 #endif
 #ifdef HAVE_LIBJXL
     ("jxl", creator<JxlWriter>)
+    ("jxl_hdr", creator<JxlHdrWriter>)
 #endif
 #ifdef HAVE_LIBWEBP
     ("webp", creator<WebpWriter>)
