@@ -58,6 +58,10 @@ class BatchHDRDialog : public QDialog {
    signals:
     void setValue(int);
 
+   public slots:
+    //! the window's close button while working acts as Cancel
+    void reject() override;
+
    protected slots:
     void num_bracketed_changed(int);
     void on_selectInputFolder_clicked();

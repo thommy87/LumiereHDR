@@ -559,8 +559,18 @@ bool BatchHDRDialog::stopIfCancelled() {
     if (!m_abort) return false;
     qDebug() << "Aborted";
     QApplication::restoreOverrideCursor();
-    this->reject();
+    QDialog::reject();
     return true;
+}
+
+void BatchHDRDialog::reject() {
+    // closing the window in the middle of a batch stops it like Cancel:
+    // the work in the background must end before the window goes
+    if (m_processing && !m_abort) {
+        on_cancelButton_clicked();
+        return;
+    }
+    QDialog::reject();
 }
 
 void BatchHDRDialog::align() {
@@ -627,7 +637,7 @@ void BatchHDRDialog::createHdrFinished() {
     if (resultHDR.get() == nullptr) {
         qDebug() << "Aborted";
         QApplication::restoreOverrideCursor();
-        this->reject();
+        QDialog::reject();
         return;
     }
     QString outName;
@@ -657,7 +667,7 @@ void BatchHDRDialog::createHdrFinished() {
     }
     catch (...) {
         QApplication::restoreOverrideCursor();
-        this->reject();
+        QDialog::reject();
         return;
     }
 
@@ -748,13 +758,13 @@ void BatchHDRDialog::try_to_continue() {
 void BatchHDRDialog::ais_failed(QProcess::ProcessError error) {
     qDebug() << "Aborted";
     QApplication::restoreOverrideCursor();
-    this->reject();
+    QDialog::reject();
 }
 
 void BatchHDRDialog::loadFilesAborted() {
     qDebug() << "Aborted";
     QApplication::restoreOverrideCursor();
-    this->reject();
+    QDialog::reject();
 }
 
 void BatchHDRDialog::updateThresholdSlider(int newValue) {
