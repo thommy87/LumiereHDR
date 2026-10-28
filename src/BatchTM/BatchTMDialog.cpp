@@ -31,7 +31,10 @@
 #include <QRegularExpression>
 #include <climits>
 
+#include <QBoxLayout>
 #include <QFileDialog>
+#include <QMenu>
+#include <QToolButton>
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -44,6 +47,7 @@
 #include <UI/SavedParametersDialog.h>
 #include <Common/config.h>
 #include <Core/TonemappingOptions.h>
+#include <TonemappingPanel/TonemappingPanel.h>
 #include <Exif/ExifOperations.h>
 #include <OsIntegration/osintegration.h>
 
@@ -80,6 +84,39 @@ BatchTMDialog::BatchTMDialog(QWidget *p, QSqlDatabase db)
             &BatchTMDialog::abort);
     connect(m_Ui->from_Database_Button, &QAbstractButton::clicked, this,
             &BatchTMDialog::from_database);
+
+    // the presets of the tone mapping panel, without settings files
+    QToolButton *presetButton = new QToolButton(this);
+    presetButton->setText(tr("&Presets"));
+    presetButton->setToolTip(
+        tr("Adds presets of the tone mapping panel, e.g. Natural or Vivid"));
+    presetButton->setPopupMode(QToolButton::InstantPopup);
+    presetButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    QMenu *presetMenu = new QMenu(presetButton);
+    presetButton->setMenu(presetMenu);
+    connect(presetMenu, &QMenu::aboutToShow, this, [this, presetMenu]() {
+        presetMenu->clear();
+        QList<QPair<QString, QString>> all;
+        for (const auto &preset : TonemappingPanel::presets())
+            if (preset.second != TonemappingPanel::uneditedPreset())
+                all << preset;
+        presetMenu->addAction(tr("All presets"), this, [this, all]() {
+            for (const auto &preset : all) addPreset(preset.second, preset.first);
+        });
+        presetMenu->addSeparator();
+        for (const auto &preset : all) {
+            const QString file = preset.second, name = preset.first;
+            presetMenu->addAction(name, this,
+                                  [this, file, name]() { addPreset(file, name); });
+        }
+    });
+    if (QBoxLayout *row = qobject_cast<QBoxLayout *>(
+            m_Ui->from_Database_Button->parentWidget()->layout())) {
+        row->insertWidget(row->indexOf(m_Ui->from_Database_Button) + 1,
+                          presetButton);
+    } else if (QLayout *any = m_Ui->from_Database_Button->parentWidget()->layout()) {
+        any->addWidget(presetButton);
+    }
     connect(m_Ui->filterLineEdit, &QLineEdit::textChanged, this,
             &BatchTMDialog::filterChanged);
     connect(m_Ui->filterComboBox,
@@ -245,6 +282,16 @@ TonemappingOptions *BatchTMDialog::parse_tm_opt_file(const QString &fname) {
         add_log_message(e);
         return nullptr;
     }
+}
+
+void BatchTMDialog::addPreset(const QString &file, const QString &name) {
+    TonemappingOptions *options = parse_tm_opt_file(file);
+    if (!options) return;
+    options->xsize_percent = m_Ui->spinBox_Width->value();
+    options->presetName = name;
+    m_tm_options_list.append(options);
+    m_Ui->listWidget_TMopts->addItem(tr("Preset: %1").arg(name));
+    check_enable_start();
 }
 
 void BatchTMDialog::check_enable_start() {

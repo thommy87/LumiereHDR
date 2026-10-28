@@ -58,6 +58,10 @@ class BatchHDRDialog : public QDialog {
    signals:
     void setValue(int);
 
+   public slots:
+    //! the window's close button while working acts as Cancel
+    void reject() override;
+
    protected slots:
     void num_bracketed_changed(int);
     void on_selectInputFolder_clicked();
@@ -90,12 +94,15 @@ class BatchHDRDialog : public QDialog {
     QStringList m_bracketed;
     // the brackets still to make, each a list of files
     QList<QStringList> m_groups;
+    QStringList m_skipped;  // brackets left out, with the reason
     int m_groupSize = 0;  // photos in the bracket being made
     class QCheckBox *m_autoGroups = nullptr;
     //! splits m_bracketed into brackets; false if that is not possible
     bool makeGroups();
     //! lists the photos of the input folder
     void scanInputFolder();
+    //! closes the dialog if Cancel was pressed; true then
+    bool stopIfCancelled();
     QStringList m_written;
     QString m_output_file_name_base;
     IOWorker *m_IO_Worker;

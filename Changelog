@@ -1,3 +1,12 @@
+Changes LumièreHDR 2.15.1
+FIX: batch HDR skips a bracket it cannot make (photos of different size, a
+     file that does not load) and goes on; a summary at the end lists them
+FIX: batch HDR finds brackets per file type, so RAW and JPEG of the same
+     shots are never mixed in one HDR
+FIX: Cancel and the close button stop batch HDR at the next step
+NEW: batch tone mapping takes the presets directly (Presets button), no
+     settings files needed; file names carry the preset's name
+
 Changes LumièreHDR 2.15.0
 NEW: lens correction for RAW photos with the Lensfun database: distortion,
      vignetting and colour fringes, from the camera and lens named in the

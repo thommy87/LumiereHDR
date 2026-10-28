@@ -26,6 +26,7 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QImage>
 #include <QScopedPointer>
 
@@ -115,9 +116,13 @@ void BatchTMJob::run() {
                 return;
             }
 
-            QString output_file_name = m_output_file_name_base + "_" +
-                                       opts->getPostfix() + "." +
-                                       m_ldr_output_format;
+            // the preset's name when it came from one, else every parameter
+            QString suffix = opts->presetName.isEmpty() ? opts->getPostfix()
+                                                         : opts->presetName;
+            suffix.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")),
+                           QStringLiteral("-"));
+            QString output_file_name = m_output_file_name_base + "_" + suffix +
+                                       "." + m_ldr_output_format;
 
             pfs::Params params = m_params;
             std::string format;

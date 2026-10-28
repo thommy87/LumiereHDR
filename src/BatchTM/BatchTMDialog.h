@@ -95,6 +95,8 @@ class BatchTMDialog : public QDialog {
    private:
     // Parses a TM_opts file (return nullptr on error)
     TonemappingOptions *parse_tm_opt_file(const QString &filename);
+    //! a preset of the tone mapping panel, by its settings file
+    void addPreset(const QString &file, const QString &name);
 
     // data structure (model) for left-side list: HDRs
     QStringList HDRs_list;

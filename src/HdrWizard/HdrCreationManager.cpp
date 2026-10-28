@@ -192,8 +192,8 @@ void HdrCreationManager::loadFilesDone() {
     if (!framesHaveSameSize()) {
         m_data.clear();
         emit errorWhileLoading(
-            tr("HdrCreationManager::loadFilesDone(): The images have different "
-               "size."));
+            tr("the photos are not all the same size (for example RAW and "
+               "JPEG, or a cropped photo)"));
     } else {
         emit finishedLoadingFiles();
     }

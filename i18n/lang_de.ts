@@ -157,6 +157,18 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>BatchHDRDialog</name>
     <message>
+        <source>Skipped %1: %2</source>
+        <translation>Übersprungen %1: %2</translation>
+    </message>
+    <message>
+        <source>Batch HDR</source>
+        <translation>Stapel-HDR</translation>
+    </message>
+    <message>
+        <source>%1 of %2 HDRs were made. These brackets were skipped:</source>
+        <translation>%1 von %2 HDRs wurden erstellt. Diese Belichtungsreihen wurden übersprungen:</translation>
+    </message>
+    <message>
         <source>No photos were found in the input folder.</source>
         <translation>Im Eingabeordner wurden keine Fotos gefunden.</translation>
     </message>
@@ -530,6 +542,22 @@ Continue?</source>
 </context>
 <context>
     <name>BatchTMDialog</name>
+    <message>
+        <source>&amp;Presets</source>
+        <translation>&amp;Presets</translation>
+    </message>
+    <message>
+        <source>Adds presets of the tone mapping panel, e.g. Natural or Vivid</source>
+        <translation>Fügt Presets aus der Dynamikkompression hinzu, etwa Natürlich oder Kräftig</translation>
+    </message>
+    <message>
+        <source>All presets</source>
+        <translation>Alle Presets</translation>
+    </message>
+    <message>
+        <source>Preset: %1</source>
+        <translation>Preset: %1</translation>
+    </message>
     <message>
         <location filename="../src/BatchTM/BatchTMDialog.ui" line="14"/>
         <source>Batch Tone Mapping</source>
@@ -2457,6 +2485,10 @@ ERROR: %2</source>
 </context>
 <context>
     <name>HdrCreationManager</name>
+    <message>
+        <source>the photos are not all the same size (for example RAW and JPEG, or a cropped photo)</source>
+        <translation>die Fotos sind nicht alle gleich groß (zum Beispiel RAW und JPEG gemischt oder ein zugeschnittenes Foto)</translation>
+    </message>
     <message>
         <location filename="../src/HdrWizard/HdrCreationManager.cpp" line="161"/>
         <source>HdrCreationManager::loadFilesDone(): Error loading a file.</source>
