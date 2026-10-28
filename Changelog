@@ -1,3 +1,7 @@
+Changes LumièreHDR 2.13.0
+NEW: HDR preview (Windows): shows the HDR with real HDR brightness on an
+     HDR screen or TV, with an exposure slider
+
 Changes LumièreHDR 2.12.0
 NEW: batch HDR finds the brackets in a folder by itself, from capture time
      and exposure; brackets may have different lengths, single photos are
