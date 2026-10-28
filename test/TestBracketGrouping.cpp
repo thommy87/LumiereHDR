@@ -58,3 +58,11 @@ TEST(TestBracketGrouping, NothingKnownGivesNoGroups) {
     std::vector<Shot> shots(4);
     EXPECT_TRUE(groupBrackets(shots).empty());
 }
+
+TEST(TestBracketGrouping, PhotosWithoutInformationStayAlone) {
+    // a bracket, a screenshot without EXIF, another bracket
+    std::vector<Shot> shots = {shot(0, 0.01, 0), shot(0.3, 0.01, -2),
+                               shot(0.6, 0.01, 2), Shot(),
+                               shot(0.9, 0.01, 0.5), shot(1.2, 0.01, -1.5)};
+    EXPECT_EQ(sizes(groupBrackets(shots)), (std::vector<size_t>{3, 1, 2}));
+}
