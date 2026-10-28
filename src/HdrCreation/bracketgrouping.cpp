@@ -31,9 +31,18 @@ std::vector<std::vector<size_t>> groupBrackets(const std::vector<Shot> &shots,
     }
     if (!anyTime && !anyExposure) return brackets;
 
+    bool closed = false;  // the last bracket takes no more photos
     for (size_t i = 0; i < shots.size(); ++i) {
         const Shot &shot = shots[i];
-        bool startNew = brackets.empty();
+        // a photo without time and exposure (a screenshot, an export) is
+        // on its own and belongs to no bracket
+        if (shot.captureTime < 0 && !shot.hasExposure) {
+            brackets.push_back({i});
+            closed = true;
+            continue;
+        }
+        bool startNew = brackets.empty() || closed;
+        closed = false;
         if (!startNew) {
             const Shot &previous = shots[brackets.back().back()];
             // a pause: the camera was not shooting a bracket any more

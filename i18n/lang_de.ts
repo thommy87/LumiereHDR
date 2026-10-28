@@ -157,6 +157,14 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>BatchHDRDialog</name>
     <message>
+        <source>No photos were found in the input folder.</source>
+        <translation>Im Eingabeordner wurden keine Fotos gefunden.</translation>
+    </message>
+    <message>
+        <source>%1 photos found, %2 of them with capture time or exposure.</source>
+        <translation>%1 Fotos gefunden, davon %2 mit Aufnahmezeit oder Belichtung.</translation>
+    </message>
+    <message>
         <source>Find the brackets &amp;automatically (capture time and exposure)</source>
         <translation>Belichtungsreihen &amp;automatisch erkennen (Aufnahmezeit und Belichtung)</translation>
     </message>

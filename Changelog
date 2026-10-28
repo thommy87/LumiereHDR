@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.13.1
+FIX: batch HDR read the folder chosen last time instead of the new one
+FIX: photos without capture time or exposure in the folder (screenshots,
+     exports) stay out of the brackets instead of joining one
+
 Changes LumièreHDR 2.13.0
 NEW: HDR preview (Windows): shows the HDR with real HDR brightness on an
      HDR screen or TV, with an exposure slider

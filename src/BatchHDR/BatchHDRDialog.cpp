@@ -204,7 +204,13 @@ BatchHDRDialog::BatchHDRDialog(QWidget *p, QSqlDatabase db)
 
         m_customConfig.push_back(ct);
     }
-    // process input images
+    scanInputFolder();
+    check_start_button();
+}
+
+void BatchHDRDialog::scanInputFolder() {
+    // the photos of the input folder; read again whenever another folder is
+    // chosen (it used to keep the list of the folder from last time)
     QStringList filters;
     filters << QStringLiteral("*.jpg")
             << QStringLiteral("*.jpeg")
@@ -265,12 +271,9 @@ BatchHDRDialog::BatchHDRDialog(QWidget *p, QSqlDatabase db)
     chosenInputDir.setFilter(QDir::Files);
     chosenInputDir.setSorting(QDir::Name);
     chosenInputDir.setNameFilters(filters);
-    m_bracketed = chosenInputDir.entryList();
-    // hack to prepend to this list the path as prefix.
-    m_bracketed.replaceInStrings(QRegularExpression(QStringLiteral("(.+)")),
-                                 chosenInputDir.path() + "/\\1");
-
-    check_start_button();
+    m_bracketed.clear();
+    for (const QString &name : chosenInputDir.entryList())
+        m_bracketed << chosenInputDir.filePath(name);
 }
 
 BatchHDRDialog::~BatchHDRDialog() {
@@ -305,6 +308,7 @@ void BatchHDRDialog::on_selectInputFolder_clicked() {
                 m_batchHdrInputDir = m_Ui->inputLineEdit->text();
                 LuminanceOptions().setBatchHdrPathInput(m_batchHdrInputDir);
             }
+            scanInputFolder();
 
             // defaulting the same output folder as the input folder
             if (m_Ui->outputLineEdit->text().isEmpty())
@@ -384,6 +388,14 @@ void BatchHDRDialog::on_startButton_clicked() {
 
 bool BatchHDRDialog::makeGroups() {
     m_groups.clear();
+    // always the folder shown, also when it was typed in
+    m_batchHdrInputDir = m_Ui->inputLineEdit->text();
+    scanInputFolder();
+    if (m_bracketed.isEmpty()) {
+        QMessageBox::warning(this, tr("Warning"),
+                             tr("No photos were found in the input folder."));
+        return false;
+    }
     if (m_autoGroups->isChecked()) {
         std::vector<libhdr::Shot> shots;
         std::vector<int> order;
@@ -403,18 +415,24 @@ bool BatchHDRDialog::makeGroups() {
             shots.push_back(shot);
             order.push_back(i);
         }
-        // in the order taken when every photo has a time, else by name
-        const bool allTimed = std::all_of(
-            shots.begin(), shots.end(),
-            [](const libhdr::Shot &s) { return s.captureTime >= 0; });
-        if (allTimed)
-            std::stable_sort(order.begin(), order.end(), [&shots](int a, int b) {
-                return shots[a].captureTime < shots[b].captureTime;
-            });
+        // in the order taken; photos without a time follow, by name
+        std::stable_sort(order.begin(), order.end(), [&shots](int a, int b) {
+            const bool ta = shots[a].captureTime >= 0;
+            const bool tb = shots[b].captureTime >= 0;
+            if (ta != tb) return ta;
+            return ta && shots[a].captureTime < shots[b].captureTime;
+        });
         std::vector<libhdr::Shot> taken;
         for (int i : order) taken.push_back(shots[i]);
         const std::vector<std::vector<size_t>> brackets =
             libhdr::groupBrackets(taken);
+        int known = 0;
+        for (const libhdr::Shot &shot : shots)
+            if (shot.captureTime >= 0 || shot.hasExposure) ++known;
+        m_Ui->textEdit->append(
+            tr("%1 photos found, %2 of them with capture time or exposure.")
+                .arg(shots.size())
+                .arg(known));
         if (brackets.empty()) {
             QMessageBox::warning(
                 this, tr("Warning"),

@@ -94,6 +94,8 @@ class BatchHDRDialog : public QDialog {
     class QCheckBox *m_autoGroups = nullptr;
     //! splits m_bracketed into brackets; false if that is not possible
     bool makeGroups();
+    //! lists the photos of the input folder
+    void scanInputFolder();
     QStringList m_written;
     QString m_output_file_name_base;
     IOWorker *m_IO_Worker;
