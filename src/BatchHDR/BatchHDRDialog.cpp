@@ -514,13 +514,7 @@ bool BatchHDRDialog::makeGroups() {
 void BatchHDRDialog::batch_hdr() {
     m_processing = true;
 
-    if (m_abort) {
-        qDebug() << "Aborted";
-        QApplication::restoreOverrideCursor();
-        // DAVIDE _ HDR WIZARD
-        // m_hdrCreationManager->reset();
-        this->reject();
-    }
+    if (stopIfCancelled()) return;
     if (!m_groups.isEmpty()) {
         const QStringList toProcess = m_groups.takeFirst();
         m_groupSize = toProcess.size();
@@ -559,7 +553,18 @@ void BatchHDRDialog::batch_hdr() {
     }
 }
 
+bool BatchHDRDialog::stopIfCancelled() {
+    // every step checks here, so Cancel takes effect at the next one
+    // instead of only after a whole HDR is made
+    if (!m_abort) return false;
+    qDebug() << "Aborted";
+    QApplication::restoreOverrideCursor();
+    this->reject();
+    return true;
+}
+
 void BatchHDRDialog::align() {
+    if (stopIfCancelled()) return;
     QStringList filesLackingExif = m_hdrCreationManager->getFilesWithoutExif();
     if (!filesLackingExif.isEmpty()) {
         qDebug() << "BatchHDRDialog::align Error: missing EXIF data";
@@ -587,6 +592,7 @@ void BatchHDRDialog::align() {
 
 void BatchHDRDialog::create_hdr(int) {
     qDebug() << "BatchHDRDialog::create_hdr()";
+    if (stopIfCancelled()) return;
 
     m_Ui->progressBar->hide();
     m_Ui->textEdit->append(tr("Creating HDR..."));
@@ -671,6 +677,7 @@ void BatchHDRDialog::createHdrFinished() {
 
 void BatchHDRDialog::error_while_loading(const QString &message) {
     qDebug() << message;
+    if (stopIfCancelled()) return;
     // this bracket cannot be made (photos of different size, a file that
     // does not load): note it and go on with the next one
     QString reason = message;

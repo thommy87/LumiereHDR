@@ -97,6 +97,8 @@ class BatchHDRDialog : public QDialog {
     bool makeGroups();
     //! lists the photos of the input folder
     void scanInputFolder();
+    //! closes the dialog if Cancel was pressed; true then
+    bool stopIfCancelled();
     QStringList m_written;
     QString m_output_file_name_base;
     IOWorker *m_IO_Worker;
