@@ -40,6 +40,7 @@ class PreferencesDialog : public QDialog {
 
    private:
     QScopedPointer<Ui::PreferencesDialog> m_Ui;
+    class QCheckBox *m_lensCorrection = nullptr;
 
    public:
     PreferencesDialog(QWidget *parent, int tab = 0);

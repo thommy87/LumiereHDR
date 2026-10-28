@@ -635,6 +635,15 @@ void LuminanceOptions::setRawUseNoiseReduction(bool b) {
     m_settingHolder->setValue(KEY_USE_NOISE, b);
 }
 
+bool LuminanceOptions::isRawLensCorrection() const {
+    return m_settingHolder->value(QStringLiteral("RawLensCorrection"), true)
+        .toBool();
+}
+
+void LuminanceOptions::setRawLensCorrection(bool b) {
+    m_settingHolder->setValue(QStringLiteral("RawLensCorrection"), b);
+}
+
 bool LuminanceOptions::isRawUseChromaAber() const {
     return m_settingHolder->value(KEY_USE_CHROMA, false).toBool();
 }

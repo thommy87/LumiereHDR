@@ -26,6 +26,8 @@
 
 #include <QtGlobal>
 #include <QColorDialog>
+#include <QGridLayout>
+#include <QCheckBox>
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -69,6 +71,23 @@ inline int value2pos(double value, int minpos, int maxpos, double minv,
 PreferencesDialog::PreferencesDialog(QWidget *p, int tab)
     : QDialog(p), m_Ui(new Ui::PreferencesDialog) {
     m_Ui->setupUi(this);
+
+#ifdef HAVE_LENSFUN
+    // lens correction for RAW photos, next to the chromatic aberration box
+    m_lensCorrection = new QCheckBox(
+        tr("Correct the lens (distortion, vignetting, colour fringes) with "
+           "the Lensfun database"),
+        this);
+    m_lensCorrection->setToolTip(
+        tr("Uses the camera and lens named in the RAW file. Lenses that are "
+           "not in the database are left as they are."));
+    if (QLayout *rawLayout = m_Ui->use_chroma_CB->parentWidget()->layout()) {
+        if (QGridLayout *grid = qobject_cast<QGridLayout *>(rawLayout))
+            grid->addWidget(m_lensCorrection, grid->rowCount(), 0, 1, -1);
+        else
+            rawLayout->addWidget(m_lensCorrection);
+    }
+#endif
 
     // sharp theme icons where the bundled theme has them
     if (QIcon::hasThemeIcon(QStringLiteral("tonemap")))
@@ -224,6 +243,8 @@ void PreferencesDialog::on_okButton_clicked() {
     luminance_options.setRawUseSaturation(m_Ui->use_sat_CB->isChecked());
     luminance_options.setRawUseNoiseReduction(m_Ui->use_noise_CB->isChecked());
     luminance_options.setRawUseChromaAber(m_Ui->use_chroma_CB->isChecked());
+    if (m_lensCorrection)
+        luminance_options.setRawLensCorrection(m_lensCorrection->isChecked());
     luminance_options.setRawNoiseReductionThreshold(m_Ui->threshold_spinBox->value());
     luminance_options.setRawUserBlack(m_Ui->user_black_spinBox->value());
     luminance_options.setRawUserSaturation(m_Ui->user_sat_spinBox->value());
@@ -601,6 +622,8 @@ void PreferencesDialog::from_options_to_gui() {
     m_Ui->threshold_horizontalSlider->setValue(luminance_options.getRawNoiseReductionThreshold());
     m_Ui->threshold_spinBox->setValue(luminance_options.getRawNoiseReductionThreshold());
     m_Ui->use_chroma_CB->setChecked(luminance_options.isRawUseChromaAber());
+    if (m_lensCorrection)
+        m_lensCorrection->setChecked(luminance_options.isRawLensCorrection());
 
     double r_minv = m_Ui->red_doubleSpinBox->minimum();
     double r_maxv = m_Ui->red_doubleSpinBox->maximum();

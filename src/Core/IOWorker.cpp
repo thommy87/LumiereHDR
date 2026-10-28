@@ -33,6 +33,8 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QFileInfo>
+#include <QDir>
+#include <QCoreApplication>
 #include <QScopedPointer>
 #include <QString>
 
@@ -351,6 +353,16 @@ pfs::Params getRawSettings(const LuminanceOptions &opts) {
     if (opts.isRawUseNoiseReduction()) {
         p.set("raw.noise_reduction_threshold",
               opts.getRawNoiseReductionThreshold());
+    }
+
+    if (opts.isRawLensCorrection()) {
+        p.set("raw.lens_correction", true);
+        // the installer puts the Lensfun database next to the program
+        const QString bundled =
+            QCoreApplication::applicationDirPath() + QStringLiteral("/lensfun");
+        if (QDir(bundled).exists())
+            p.set("raw.lensfun_database",
+                  std::string(QFile::encodeName(bundled).constData()));
     }
 
     if (opts.isRawUseChromaAber()) {

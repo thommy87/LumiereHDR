@@ -86,7 +86,7 @@ jobs:
             toolchain:p cmake:p ninja:p pkgconf:p
             qt6-base:p qt6-tools:p qt6-svg:p qt6-5compat:p qt6-translations:p
             boost:p exiv2:p libtiff:p libpng:p openexr:p gsl:p libjpeg-turbo:p
-            cfitsio:p libraw:p fftw:p lcms2:p eigen3:p libavif:p libjxl:p libwebp:p libultrahdr:p
+            cfitsio:p libraw:p fftw:p lcms2:p eigen3:p libavif:p libjxl:p libwebp:p libultrahdr:p lensfun:p
 
       - name: Build
         run: |
@@ -108,6 +108,9 @@ jobs:
           cp -r help hdrhtml icons "$dist/"
           find build -name 'lang_*.qm' -exec cp {} "$dist/i18n/" \;
           cp LICENSE README.md PRIVACY.md CODE_SIGNING_POLICY.md "$dist/"
+          # the Lensfun lens database, read by the RAW lens correction
+          lensdb=$(ls -d /ucrt64/share/lensfun/version_* 2>/dev/null | tail -1)
+          if [ -n "$lensdb" ]; then mkdir -p "$dist/lensfun" && cp "$lensdb"/*.xml "$dist/lensfun/"; fi
           deploy=$(command -v windeployqt6 || command -v windeployqt-qt6 || command -v windeployqt)
           "$deploy" --release --no-translations --no-compiler-runtime --no-opengl-sw "$dist/lumierehdr.exe"
           # copy every MSYS2 DLL the binaries and Qt plugins depend on
