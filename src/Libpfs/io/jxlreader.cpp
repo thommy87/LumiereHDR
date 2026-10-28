@@ -111,9 +111,14 @@ void JxlReader::read(Frame &frame, const Params &params) {
             // lossy files can be decoded straight into what we need: linear
             // Rec. 709 for HDR, sRGB for photos
             if (!info.uses_original_profile) {
-                JxlColorEncoding wanted;
-                JxlColorEncodingSetToSRGB(&wanted, JXL_FALSE);
-                if (pq || hlg) wanted.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+                JxlColorEncoding wanted = {};
+                wanted.color_space = JXL_COLOR_SPACE_RGB;
+                wanted.white_point = JXL_WHITE_POINT_D65;
+                wanted.primaries = JXL_PRIMARIES_SRGB;
+                wanted.transfer_function = (pq || hlg)
+                                               ? JXL_TRANSFER_FUNCTION_LINEAR
+                                               : JXL_TRANSFER_FUNCTION_SRGB;
+                wanted.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
                 JxlDecoderSetPreferredColorProfile(decoder.get(), &wanted);
             }
         } else if (status == JXL_DEC_NEED_IMAGE_OUT_BUFFER) {

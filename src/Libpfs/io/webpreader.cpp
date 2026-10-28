@@ -60,7 +60,7 @@ void WebpReader::read(Frame &frame, const Params &params) {
         WebPDecodeRGB(m_file.data(), m_file.size(), &width, &height);
     if (!rgb) throw ReadException("Cannot decode the WebP file " + filename());
 
-    Frame tempFrame(size_t(width), size_t(height));
+    Frame tempFrame(static_cast<size_t>(width), static_cast<size_t>(height));
     Channel *r, *g, *b;
     tempFrame.createXYZChannels(r, g, b);
     const size_t size = size_t(width) * size_t(height);
