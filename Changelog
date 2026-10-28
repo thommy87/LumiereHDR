@@ -1,3 +1,6 @@
+Changes LumièreHDR 2.13.2
+NEW: the HDR preview says clearly that it needs an HDR screen
+
 Changes LumièreHDR 2.13.1
 FIX: batch HDR read the folder chosen last time instead of the new one
 FIX: photos without capture time or exposure in the folder (screenshots,
