@@ -2480,6 +2480,14 @@ ERROR: %2</source>
 <context>
     <name>HdrViewer</name>
     <message>
+        <source>HDR preview...</source>
+        <translation>HDR-Vorschau …</translation>
+    </message>
+    <message>
+        <source>Shows this HDR with real HDR brightness on an HDR screen, such as an HDR TV or monitor with &quot;Use HDR&quot; switched on in Windows</source>
+        <translation>Zeigt dieses HDR mit echter HDR-Helligkeit auf einem HDR-Bildschirm, etwa einem HDR-Fernseher oder -Monitor mit eingeschaltetem „HDR verwenden“ in Windows</translation>
+    </message>
+    <message>
         <location filename="../src/Viewers/HdrViewer.cpp" line="112"/>
         <source>&amp;Mapping:</source>
         <translation>Da&amp;rstellung:</translation>
@@ -7304,6 +7312,40 @@ Error: %1</source>
     <message>
         <source>Cancelled</source>
         <translation>Abgebrochen</translation>
+    </message>
+</context>
+<context>
+    <name>HdrDisplayCanvas</name>
+    <message>
+        <source>Direct3D is not available, so the HDR preview cannot be shown.</source>
+        <translation>Direct3D ist nicht verfügbar, daher kann die HDR-Vorschau nicht angezeigt werden.</translation>
+    </message>
+    <message>
+        <source>HDR is on for this screen: highlights up to about %1 nits.</source>
+        <translation>HDR ist für diesen Bildschirm an: Lichter bis etwa %1 Nits.</translation>
+    </message>
+    <message>
+        <source>HDR is off for this screen, so the picture is shown without HDR brightness. Switch on &quot;Use HDR&quot; in the Windows display settings, or move this window to an HDR screen.</source>
+        <translation>HDR ist für diesen Bildschirm aus, daher wird das Bild ohne HDR-Helligkeit gezeigt. Schalte in den Windows-Anzeigeeinstellungen „HDR verwenden“ ein oder schiebe dieses Fenster auf einen HDR-Bildschirm.</translation>
+    </message>
+</context>
+<context>
+    <name>HdrDisplayWindow</name>
+    <message>
+        <source>HDR preview</source>
+        <translation>HDR-Vorschau</translation>
+    </message>
+    <message>
+        <source>Brighter or darker; the highlights stay within what the screen can show</source>
+        <translation>Heller oder dunkler; die Lichter bleiben im Bereich, den der Bildschirm zeigen kann</translation>
+    </message>
+    <message>
+        <source>%1 EV</source>
+        <translation>%1 EV</translation>
+    </message>
+    <message>
+        <source>Exposure:</source>
+        <translation>Belichtung:</translation>
     </message>
 </context>
 </TS>
