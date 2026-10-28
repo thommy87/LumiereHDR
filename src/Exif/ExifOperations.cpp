@@ -25,6 +25,7 @@
 //! \author Franco Comida
 //! \author Davide Anastasia <davideanastasia@users.sourceforge.net>
 
+#include <QDateTime>
 #include <QDebug>
 
 #include <cmath>
@@ -385,6 +386,49 @@ float getExposureTime(const std::string &filename) {
     } catch (Exiv2Error &e) {
         return -1;
     }
+}
+
+ShotInfo getShotInfo(const std::string &filename) {
+    ShotInfo info;
+    try {
+        ImagePtr image = Exiv2::ImageFactory::open(filename);
+        image->readMetadata();
+        Exiv2::ExifData &exif = image->exifData();
+        if (exif.empty()) return info;
+        auto number = [&exif](const char *key) -> double {
+            Exiv2::ExifData::const_iterator it = exif.findKey(Exiv2::ExifKey(key));
+            return it != exif.end() ? double(it->toFloat()) : -1.0;
+        };
+        auto text = [&exif](const char *key) -> std::string {
+            Exiv2::ExifData::const_iterator it = exif.findKey(Exiv2::ExifKey(key));
+            return it != exif.end() ? it->toString() : std::string();
+        };
+        info.exposureTime = getExposureTime(filename);
+        info.fNumber = number("Exif.Photo.FNumber");
+        info.iso = number("Exif.Photo.ISOSpeedRatings");
+
+        // "YYYY:MM:DD HH:MM:SS", read as UTC so summer time does not matter
+        const QDateTime taken = QDateTime::fromString(
+            QString::fromStdString(text("Exif.Photo.DateTimeOriginal")),
+            QStringLiteral("yyyy:MM:dd HH:mm:ss"));
+        if (taken.isValid()) {
+            QDateTime utc = taken;
+            utc.setTimeSpec(Qt::UTC);
+            info.captureTime = double(utc.toMSecsSinceEpoch()) / 1000.0;
+            // hundredths and so on, as digits after a decimal point
+            const QString sub = QString::fromStdString(
+                                    text("Exif.Photo.SubSecTimeOriginal"))
+                                    .trimmed();
+            if (!sub.isEmpty()) {
+                bool ok = false;
+                const double fraction =
+                    (QStringLiteral("0.") + sub).toDouble(&ok);
+                if (ok) info.captureTime += fraction;
+            }
+        }
+    } catch (Exiv2Error &) {
+    }
+    return info;
 }
 
 float getAverageLuminance(const std::string &filename) {

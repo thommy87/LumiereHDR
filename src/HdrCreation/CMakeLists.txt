@@ -5,6 +5,7 @@ SET(FILES_HXX
     ${CMAKE_CURRENT_SOURCE_DIR}/weights.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fusionoperator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mtb_alignment.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/bracketgrouping.h
 )
 SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/debevec.cpp
@@ -13,6 +14,7 @@ SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/weights.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fusionoperator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mtb_alignment.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bracketgrouping.cpp
 )
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})

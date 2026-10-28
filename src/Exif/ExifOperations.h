@@ -45,6 +45,16 @@ void copyExifData(const std::string &from, const std::string &to,
 float getAverageLuminance(const std::string &filename);
 
 float getExposureTime(const std::string &filename);
+
+//! when and how a photo was taken, for telling brackets apart; negative
+//! values mean unknown
+struct ShotInfo {
+    double captureTime = -1;  // seconds, from the camera's clock
+    double exposureTime = -1;
+    double fNumber = -1;
+    double iso = -1;
+};
+ShotInfo getShotInfo(const std::string &filename);
 }
 
 #endif

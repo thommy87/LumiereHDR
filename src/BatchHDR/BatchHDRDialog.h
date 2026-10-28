@@ -88,6 +88,12 @@ class BatchHDRDialog : public QDialog {
     QString m_tempDir;
 
     QStringList m_bracketed;
+    // the brackets still to make, each a list of files
+    QList<QStringList> m_groups;
+    int m_groupSize = 0;  // photos in the bracket being made
+    class QCheckBox *m_autoGroups = nullptr;
+    //! splits m_bracketed into brackets; false if that is not possible
+    bool makeGroups();
     QStringList m_written;
     QString m_output_file_name_base;
     IOWorker *m_IO_Worker;

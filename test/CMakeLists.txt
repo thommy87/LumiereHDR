@@ -157,6 +157,12 @@ TARGET_LINK_LIBRARIES(TestMTB common hdrcreation pfs
     ${LIBS})
 ADD_TEST(TestMTB TestMTB)
 
+ADD_EXECUTABLE(TestBracketGrouping TestBracketGrouping.cpp)
+TARGET_LINK_LIBRARIES(TestBracketGrouping hdrcreation
+    ${GTEST_BOTH_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT})
+ADD_TEST(TestBracketGrouping TestBracketGrouping)
+
 ADD_EXECUTABLE(TestMinMax TestMinMax.cpp)
 TARGET_LINK_LIBRARIES(TestMinMax ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 ADD_TEST(TestMinMax TestMinMax)
