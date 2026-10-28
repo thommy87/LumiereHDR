@@ -67,6 +67,7 @@ class TonemappingOptions {
     // applied to the result of every operator alike
     float postbrightness;  // exposure change in stops, 0 = none
     float postcontrast;    // -1 (flat) .. 0 (none) .. +1 (strong)
+    float postwarmth;      // -1 (cool) .. 0 (none) .. +1 (warm)
     // as shown in the tone mapping panel, for readable file names
     QString operatorLabel;  // e.g. "Natural contrast (Mantiuk 2006)"
     QString presetName;     // empty for own settings

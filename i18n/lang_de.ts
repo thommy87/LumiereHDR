@@ -5512,6 +5512,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QObject</name>
     <message>
+        <source>Warmth=%1</source>
+        <translation>Wärme=%1</translation>
+    </message>
+    <message>
         <source>Ultra HDR</source>
         <translation>Ultra HDR</translation>
     </message>
@@ -6156,6 +6160,18 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 </context>
 <context>
     <name>TonemappingPanel</name>
+    <message>
+        <source>&amp;Warmth</source>
+        <translation>&amp;Wärme</translation>
+    </message>
+    <message>
+        <source>Warmer (more yellow-red) or cooler (more blue), like a white balance shift. The same for every operator.</source>
+        <translation>Wärmer (mehr Gelb-Rot) oder kühler (mehr Blau), wie ein verschobener Weißabgleich. Gleich für alle Operatoren.</translation>
+    </message>
+    <message>
+        <source>Vintage</source>
+        <translation>Vintage</translation>
+    </message>
     <message>
         <source>&amp;Queue...</source>
         <translation>&amp;Warteschlange …</translation>

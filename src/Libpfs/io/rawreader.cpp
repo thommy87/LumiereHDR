@@ -487,8 +487,16 @@ void RAWReader::read(Frame &frame, const Params &params) {
     bool isFoveon = P1.is_foveon;
 
     // TODO check if super ccd can be identified by filters == 1263225675
-    if ((p.userQuality_ < 3) || isFoveon || !(isBayer() || isXtrans()) || (m_filters == 1263225675)) {
+    const bool ownDemosaic = !((p.userQuality_ < 3) || isFoveon ||
+                               !(isBayer() || isXtrans()) ||
+                               (m_filters == 1263225675));
+    if (!ownDemosaic) {
         OUT.no_interpolation = 0;
+    } else {
+        // our demosaicing works on the camera's own colours; converting
+        // the not yet demosaiced pixels to sRGB kept only the diagonal of
+        // the colour matrix and left RAW photos flat and warm
+        OUT.output_color = 0;
     }
 
     p.wbMethod_ = 3;
@@ -497,6 +505,10 @@ void RAWReader::read(Frame &frame, const Params &params) {
         m_processor.recycle();
         throw pfs::io::ReadException("Error Processing RAW File");
     }
+    // camera colours -> sRGB (linear), applied after our own demosaicing
+    float rgbCam[3][4];
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 4; ++j) rgbCam[i][j] = C.rgb_cam[i][j];
 
     libraw_processed_image_t *image = m_processor.dcraw_make_mem_image();
 
@@ -716,6 +728,19 @@ void RAWReader::read(Frame &frame, const Params &params) {
     free ( r );
     free ( rawdata[0] );
     free ( rawdata );
+
+    // what LibRaw does for its own demosaicing: camera colours to sRGB
+    {
+#ifdef _OPENMP
+    #pragma omp parallel for
+#endif
+        for (size_t k = 0; k < size_t(W) * H; k++) {
+            const float cr = (*Xc)(k), cg = (*Yc)(k), cb = (*Zc)(k);
+            (*Xc)(k) = rgbCam[0][0] * cr + rgbCam[0][1] * cg + rgbCam[0][2] * cb;
+            (*Yc)(k) = rgbCam[1][0] * cr + rgbCam[1][1] * cg + rgbCam[1][2] * cb;
+            (*Zc)(k) = rgbCam[2][0] * cr + rgbCam[2][1] * cg + rgbCam[2][2] * cb;
+        }
+    }
 
     Array2Df *Ch[3] = {Xc, Yc, Zc};
 #ifdef _OPENMP
