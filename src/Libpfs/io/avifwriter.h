@@ -42,6 +42,14 @@ class AvifWriter : public FrameWriter {
     size_t m_fileSize = 0;
 };
 
+//! HDR AVIF from a merged HDR: 10 bit, Rec. 2020, PQ, for HDR screens
+class AvifHdrWriter : public FrameWriter {
+   public:
+    explicit AvifHdrWriter(const std::string &filename);
+
+    bool write(const pfs::Frame &frame, const pfs::Params &params);
+};
+
 }  // io
 }  // pfs
 

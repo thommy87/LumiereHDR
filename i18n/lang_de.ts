@@ -2543,6 +2543,10 @@ ERROR: %2</source>
 <context>
     <name>HdrWizard</name>
     <message>
+        <source>AVIF, JPEG XL, WebP (*.avif *.jxl *.webp *.AVIF *.JXL *.WEBP);;</source>
+        <translation>AVIF, JPEG XL, WebP (*.avif *.jxl *.webp *.AVIF *.JXL *.WEBP);;</translation>
+    </message>
+    <message>
         <source>&amp;Compute HDR</source>
         <translation>HDR &amp;berechnen</translation>
     </message>
@@ -3544,6 +3548,10 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>MainWindow</name>
+    <message>
+        <source>HDR AVIF, HDR JPEG XL (*.avif *.jxl *.AVIF *.JXL);;</source>
+        <translation>HDR-AVIF, HDR-JPEG-XL (*.avif *.jxl *.AVIF *.JXL);;</translation>
+    </message>
     <message>
         <source>Ultra HDR JPEG</source>
         <translation>Ultra-HDR-JPEG</translation>
@@ -5431,6 +5439,14 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>QObject</name>
+    <message>
+        <source>HDR AVIF, bright on HDR screens (*.avif *.AVIF);;</source>
+        <translation>HDR-AVIF, hell auf HDR-Bildschirmen (*.avif *.AVIF);;</translation>
+    </message>
+    <message>
+        <source>HDR JPEG XL, bright on HDR screens (*.jxl *.JXL);;</source>
+        <translation>HDR-JPEG-XL, hell auf HDR-Bildschirmen (*.jxl *.JXL);;</translation>
+    </message>
     <message>
         <source>Ultra HDR JPEG</source>
         <translation>Ultra-HDR-JPEG</translation>

@@ -42,6 +42,14 @@ class JxlWriter : public FrameWriter {
     size_t m_fileSize = 0;
 };
 
+//! HDR JPEG XL from a merged HDR: Rec. 2020, PQ, for HDR screens
+class JxlHdrWriter : public FrameWriter {
+   public:
+    explicit JxlHdrWriter(const std::string &filename);
+
+    bool write(const pfs::Frame &frame, const pfs::Params &params);
+};
+
 }  // io
 }  // pfs
 

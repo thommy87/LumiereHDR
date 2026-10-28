@@ -200,6 +200,8 @@ QString getHdrFileNameFromSaveDialog(const QString &suggestedFileName,
 
     QStringList validHdrExtensions;
     validHdrExtensions << "exr"
+                       << "avif"
+                       << "jxl"
                        << "hdr"
                        << "tif"
                        << "tiff"
@@ -212,6 +214,14 @@ QString getHdrFileNameFromSaveDialog(const QString &suggestedFileName,
     filetypes += QLatin1String("HDR TIFF (*.tiff *.tif *.TIFF *.TIT);;");
     filetypes += QLatin1String("Radiance RGBE (*.hdr *.pic *.HDR *.PIC);;");
     filetypes += QLatin1String("PFS Stream (*.pfs *.PFS);;");
+#ifdef HAVE_LIBAVIF
+    filetypes += QObject::tr(
+        "HDR AVIF, bright on HDR screens (*.avif *.AVIF);;");
+#endif
+#ifdef HAVE_LIBJXL
+    filetypes += QObject::tr(
+        "HDR JPEG XL, bright on HDR screens (*.jxl *.JXL);;");
+#endif
 
     QFileInfo qfi(suggestedFileName);
 
@@ -826,6 +836,7 @@ void MainWindow::on_fileOpenAction_triggered() {
     filetypes += QLatin1String(");;");
     filetypes += QLatin1String("OpenEXR (*.exr *.EXR);;");
     filetypes += QLatin1String("Radiance RGBE (*.hdr *.pic *.HDR *.PIC);;");
+    filetypes += tr("HDR AVIF, HDR JPEG XL (*.avif *.jxl *.AVIF *.JXL);;");
     filetypes += QLatin1String("TIFF images (*.TIFF *.TIF *.tiff *.tif);;");
 #if HAVE_CFITSIO
     filetypes += QLatin1String("FITS (*.fit *.FIT *.fits *.FITS);;");
@@ -923,6 +934,11 @@ void MainWindow::on_fileSaveAsAction_triggered() {
         QString format = qfi.suffix();
 
         pfs::Params p;
+        // an HDR saved as AVIF or JPEG XL stays HDR (PQ, Rec. 2020)
+        if (format.compare(QLatin1String("avif"), Qt::CaseInsensitive) == 0)
+            p.set("format", std::string("avif_hdr"));
+        if (format.compare(QLatin1String("jxl"), Qt::CaseInsensitive) == 0)
+            p.set("format", std::string("jxl_hdr"));
         if (format == QLatin1String("tif") || format == QLatin1String("tiff")) {
             TiffModeDialog t(true, -1, this);
             if (t.exec() == QDialog::Rejected) return;
