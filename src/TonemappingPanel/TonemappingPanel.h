@@ -199,7 +199,8 @@ class TonemappingPanel : public QWidget {
     QString & getDatabaseConnection();
 
     //! name and settings file of the built-in and the user's presets
-    QList<QPair<QString, QString>> presets() const;
+    //! (name, file) of every preset, built in and own
+    static QList<QPair<QString, QString>> presets();
 
    public Q_SLOTS:
     void setEnabled(bool);

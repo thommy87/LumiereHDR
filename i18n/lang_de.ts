@@ -543,6 +543,22 @@ Continue?</source>
 <context>
     <name>BatchTMDialog</name>
     <message>
+        <source>&amp;Presets</source>
+        <translation>&amp;Presets</translation>
+    </message>
+    <message>
+        <source>Adds presets of the tone mapping panel, e.g. Natural or Vivid</source>
+        <translation>Fügt Presets aus der Dynamikkompression hinzu, etwa Natürlich oder Kräftig</translation>
+    </message>
+    <message>
+        <source>All presets</source>
+        <translation>Alle Presets</translation>
+    </message>
+    <message>
+        <source>Preset: %1</source>
+        <translation>Preset: %1</translation>
+    </message>
+    <message>
         <location filename="../src/BatchTM/BatchTMDialog.ui" line="14"/>
         <source>Batch Tone Mapping</source>
         <translation>Stapel-Dynamikkompression</translation>
