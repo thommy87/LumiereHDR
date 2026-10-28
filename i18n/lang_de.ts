@@ -157,6 +157,30 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>BatchHDRDialog</name>
     <message>
+        <source>Find the brackets &amp;automatically (capture time and exposure)</source>
+        <translation>Belichtungsreihen &amp;automatisch erkennen (Aufnahmezeit und Belichtung)</translation>
+    </message>
+    <message>
+        <source>Photos taken right after each other with different exposures become one HDR; a pause or a repeated exposure starts the next. Brackets may have different lengths.</source>
+        <translation>Fotos, die direkt nacheinander mit unterschiedlicher Belichtung aufgenommen wurden, ergeben ein HDR; eine Pause oder eine wiederholte Belichtung beginnt die nächste Reihe. Die Reihen dürfen unterschiedlich lang sein.</translation>
+    </message>
+    <message>
+        <source>These photos carry no capture time or exposure, so the brackets cannot be found automatically. Switch off the automatic search and set the number of photos per bracket.</source>
+        <translation>Diese Fotos enthalten weder Aufnahmezeit noch Belichtung, daher lassen sich die Reihen nicht automatisch erkennen. Schalte die automatische Erkennung aus und stelle die Anzahl Fotos pro Reihe ein.</translation>
+    </message>
+    <message>
+        <source>Found %1 brackets (photos each: %2).</source>
+        <translation>%1 Belichtungsreihen erkannt (Fotos je Reihe: %2).</translation>
+    </message>
+    <message>
+        <source>%1 single photos belong to no bracket and are left out.</source>
+        <translation>%1 einzelne Fotos gehören zu keiner Reihe und werden ausgelassen.</translation>
+    </message>
+    <message>
+        <source>No brackets were found in this folder.</source>
+        <translation>In diesem Ordner wurden keine Belichtungsreihen gefunden.</translation>
+    </message>
+    <message>
         <location filename="../src/BatchHDR/BatchHDRDialog.ui" line="14"/>
         <source>Batch HDR</source>
         <translation>HDR-Stapelverarbeitung</translation>

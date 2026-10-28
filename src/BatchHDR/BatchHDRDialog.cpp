@@ -24,6 +24,12 @@
 */
 
 #include <BatchHDR/BatchHDRDialog.h>
+#include <cmath>
+#include <algorithm>
+#include <Exif/ExifOperations.h>
+#include <HdrCreation/bracketgrouping.h>
+#include <QGridLayout>
+#include <QCheckBox>
 #include <QRegularExpression>
 #include <BatchHDR/ui_BatchHDRDialog.h>
 #include <Common/CommonFunctions.h>
@@ -71,6 +77,29 @@ BatchHDRDialog::BatchHDRDialog(QWidget *p, QSqlDatabase db)
 
     m_hdrCreationManager = new HdrCreationManager;
     m_IO_Worker = new IOWorker;
+
+    // find the brackets by capture time and exposure, so they may differ
+    // in length; the fixed count stays for photos without that information
+    m_autoGroups = new QCheckBox(
+        tr("Find the brackets &automatically (capture time and exposure)"),
+        this);
+    m_autoGroups->setToolTip(
+        tr("Photos taken right after each other with different exposures "
+           "become one HDR; a pause or a repeated exposure starts the next. "
+           "Brackets may have different lengths."));
+    m_autoGroups->setChecked(true);
+    if (QLayout *layout = m_Ui->spinBox->parentWidget()->layout()) {
+        if (QGridLayout *grid = qobject_cast<QGridLayout *>(layout))
+            grid->addWidget(m_autoGroups, grid->rowCount(), 0, 1, -1);
+        else
+            layout->addWidget(m_autoGroups);
+    }
+    auto fixedCount = [this](bool automatic) {
+        m_Ui->spinBox->setEnabled(!automatic);
+        m_Ui->horizontalSlider->setEnabled(!automatic);
+    };
+    connect(m_autoGroups, &QCheckBox::toggled, this, fixedCount);
+    fixedCount(true);
 
     connect(m_Ui->horizontalSlider, &QAbstractSlider::valueChanged, this,
             &BatchHDRDialog::num_bracketed_changed);
@@ -333,27 +362,7 @@ void BatchHDRDialog::on_startButton_clicked() {
                     QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     }
 
-    if (m_bracketed.count() < m_Ui->spinBox->value()) {
-        qDebug() << "Total number of pictures must be a multiple of number of "
-                    "bracketed images";
-        QMessageBox::warning(
-            0, tr("Warning"),
-            tr("Total number of pictures must be a multiple of "
-               "number of bracketed images."),
-            QMessageBox::Ok, QMessageBox::NoButton);
-        return;
-    }
-
-    if (m_bracketed.count() % m_Ui->spinBox->value() != 0) {
-        qDebug() << "Total number of pictures must be a multiple of number of "
-                    "bracketed images";
-        QMessageBox::warning(
-            0, tr("Warning"),
-            tr("Total number of pictures must be a multiple of "
-               "number of bracketed images."),
-            QMessageBox::Ok, QMessageBox::NoButton);
-        return;
-    }
+    if (doStart && !makeGroups()) return;
 
     if (doStart) {
         m_Ui->horizontalSlider->setEnabled(false);
@@ -363,13 +372,98 @@ void BatchHDRDialog::on_startButton_clicked() {
         m_Ui->groupBoxAg->setEnabled(false);
         m_Ui->groupBoxIO->setEnabled(false);
         m_Ui->startButton->setEnabled(false);
-        m_total = m_bracketed.count() / m_Ui->spinBox->value();
+        m_autoGroups->setEnabled(false);
+        m_total = m_groups.count();
         m_Ui->progressBar->setMaximum(m_total);
         m_Ui->textEdit->append(tr("Started processing..."));
         // mouse pointer to busy
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         batch_hdr();
     }
+}
+
+bool BatchHDRDialog::makeGroups() {
+    m_groups.clear();
+    if (m_autoGroups->isChecked()) {
+        std::vector<libhdr::Shot> shots;
+        std::vector<int> order;
+        for (int i = 0; i < m_bracketed.size(); ++i) {
+            const ExifOperations::ShotInfo info = ExifOperations::getShotInfo(
+                QFile::encodeName(m_bracketed.at(i)).constData());
+            libhdr::Shot shot;
+            shot.captureTime = info.captureTime;
+            shot.duration = info.exposureTime;
+            if (info.exposureTime > 0) {
+                // the light let in, in stops: time, sensitivity, aperture
+                shot.exposure = std::log2(info.exposureTime);
+                if (info.iso > 0) shot.exposure += std::log2(info.iso / 100.0);
+                if (info.fNumber > 0) shot.exposure -= 2 * std::log2(info.fNumber);
+                shot.hasExposure = true;
+            }
+            shots.push_back(shot);
+            order.push_back(i);
+        }
+        // in the order taken when every photo has a time, else by name
+        const bool allTimed = std::all_of(
+            shots.begin(), shots.end(),
+            [](const libhdr::Shot &s) { return s.captureTime >= 0; });
+        if (allTimed)
+            std::stable_sort(order.begin(), order.end(), [&shots](int a, int b) {
+                return shots[a].captureTime < shots[b].captureTime;
+            });
+        std::vector<libhdr::Shot> taken;
+        for (int i : order) taken.push_back(shots[i]);
+        const std::vector<std::vector<size_t>> brackets =
+            libhdr::groupBrackets(taken);
+        if (brackets.empty()) {
+            QMessageBox::warning(
+                this, tr("Warning"),
+                tr("These photos carry no capture time or exposure, so the "
+                   "brackets cannot be found automatically. Switch off the "
+                   "automatic search and set the number of photos per "
+                   "bracket."));
+            return false;
+        }
+        int single = 0;
+        for (const std::vector<size_t> &bracket : brackets) {
+            if (bracket.size() < 2) {
+                ++single;
+                continue;
+            }
+            QStringList files;
+            for (size_t k : bracket) files << m_bracketed.at(order[k]);
+            m_groups << files;
+        }
+        QStringList lengths;
+        for (const QStringList &group : m_groups)
+            lengths << QString::number(group.size());
+        m_Ui->textEdit->append(tr("Found %1 brackets (photos each: %2).")
+                                   .arg(m_groups.size())
+                                   .arg(lengths.join(QStringLiteral(", "))));
+        if (single)
+            m_Ui->textEdit->append(
+                tr("%1 single photos belong to no bracket and are left out.")
+                    .arg(single));
+        if (m_groups.isEmpty()) {
+            QMessageBox::warning(this, tr("Warning"),
+                                 tr("No brackets were found in this folder."));
+            return false;
+        }
+        return true;
+    }
+
+    const int count = m_Ui->spinBox->value();
+    if (m_bracketed.count() < count || m_bracketed.count() % count != 0) {
+        QMessageBox::warning(
+            0, tr("Warning"),
+            tr("Total number of pictures must be a multiple of "
+               "number of bracketed images."),
+            QMessageBox::Ok, QMessageBox::NoButton);
+        return false;
+    }
+    for (int i = 0; i < m_bracketed.count(); i += count)
+        m_groups << m_bracketed.mid(i, count);
+    return true;
 }
 
 void BatchHDRDialog::batch_hdr() {
@@ -382,17 +476,15 @@ void BatchHDRDialog::batch_hdr() {
         // m_hdrCreationManager->reset();
         this->reject();
     }
-    if (!m_bracketed.isEmpty()) {
-        QFileInfo fi1(m_bracketed.at(0));
-        QFileInfo fi2(m_bracketed.at(m_Ui->spinBox->value() - 1));
+    if (!m_groups.isEmpty()) {
+        const QStringList toProcess = m_groups.takeFirst();
+        m_groupSize = toProcess.size();
+        QFileInfo fi1(toProcess.first());
+        QFileInfo fi2(toProcess.last());
         m_output_file_name_base =
             fi1.completeBaseName() + "-" + fi2.completeBaseName();
         m_Ui->textEdit->append(tr("Loading files..."));
         m_numProcessed++;
-        QStringList toProcess;
-        for (int i = 0; i < m_Ui->spinBox->value(); ++i) {
-            toProcess << m_bracketed.takeFirst();
-        }
         qDebug() << "BatchHDRDialog::batch_hdr() Files to process: "
                  << toProcess;
         // DAVIDE _ HDR CREATION
@@ -448,7 +540,7 @@ void BatchHDRDialog::create_hdr(int) {
     if (m_Ui->autoAG_checkBox->isChecked()) {
         m_Ui->textEdit->append(tr("Doing auto anti-ghosting..."));
         QList<QPair<int, int>> HV_offsets;
-        for (int i = 0; i < m_Ui->spinBox->value(); i++) {
+        for (int i = 0; i < m_groupSize; i++) {
             HV_offsets.append(qMakePair(0, 0));
         }
         float patchesPercent;
@@ -573,7 +665,7 @@ void BatchHDRDialog::processed() {
 }
 
 void BatchHDRDialog::try_to_continue() {
-    if (m_processed == m_Ui->spinBox->value()) {
+    if (m_processed == m_groupSize) {
         m_processed = 0;
         if (m_loading_error) {
             m_loading_error = false;
