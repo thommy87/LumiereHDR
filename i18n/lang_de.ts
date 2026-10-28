@@ -2488,6 +2488,10 @@ ERROR: %2</source>
 <context>
     <name>HdrViewer</name>
     <message>
+        <source>HDR preview (HDR screens)...</source>
+        <translation>HDR-Vorschau (HDR-Bildschirme) …</translation>
+    </message>
+    <message>
         <source>HDR preview...</source>
         <translation>HDR-Vorschau …</translation>
     </message>
@@ -7339,6 +7343,10 @@ Error: %1</source>
 </context>
 <context>
     <name>HdrDisplayWindow</name>
+    <message>
+        <source>&lt;b&gt;Only on HDR screens:&lt;/b&gt; this preview shows real HDR brightness only on an HDR monitor or HDR TV with &quot;Use HDR&quot; switched on in the Windows display settings. On a normal screen it looks like the usual view.</source>
+        <translation>&lt;b&gt;Nur auf HDR-Bildschirmen:&lt;/b&gt; Diese Vorschau zeigt echte HDR-Helligkeit nur auf einem HDR-Monitor oder HDR-Fernseher, bei dem in den Windows-Anzeigeeinstellungen „HDR verwenden“ eingeschaltet ist. Auf einem normalen Bildschirm sieht sie aus wie die gewöhnliche Ansicht.</translation>
+    </message>
     <message>
         <source>HDR preview</source>
         <translation>HDR-Vorschau</translation>

@@ -304,6 +304,17 @@ HdrDisplayWindow::HdrDisplayWindow(std::shared_ptr<pfs::Frame> hdr,
     setAttribute(Qt::WA_DeleteOnClose);
     resize(1100, 760);
 
+    // the preview only shows more than the normal view on a real HDR screen
+    QLabel *hint = new QLabel(
+        tr("<b>Only on HDR screens:</b> this preview shows real HDR "
+           "brightness only on an HDR monitor or HDR TV with \"Use HDR\" "
+           "switched on in the Windows display settings. On a normal screen "
+           "it looks like the usual view."),
+        this);
+    hint->setWordWrap(true);
+    hint->setFrameShape(QFrame::StyledPanel);
+    hint->setMargin(6);
+
     m_canvas = new HdrDisplayCanvas(this);
     m_canvas->setImage(std::move(hdr));
 
@@ -334,6 +345,7 @@ HdrDisplayWindow::HdrDisplayWindow(std::shared_ptr<pfs::Frame> hdr,
     controls->addWidget(m_exposureLabel);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(hint);
     layout->addWidget(m_canvas, 1);
     layout->addLayout(controls);
     layout->addWidget(m_status);

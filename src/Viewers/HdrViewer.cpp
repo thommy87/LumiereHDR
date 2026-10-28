@@ -108,7 +108,8 @@ void HdrViewer::initUi() {
     mToolBar->addSeparator();
 #ifdef Q_OS_WIN
     // the picture with real HDR brightness, on an HDR screen
-    QAction *hdrPreview = mToolBar->addAction(tr("HDR preview..."));
+    QAction *hdrPreview =
+        mToolBar->addAction(tr("HDR preview (HDR screens)..."));
     hdrPreview->setToolTip(
         tr("Shows this HDR with real HDR brightness on an HDR screen, such "
            "as an HDR TV or monitor with \"Use HDR\" switched on in "
