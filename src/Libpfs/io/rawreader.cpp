@@ -35,6 +35,9 @@
 #include <Libpfs/fixedstrideiterator.h>
 #include <Libpfs/frame.h>
 #include <Libpfs/io/rawreader.h>
+#ifdef HAVE_LENSFUN
+#include <Libpfs/io/lenscorrection.h>
+#endif
 #include <Libpfs/utils/transform.h>
 #include "sleef.c"
 #include "opthelper.h"
@@ -436,6 +439,26 @@ void RAWReader::read(Frame &frame, const Params &params) {
         throw pfs::io::ReadException("Error Unpacking RAW File");
     }
 
+#ifdef HAVE_LENSFUN
+    // camera and lens, before LibRaw forgets them; the correction itself
+    // comes after demosaicing, on linear RGB
+    LensInfo lensInfo;
+    lensInfo.make = P1.make;
+    lensInfo.model = P1.model;
+    lensInfo.lens = m_processor.imgdata.lens.Lens;
+    lensInfo.focal = P2.focal_len;
+    lensInfo.aperture = P2.aperture;
+    bool lensCorrection = false;
+    params.get("raw.lens_correction", lensCorrection);
+    std::string lensDatabase;
+    params.get("raw.lensfun_database", lensDatabase);
+    auto correct = [&](Frame &f) {
+        if (lensCorrection) correctLens(f, lensInfo, lensDatabase);
+    };
+#else
+    auto correct = [](Frame &) {};
+#endif
+
     PRINT_DEBUG("Width: " << S.width << " Height: " << S.height);
     PRINT_DEBUG("iWidth: " << S.iwidth << " iHeight: " << S.iheight);
     PRINT_DEBUG("Make: " << P1.make);
@@ -509,6 +532,7 @@ void RAWReader::read(Frame &frame, const Params &params) {
         LibRaw::dcraw_clear_mem(image);
         m_processor.recycle();
 
+        correct(tempFrame);
         FrameReader::read(tempFrame, params);
         frame.swap(tempFrame);
         return;
@@ -723,6 +747,7 @@ void RAWReader::read(Frame &frame, const Params &params) {
             }
         }
 
+    correct(tempFrame);
     FrameReader::read(tempFrame, params);
     frame.swap(tempFrame);
 }

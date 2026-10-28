@@ -4680,6 +4680,14 @@ Do you want to continue?</source>
 <context>
     <name>PreferencesDialog</name>
     <message>
+        <source>Correct the lens (distortion, vignetting, colour fringes) with the Lensfun database</source>
+        <translation>Objektiv korrigieren (Verzeichnung, Vignettierung, Farbsäume) mit der Lensfun-Datenbank</translation>
+    </message>
+    <message>
+        <source>Uses the camera and lens named in the RAW file. Lenses that are not in the database are left as they are.</source>
+        <translation>Nutzt Kamera und Objektiv aus der RAW-Datei. Objektive, die nicht in der Datenbank stehen, bleiben unverändert.</translation>
+    </message>
+    <message>
         <location filename="../src/Preferences/PreferencesDialog.ui" line="26"/>
         <source>Preferences</source>
         <translation>Einstellungen</translation>

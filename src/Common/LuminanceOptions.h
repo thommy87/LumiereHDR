@@ -73,6 +73,9 @@ class LuminanceOptions : public QObject {
 
     // Chromatic Aberration
     bool isRawUseChromaAber() const;
+    //! correct distortion, vignetting and colour fringes with Lensfun
+    bool isRawLensCorrection() const;
+    void setRawLensCorrection(bool b);
     void setRawUseChromaAber(bool);
     double getRawAber0() const;
     void setRawAber0(double);

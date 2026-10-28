@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.15.0
+NEW: lens correction for RAW photos with the Lensfun database: distortion,
+     vignetting and colour fringes, from the camera and lens named in the
+     file; on by default, switchable in the RAW settings
+
 Changes LumièreHDR 2.14.0
 NEW: AVIF, JPEG XL and WebP photos can be opened and merged into HDRs, in
      the HDR wizard and in batch HDR
