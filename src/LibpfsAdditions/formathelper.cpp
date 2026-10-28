@@ -58,9 +58,6 @@ void FormatHelper::initConnection(QComboBox *comboBox,
 #ifdef HAVE_LIBWEBP
         comboBox->addItem(QObject::tr("WebP"), QVariant(28));
 #endif
-#ifdef HAVE_LIBUHDR
-        comboBox->addItem(QObject::tr("Ultra HDR JPEG"), QVariant(29));
-#endif
         comboBox->addItem(QObject::tr("BMP"), QVariant(23));
         comboBox->addItem(QObject::tr("PPM"), QVariant(24));
         comboBox->addItem(QObject::tr("PBM"), QVariant(25));
@@ -110,8 +107,6 @@ QString FormatHelper::getFileExtensionForFormat(int format) {
             return ("jxl");
         case 28:
             return ("webp");
-        case 29:
-            return ("jpg");
     }
     return QStringLiteral("tiff");
 }
@@ -158,11 +153,6 @@ pfs::Params FormatHelper::getParamsForFormat(int format) {
             params.set("format", std::string("webp"));
             params.set("quality", 90);
             break;
-        case 29:
-            // the HDR itself is added by whoever writes the picture
-            params.set("format", std::string("ultrahdr"));
-            params.set("quality", 95);
-            break;
         case 23:
         case 24:
         case 25:
@@ -198,17 +188,42 @@ void FormatHelper::buttonPressed() {
         case 22:
         case 26:
         case 27:
-        case 28:
-        case 29: {
+        case 28: {
             size_t quality;
             int qual = -1;
             if (m_params.get("quality", quality)) qual = quality;
 
             ImageQualityDialog d(nullptr, getFileExtensionForFormat(format),
                                  qual, m_settingsButton);
+            // the HDR tick box, as when saving one picture
+            const char *hdrFormat = nullptr;
+#ifdef HAVE_LIBUHDR
+            if (format == 21) {
+                d.offerHdr(QStringLiteral("queue-ultrahdr"),
+                           QObject::tr("Ultra HDR"),
+                           QObject::tr("Highlights glow on HDR screens "
+                                       "(iPhone, Android, HDR monitors)."),
+                           false);
+                hdrFormat = "ultrahdr";
+            }
+#endif
+            if (format == 26 || format == 27) {
+                d.offerHdr(QStringLiteral("queue-hdr-") +
+                               getFileExtensionForFormat(format),
+                           QObject::tr("HDR"),
+                           QObject::tr("Glowing highlights on HDR screens."),
+                           false);
+                hdrFormat = format == 26 ? "avif_hdr" : "jxl_hdr";
+            }
             if (d.exec() == QDialog::Accepted) {
                 size_t quality = d.getQuality();
                 m_params.set("quality", quality);
+                if (hdrFormat) {
+                    std::string plain;
+                    getParamsForFormat(format).get("format", plain);
+                    m_params.set("format",
+                                 d.hdrChosen() ? std::string(hdrFormat) : plain);
+                }
             }
 
         } break;
@@ -227,8 +242,7 @@ void FormatHelper::updateButton(int format) {
                    || format == 22   // png
                    || format == 26   // avif
                    || format == 27   // jxl
-                   || format == 28   // webp
-                   || format == 29;  // ultra hdr
+                   || format == 28;  // webp
     m_settingsButton->setEnabled(enabled);
 }
 
@@ -238,6 +252,7 @@ void FormatHelper::loadFromSettings(const QString prefix) {
     int format = LuminanceOptions()
                      .value(prefix + "/" + KEY_EXPORT_FORMAT, m_hdr ? 0 : 20)
                      .toInt();
+    if (format == 29) format = 21;  // Ultra HDR is now a tick box of JPEG
     m_comboBox->setCurrentIndex(m_comboBox->findData(format));
     m_params = FormatHelper::getParamsFromSettings(prefix, m_hdr);
 }
@@ -255,6 +270,12 @@ void FormatHelper::writeSettings(const QString prefix) {
         int qual = quality;
         LuminanceOptions().setValue(prefix + "/" + KEY_EXPORT_QUALITY, qual);
     }
+    // the HDR tick box (Ultra HDR, HDR AVIF, HDR JPEG XL)
+    std::string writer;
+    m_params.get("format", writer);
+    LuminanceOptions().setValue(prefix + "/ExportHdr",
+                                writer == "ultrahdr" || writer == "avif_hdr" ||
+                                    writer == "jxl_hdr");
 }
 
 pfs::Params FormatHelper::getParamsFromSettings(const QString prefix,
@@ -262,7 +283,20 @@ pfs::Params FormatHelper::getParamsFromSettings(const QString prefix,
     int format = LuminanceOptions()
                      .value(prefix + "/" + KEY_EXPORT_FORMAT, hdr ? 0 : 20)
                      .toInt();
+    bool hdrWanted =
+        LuminanceOptions().value(prefix + "/ExportHdr", false).toBool();
+    if (format == 29) {  // "Ultra HDR JPEG" was a format of its own
+        format = 21;
+        hdrWanted = true;
+    }
     pfs::Params params = FormatHelper::getParamsForFormat(format);
+    if (hdrWanted) {
+#ifdef HAVE_LIBUHDR
+        if (format == 21) params.set("format", std::string("ultrahdr"));
+#endif
+        if (format == 26) params.set("format", std::string("avif_hdr"));
+        if (format == 27) params.set("format", std::string("jxl_hdr"));
+    }
 
     int tiffMode = LuminanceOptions()
                        .value(prefix + "/" + KEY_EXPORT_TIFF_MODE, -1)

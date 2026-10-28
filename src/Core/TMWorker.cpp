@@ -155,7 +155,8 @@ void TMWorker::runExportJob(ExportJobPtr job) {
     std::string format;
     params.get("format", format);
     // Ultra HDR keeps the HDR next to the picture, for HDR screens
-    if (format == "ultrahdr") params.set("hdr_frame", job->hdr);
+    if (format == "ultrahdr" || format == "avif_hdr" || format == "jxl_hdr")
+        params.set("hdr_frame", job->hdr);
 
     QDir dir(job->exportDir);
     const QString firstPart = job->hdrName + "_" + options.getPostfix();

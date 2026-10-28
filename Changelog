@@ -1,8 +1,12 @@
 Changes LumièreHDR 2.14.0
 NEW: AVIF, JPEG XL and WebP photos can be opened and merged into HDRs, in
      the HDR wizard and in batch HDR
-NEW: save the HDR as HDR AVIF or HDR JPEG XL (Rec. 2020, PQ): bright on
-     HDR screens; such files open again as HDR
+NEW: HDR AVIF and HDR JPEG XL (Rec. 2020, PQ), bright on HDR screens:
+     from the HDR tab, or from an edited result with glowing highlights;
+     such files open again as HDR
+NEW: Ultra HDR, HDR AVIF and HDR JPEG XL are a tick box with a short
+     explanation in the quality dialog (also for the export queue and
+     batch), no longer formats of their own in the file type list
 
 Changes LumièreHDR 2.13.2
 NEW: the HDR preview says clearly that it needs an HDR screen

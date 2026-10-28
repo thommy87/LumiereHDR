@@ -122,7 +122,8 @@ void BatchTMJob::run() {
             pfs::Params params = m_params;
             std::string format;
             params.get("format", format);
-            if (format == "ultrahdr") {
+            if (format == "ultrahdr" || format == "avif_hdr" ||
+                format == "jxl_hdr") {
                 // the HDR goes along for the gain map; it is not freed here
                 params.set("hdr_frame",
                            std::shared_ptr<pfs::Frame>(

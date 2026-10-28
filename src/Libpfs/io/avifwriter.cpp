@@ -125,7 +125,7 @@ bool AvifHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
     Rgb8WriterParams p;
     p.parse(params);
     const size_t width = frame.getWidth(), height = frame.getHeight();
-    const std::vector<float> nits = hdr::toNits2020(frame);
+    const std::vector<float> nits = hdr::nitsToWrite(frame, params);
 
     // 10-bit PQ samples
     std::vector<uint16_t> pixels(nits.size());

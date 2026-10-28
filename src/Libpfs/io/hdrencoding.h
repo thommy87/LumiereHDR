@@ -22,6 +22,11 @@
 #include <vector>
 
 #include <Libpfs/frame.h>
+#include <Libpfs/params.h>
+#include <Libpfs/io/boostmap.h>
+#include <Libpfs/manip/resize.h>
+
+#include <memory>
 
 namespace pfs {
 namespace io {
@@ -118,6 +123,59 @@ inline std::vector<float> toNits2020(const Frame &frame) {
             out[i * 3 + k] = std::min(std::max(c[k], 0.f), kPeak);
     }
     return out;
+}
+
+//! An edited result (0..1, as shown) made into HDR, nits in Rec. 2020: its
+//! normal white at kReferenceWhite and the bright parts of the scene lifted
+//! by up to kMaxBoost, measured on \a source (the HDR behind it), as an
+//! HDR screen shows an Ultra HDR JPEG.
+inline std::vector<float> resultToNits2020(const Frame &result,
+                                           const Frame &source) {
+    const size_t width = result.getWidth(), height = result.getHeight();
+    std::unique_ptr<Frame> resized;
+    const Frame *hdr = &source;
+    if (source.getWidth() != width || source.getHeight() != height) {
+        resized.reset(pfs::resize(const_cast<Frame *>(&source), int(width),
+                                  BilinearInterp));
+        hdr = resized.get();
+    }
+    const BoostMap boost(*hdr, width, height);
+    const Channel *r, *g, *b;
+    result.getXYZChannels(r, g, b);
+    std::vector<float> out(width * height * 3, 0.f);
+    if (!r || !g || !b) return out;
+    auto linear = [](float v) {
+        v = std::min(std::max(v, 0.f), 1.f);
+        return v <= 0.04045f ? v / 12.92f
+                             : std::pow((v + 0.055f) / 1.055f, 2.4f);
+    };
+    const float knee = 0.75f * kPeak;
+    for (size_t y = 0; y < height; ++y)
+        for (size_t x = 0; x < width; ++x) {
+            const size_t i = y * width + x;
+            const float lift = boost.at(float(x), float(y)) * kReferenceWhite;
+            float c[3] = {linear((*r)(i)) * lift, linear((*g)(i)) * lift,
+                          linear((*b)(i)) * lift};
+            const float l = 0.2126f * c[0] + 0.7152f * c[1] + 0.0722f * c[2];
+            if (l > knee) {
+                const float rolled =
+                    kPeak - (kPeak - knee) * std::exp(-(l - knee) / (kPeak - knee));
+                for (float &v : c) v *= rolled / l;
+            }
+            rec709To2020(c[0], c[1], c[2]);
+            for (int k = 0; k < 3; ++k)
+                out[i * 3 + k] = std::min(std::max(c[k], 0.f), kPeak);
+        }
+    return out;
+}
+
+//! the HDR to write: an edited result with its HDR (\a params "hdr_frame"),
+//! or the frame itself when it is the HDR
+inline std::vector<float> nitsToWrite(const Frame &frame, const Params &params) {
+    std::shared_ptr<Frame> source;
+    if (params.get("hdr_frame", source) && source)
+        return resultToNits2020(frame, *source);
+    return toNits2020(frame);
 }
 
 }  // namespace hdr

@@ -3549,6 +3549,38 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Save as %1</source>
+        <translation>Speichern als %1</translation>
+    </message>
+    <message>
+        <source>HDR</source>
+        <translation>HDR</translation>
+    </message>
+    <message>
+        <source>Saves the full brightness range: highlights glow on HDR screens (TV, monitor, Android, Chrome). Without it the picture is saved as the HDR tab shows it.</source>
+        <translation>Speichert den vollen Helligkeitsumfang: Lichter leuchten auf HDR-Bildschirmen (Fernseher, Monitor, Android, Chrome). Ohne Häkchen wird das Bild so gespeichert, wie der HDR-Reiter es zeigt.</translation>
+    </message>
+    <message>
+        <source>Ultra HDR</source>
+        <translation>Ultra HDR</translation>
+    </message>
+    <message>
+        <source>Highlights glow on HDR screens (iPhone, Android, HDR monitors); elsewhere it is a normal JPEG.</source>
+        <translation>Lichter leuchten auf HDR-Bildschirmen (iPhone, Android, HDR-Monitore); überall sonst ist es ein normales JPEG.</translation>
+    </message>
+    <message>
+        <source>Your edit with glowing highlights on HDR screens (TV, monitor, Android, Chrome); on normal screens it depends on the viewer.</source>
+        <translation>Deine Bearbeitung mit leuchtenden Lichtern auf HDR-Bildschirmen (Fernseher, Monitor, Android, Chrome); auf normalen Bildschirmen hängt es vom Anzeigeprogramm ab.</translation>
+    </message>
+    <message>
+        <source>HDR AVIF</source>
+        <translation>HDR-AVIF</translation>
+    </message>
+    <message>
+        <source>HDR JPEG XL</source>
+        <translation>HDR-JPEG-XL</translation>
+    </message>
+    <message>
         <source>HDR AVIF, HDR JPEG XL (*.avif *.jxl *.AVIF *.JXL);;</source>
         <translation>HDR-AVIF, HDR-JPEG-XL (*.avif *.jxl *.AVIF *.JXL);;</translation>
     </message>
@@ -5439,6 +5471,22 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>QObject</name>
+    <message>
+        <source>Ultra HDR</source>
+        <translation>Ultra HDR</translation>
+    </message>
+    <message>
+        <source>HDR</source>
+        <translation>HDR</translation>
+    </message>
+    <message>
+        <source>Highlights glow on HDR screens (iPhone, Android, HDR monitors).</source>
+        <translation>Lichter leuchten auf HDR-Bildschirmen (iPhone, Android, HDR-Monitore).</translation>
+    </message>
+    <message>
+        <source>Glowing highlights on HDR screens.</source>
+        <translation>Leuchtende Lichter auf HDR-Bildschirmen.</translation>
+    </message>
     <message>
         <source>HDR AVIF, bright on HDR screens (*.avif *.AVIF);;</source>
         <translation>HDR-AVIF, hell auf HDR-Bildschirmen (*.avif *.AVIF);;</translation>

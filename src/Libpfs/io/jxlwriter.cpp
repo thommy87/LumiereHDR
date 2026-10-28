@@ -125,7 +125,7 @@ bool JxlHdrWriter::write(const pfs::Frame &frame, const pfs::Params &params) {
     Rgb8WriterParams p;
     p.parse(params);
     const bool lossless = p.quality_ >= 100;
-    const std::vector<float> nits = hdr::toNits2020(frame);
+    const std::vector<float> nits = hdr::nitsToWrite(frame, params);
 
     // 16-bit PQ samples
     std::vector<uint16_t> pixels(nits.size());
