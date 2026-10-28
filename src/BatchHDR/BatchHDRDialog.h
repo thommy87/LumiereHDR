@@ -90,6 +90,7 @@ class BatchHDRDialog : public QDialog {
     QStringList m_bracketed;
     // the brackets still to make, each a list of files
     QList<QStringList> m_groups;
+    QStringList m_skipped;  // brackets left out, with the reason
     int m_groupSize = 0;  // photos in the bracket being made
     class QCheckBox *m_autoGroups = nullptr;
     //! splits m_bracketed into brackets; false if that is not possible

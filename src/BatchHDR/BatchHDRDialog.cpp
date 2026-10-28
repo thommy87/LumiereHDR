@@ -38,6 +38,8 @@
 
 #include <HdrWizard/HdrProfiles.h>
 #include <QDir>
+#include <QFileInfo>
+#include <QTimer>
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -425,10 +427,32 @@ bool BatchHDRDialog::makeGroups() {
             if (ta != tb) return ta;
             return ta && shots[a].captureTime < shots[b].captureTime;
         });
-        std::vector<libhdr::Shot> taken;
-        for (int i : order) taken.push_back(shots[i]);
-        const std::vector<std::vector<size_t>> brackets =
-            libhdr::groupBrackets(taken);
+        // each kind of file on its own: a camera that saves RAW and JPEG
+        // gives every shot twice, and the two never belong in one HDR
+        auto kind = [this](int i) {
+            QString suffix = QFileInfo(m_bracketed.at(i)).suffix().toLower();
+            if (suffix == QLatin1String("jpeg")) suffix = QStringLiteral("jpg");
+            if (suffix == QLatin1String("tiff")) suffix = QStringLiteral("tif");
+            return suffix;
+        };
+        QStringList kinds;
+        for (int i : order)
+            if (!kinds.contains(kind(i))) kinds << kind(i);
+        std::vector<std::vector<int>> brackets;  // indices into m_bracketed
+        for (const QString &k : kinds) {
+            std::vector<int> files;
+            std::vector<libhdr::Shot> taken;
+            for (int i : order)
+                if (kind(i) == k) {
+                    files.push_back(i);
+                    taken.push_back(shots[i]);
+                }
+            for (const std::vector<size_t> &found : libhdr::groupBrackets(taken)) {
+                std::vector<int> bracket;
+                for (size_t n : found) bracket.push_back(files[n]);
+                brackets.push_back(bracket);
+            }
+        }
         int known = 0;
         for (const libhdr::Shot &shot : shots)
             if (shot.captureTime >= 0 || shot.hasExposure) ++known;
@@ -436,7 +460,7 @@ bool BatchHDRDialog::makeGroups() {
             tr("%1 photos found, %2 of them with capture time or exposure.")
                 .arg(shots.size())
                 .arg(known));
-        if (brackets.empty()) {
+        if (known == 0) {
             QMessageBox::warning(
                 this, tr("Warning"),
                 tr("These photos carry no capture time or exposure, so the "
@@ -446,13 +470,13 @@ bool BatchHDRDialog::makeGroups() {
             return false;
         }
         int single = 0;
-        for (const std::vector<size_t> &bracket : brackets) {
+        for (const std::vector<int> &bracket : brackets) {
             if (bracket.size() < 2) {
                 ++single;
                 continue;
             }
             QStringList files;
-            for (size_t k : bracket) files << m_bracketed.at(order[k]);
+            for (int k : bracket) files << m_bracketed.at(k);
             m_groups << files;
         }
         QStringList lengths;
@@ -522,6 +546,16 @@ void BatchHDRDialog::batch_hdr() {
             m_Ui->textEdit->append(tr("Completed with errors"));
         else
             m_Ui->textEdit->append(tr("Completed without errors"));
+        if (!m_skipped.isEmpty()) {
+            const int made = m_total - m_skipped.size();
+            QMessageBox::information(
+                this, tr("Batch HDR"),
+                tr("%1 of %2 HDRs were made. These brackets were skipped:")
+                        .arg(made)
+                        .arg(m_total) +
+                    QStringLiteral("\n\n") +
+                    m_skipped.join(QStringLiteral("\n")));
+        }
     }
 }
 
@@ -637,11 +671,19 @@ void BatchHDRDialog::createHdrFinished() {
 
 void BatchHDRDialog::error_while_loading(const QString &message) {
     qDebug() << message;
-    m_Ui->textEdit->append(tr("Error: ") + message);
+    // this bracket cannot be made (photos of different size, a file that
+    // does not load): note it and go on with the next one
+    QString reason = message;
+    reason.remove(QStringLiteral("HdrCreationManager::loadFilesDone(): "));
+    m_Ui->textEdit->append(
+        tr("Skipped %1: %2").arg(m_output_file_name_base, reason));
+    m_skipped << m_output_file_name_base + QStringLiteral(": ") + reason;
     m_errors = true;
-    m_loading_error = true;
-    m_processed++;
-    try_to_continue();
+    m_loading_error = false;
+    m_processed = 0;
+    m_hdrCreationManager->reset();
+    // after the loader has finished calling us
+    QTimer::singleShot(0, this, &BatchHDRDialog::batch_hdr);
 }
 
 void BatchHDRDialog::writeAisData(QByteArray &data) {
