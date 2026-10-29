@@ -33,7 +33,6 @@
 #include <utility>
 #include <vector>
 
-#include <Common/global.h>
 #include <Libpfs/array2d.h>
 #include <Libpfs/colorspace/convert.h>
 #include <Libpfs/colorspace/xyz.h>

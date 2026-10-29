@@ -34,6 +34,21 @@ std::mutex FFTW_MUTEX::fftw_mutex_destroy_plan;
 std::mutex FFTW_MUTEX::fftw_mutex_alloc;
 std::mutex FFTW_MUTEX::fftw_mutex_free;
 
+namespace {
+std::mutex wisdom_mutex;
+std::string wisdom_file;
+}
+
+void set_fftw_wisdom_file(const std::string &filename) {
+    std::lock_guard<std::mutex> lock(wisdom_mutex);
+    wisdom_file = filename;
+}
+
+std::string fftw_wisdom_file() {
+    std::lock_guard<std::mutex> lock(wisdom_mutex);
+    return wisdom_file;
+}
+
 void init_fftw() {
     FFTW_MUTEX::fftw_mutex_global.lock();
     static bool is_init_threads = false;

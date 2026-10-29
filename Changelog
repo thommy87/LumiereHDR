@@ -1,3 +1,8 @@
+Changes LumièreHDR 2.16.2
+DEV: the calculation core (image library, HDR merging, tone mapping
+     operators) no longer uses Qt for scaling, colour conversion, FFTW
+     plans and response curve names: groundwork for the Mac app
+
 Changes LumièreHDR 2.16.1
 FIX: progress shows on the Windows taskbar button again (Qt 6), and saved
      files appear in its jump list

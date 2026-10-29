@@ -32,7 +32,7 @@
 #include <QStringList>
 #include <QUrl>
 
-enum InterpolationMethod { LanczosInterp, BilinearInterp };
+#include "Libpfs/manip/interpolation.h"
 
 bool matchesLdrFilename(const QString &file);
 bool matchesHdrFilename(const QString &file);

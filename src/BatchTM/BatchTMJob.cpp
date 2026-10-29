@@ -37,6 +37,7 @@
 #include <Libpfs/manip/gamma.h>
 #include <Libpfs/manip/resize.h>
 #include <Libpfs/progress.h>
+#include <Core/TonemappingOptions.h>
 #include <Libpfs/tm/TonemapOperator.h>
 
 #include <Common/LuminanceOptions.h>

@@ -25,7 +25,7 @@
 #ifndef PFS_COLORSPACE_SATURATION_HXX
 #define PFS_COLORSPACE_SATURATION_HXX
 
-#include <Common/CommonFunctions.h>
+#include <Libpfs/colorspace/hsl.h>
 #include <Libpfs/colorspace/saturation.h>
 
 namespace pfs {
