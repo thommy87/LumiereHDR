@@ -146,6 +146,10 @@ class GenericViewer : public QWidget {
 
     //! \brief returns a QImage that reflects the content of the viewerport
     QImage getQImage() const;
+    //! the shown picture, scaled down to cover \a size; and a key that
+    //! changes whenever the picture does
+    QPixmap thumbnail(const QSize &size) const;
+    qint64 pictureKey() const;
 
     //! \brief set new QImage
     void setQImage(const QImage &qimage);

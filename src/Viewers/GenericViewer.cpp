@@ -61,7 +61,9 @@ GenericViewer::GenericViewer(pfs::Frame *frame, QWidget *parent, bool ns)
     mVBL->addWidget(mToolBar);
 
     mScene = new QGraphicsScene(this);
-    mScene->setBackgroundBrush(Qt::darkGray);
+    // around the image: the darkest colour of the scheme (near black in
+    // dark mode, a neutral grey in light mode)
+    mScene->setBackgroundBrush(palette().color(QPalette::Dark));
     mView = new IGraphicsView(mScene, this);
     mView->setCacheMode(QGraphicsView::CacheBackground);
     mView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -107,6 +109,10 @@ void GenericViewer::retranslateUi() {
 
 void GenericViewer::changeEvent(QEvent *event) {
     if (event->type() == QEvent::LanguageChange) retranslateUi();
+    if (event->type() == QEvent::PaletteChange) {
+        mScene->setBackgroundBrush(palette().color(QPalette::Dark));
+        mView->resetCachedContent();
+    }
     QWidget::changeEvent(event);
 }
 
@@ -337,6 +343,18 @@ void GenericViewer::syncViewer(GenericViewer *src) {
 float GenericViewer::getScaleFactor() { return mView->transform().m11(); }
 
 QImage GenericViewer::getQImage() const { return mPixmap->pixmap().toImage(); }
+
+QPixmap GenericViewer::thumbnail(const QSize &size) const {
+    const QPixmap picture = mPixmap->pixmap();
+    if (picture.isNull()) return QPixmap();
+    QPixmap scaled = picture.scaled(size, Qt::KeepAspectRatioByExpanding,
+                                    Qt::SmoothTransformation);
+    return scaled.copy((scaled.width() - size.width()) / 2,
+                       (scaled.height() - size.height()) / 2, size.width(),
+                       size.height());
+}
+
+qint64 GenericViewer::pictureKey() const { return mPixmap->pixmap().cacheKey(); }
 
 void GenericViewer::setQImage(const QImage &qimage) {
     QPixmap pixmap = QPixmap::fromImage(qimage);

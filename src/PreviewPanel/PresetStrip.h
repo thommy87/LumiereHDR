@@ -24,15 +24,18 @@
 namespace pfs {
 class Frame;
 }
-class QHBoxLayout;
+class QGridLayout;
 class QToolButton;
 
-//! \brief Row of tone mapping presets under the image: a small preview of
-//! the current HDR image with each preset, its name underneath.
+//! \brief The looks (tone mapping presets): a small preview of the current
+//! HDR image with each, its name underneath; in a row, or in columns.
 class PresetStrip : public QScrollArea {
     Q_OBJECT
    public:
     explicit PresetStrip(QWidget *parent = nullptr);
+
+    //! \a columns side by side, scrolling down; 0 for one scrolling row
+    void setColumns(int columns, const QSize &preview);
 
     //! name and settings file of each preset, in display order
     void setPresets(const QList<QPair<QString, QString>> &presets);
@@ -49,7 +52,10 @@ class PresetStrip : public QScrollArea {
    private:
     QList<QPair<QString, QString>> m_presets;
     QList<QToolButton *> m_buttons;
-    QHBoxLayout *m_layout;
+    QGridLayout *m_layout;
+    int m_columns = 0;
+    QSize m_preview;
+    void placeButtons();
 };
 
 #endif

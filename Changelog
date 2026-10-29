@@ -1,3 +1,15 @@
+Changes LumièreHDR 2.18.0
+NEW: Develop, step two of the redesign: the looks on the left as a grid of
+     previews of the picture, with "Save current look" and looks as files;
+     the history of edits behind the second switch there
+NEW: the histogram with its clipping figures sits above the settings on
+     the right and is shown from the start (View > Histogram hides it)
+NEW: the open pictures are a film strip under the image instead of tabs:
+     the HDR first, then the results; right-click or middle-click closes
+     one, "Compare images" sits at its end
+NEW: sliders, scroll bars and menus in the new look; around the image the
+     darkest colour of the scheme instead of a fixed grey
+
 Changes LumièreHDR 2.17.0
 NEW: a new main window, step one of the redesign: a bar across the top
      with the workspaces Start, Merge HDR, Develop and Export, search,

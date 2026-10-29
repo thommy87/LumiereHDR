@@ -1386,6 +1386,8 @@ QString userPresetDir() {
 }
 }  // namespace
 
+QString TonemappingPanel::ownPresetFolder() { return userPresetDir(); }
+
 QList<QPair<QString, QString>> TonemappingPanel::presets() {
     QList<QPair<QString, QString>> list;
     // the HDR as it is, for when the merged picture needs nothing more
