@@ -28,7 +28,7 @@
 //! \author Davide Anastasia <davideanastasia@users.sourceforge.net>
 
 //#include "Libpfs/array2d_fwd.h"
-#include "Common/global.h"
+#include "Libpfs/manip/interpolation.h"
 #include "Libpfs/array2d.h"
 
 namespace pfs {
