@@ -36,6 +36,12 @@
 #include <QDebug>
 #endif
 #include <QActionGroup>
+#include <QButtonGroup>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QToolButton>
+#include <QUrl>
 
 #include <QDesktopServices>
 #include <QDir>
@@ -112,6 +118,7 @@
 #include <UI/ImageQualityDialog.h>
 #include <UI/CompareDialog.h>
 #include <UI/HistogramPanel.h>
+#include "MainWindow/FilmStrip.h"
 #include <UI/CommandPalette.h>
 #include <UI/LumiereIcons.h>
 #include <UI/HomePage.h>
@@ -408,8 +415,22 @@ void MainWindow::createCentralWidget() {
     m_tabwidget->tabBar()->setExpanding(false);
     applyTabStyle();
 
-    m_centralwidget_splitter->addWidget(m_tonemapPanel);
+    // Develop: the looks on the left, the image in the middle, the
+    // histogram and the settings of the look on the right
+    m_centralwidget_splitter->setObjectName(QStringLiteral("DevelopSplitter"));
+    m_centralwidget_splitter->setHandleWidth(1);
+    m_centralwidget_splitter->setChildrenCollapsible(false);
+    m_centralwidget_splitter->addWidget(createLooksPanel());
     m_centralwidget_splitter->addWidget(m_bottom_splitter);
+    QWidget *inspector = new QWidget;
+    inspector->setObjectName(QStringLiteral("Inspector"));
+    inspector->setAttribute(Qt::WA_StyledBackground);
+    QVBoxLayout *inspectorLayout = new QVBoxLayout(inspector);
+    inspectorLayout->setContentsMargins(0, 0, 0, 0);
+    inspectorLayout->setSpacing(0);
+    inspectorLayout->addWidget(m_histogramPanel);
+    inspectorLayout->addWidget(m_tonemapPanel, 1);
+    m_centralwidget_splitter->addWidget(inspector);
 
     // the image tools sit right above the image they work on
     removeToolBar(m_Ui->toolBar);
@@ -422,33 +443,29 @@ void MainWindow::createCentralWidget() {
     imageLayout->setSpacing(0);
     imageLayout->addWidget(m_Ui->toolBar);
     imageLayout->addWidget(m_tabwidget, 1);
+    // the open images as a film strip under the picture instead of tabs
+    m_tabwidget->tabBar()->hide();
+    m_filmStrip = new FilmStrip(m_tabwidget);
+    connect(m_filmStrip, &FilmStrip::closeRequested, this,
+            &MainWindow::removeTab);
+    imageLayout->addWidget(m_filmStrip);
     m_Ui->toolBar->show();
     m_bottom_splitter->addWidget(imageColumn);
 
-    m_bottom_splitter->setStretchFactor(0, 10);
-    m_bottom_splitter->setStretchFactor(1, 1);
-    m_centralwidget_splitter->setStretchFactor(0, 1);
-    m_centralwidget_splitter->setStretchFactor(1, 5);
+    m_centralwidget_splitter->setStretchFactor(0, 0);
+    m_centralwidget_splitter->setStretchFactor(1, 1);
+    m_centralwidget_splitter->setStretchFactor(2, 0);
 
     // create preview panel
     m_PreviewscrollArea = new QScrollArea;
     m_PreviewscrollArea->setWidgetResizable(true);
     m_PreviewscrollArea->setWidget(m_PreviewPanel);
 
-    m_centralwidget_splitter->addWidget(m_PreviewscrollArea);
-    m_centralwidget_splitter->setCollapsible(2, false);
-
-    // the operator previews are replaced by the preset strip under the
-    // image; the panel stays for the tone mapping panel's own use
+    // the operator previews are replaced by the looks; the panel stays for
+    // the tone mapping panel's own use
     m_PreviewscrollArea->setParent(m_bottom_splitter);
     m_PreviewscrollArea->hide();
 
-    m_presetStrip = new PresetStrip;
-    m_presetStrip->setPresets(m_tonemapPanel->presets());
-    m_bottom_splitter->addWidget(m_presetStrip);
-    m_bottom_splitter->setCollapsible(m_bottom_splitter->indexOf(m_presetStrip),
-                                      false);
-    m_presetStrip->hide();
     connect(m_presetStrip, &PresetStrip::presetClicked, m_tonemapPanel,
             &TonemappingPanel::applyPresetFile);
     connect(m_tonemapPanel, &TonemappingPanel::currentPresetChanged,
@@ -479,11 +496,12 @@ void MainWindow::createCentralWidget() {
 
     const QByteArray splitterState =
         LuminanceOptions()
-            .value(QStringLiteral("MainWindowSplitterState"))
+            .value(QStringLiteral("DevelopSplitterState"))
             .toByteArray();
     if (splitterState.isEmpty())
-        // first start: a panel of comfortable width, the rest for the image
-        m_centralwidget_splitter->setSizes({380, 1000});
+        // first start: looks and settings at a comfortable width, the rest
+        // for the image
+        m_centralwidget_splitter->setSizes({244, 1000, 400});
     else
         m_centralwidget_splitter->restoreState(splitterState);
     m_centralwidget_splitter->restoreGeometry(
@@ -499,10 +517,7 @@ void MainWindow::createCentralWidget() {
             .value(QStringLiteral("MainWindowBottomSplitterGeometry"))
             .toByteArray());
 
-    QPalette pal = m_tabwidget->palette();
-    pal.setColor(QPalette::Dark, Qt::darkGray);
-    m_tabwidget->setPalette(pal);
-
+    // the darkest colour of the scheme around the image
     m_tabwidget->setBackgroundRole(QPalette::Dark);
     m_tabwidget->setAutoFillBackground(true);
 
@@ -612,6 +627,7 @@ void MainWindow::createShell() {
     tools->addAction(m_Ui->actionResizeHDR);
     tools->addSeparator();
     tools->addAction(m_compareAct);
+    m_filmStrip->addButton(m_compareAct);
     m_lineIcons = {{edits.value(0), QStringLiteral("undo")},
                    {edits.value(1), QStringLiteral("redo")},
                    {m_Ui->fitToWindowAct, QStringLiteral("fit")},
@@ -640,6 +656,8 @@ void MainWindow::createShell() {
 void MainWindow::refreshLineIcons() {
     for (const auto &entry : std::as_const(m_lineIcons))
         if (entry.first) entry.first->setIcon(LumiereIcons::icon(entry.second));
+    for (const auto &entry : std::as_const(m_lineIconButtons))
+        entry.first->setIcon(LumiereIcons::icon(entry.second));
 }
 
 void MainWindow::showWorkspace(bool images) {
@@ -657,6 +675,94 @@ void MainWindow::openCommandPalette() {
         if (a->menu()) menus << a->menu();
     CommandPalette *palette = new CommandPalette(menus, this);
     palette->show();
+}
+
+QWidget *MainWindow::createLooksPanel() {
+    m_looksPanel = new QWidget;
+    m_looksPanel->setObjectName(QStringLiteral("LooksPanel"));
+    m_looksPanel->setAttribute(Qt::WA_StyledBackground);
+    m_looksPanel->setMinimumWidth(220);
+
+    // Looks | History, as a segmented switch
+    QWidget *segment = new QWidget;
+    segment->setObjectName(QStringLiteral("Segment"));
+    QHBoxLayout *segmentLayout = new QHBoxLayout(segment);
+    segmentLayout->setContentsMargins(3, 3, 3, 3);
+    segmentLayout->setSpacing(2);
+    m_looksSwitch = new QButtonGroup(this);
+    const QStringList names = {tr("Looks"), tr("History")};
+    for (int i = 0; i < names.size(); ++i) {
+        QToolButton *b = new QToolButton;
+        b->setObjectName(QStringLiteral("SegmentButton"));
+        b->setText(names[i]);
+        b->setCheckable(true);
+        b->setChecked(i == 0);
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_looksSwitch->addButton(b, i);
+        segmentLayout->addWidget(b);
+    }
+
+    m_presetStrip = new PresetStrip;
+    m_presetStrip->setPresets(m_tonemapPanel->presets());
+    m_presetStrip->setColumns(2, QSize(100, 66));
+
+    // own looks: save the current one, or work with settings files
+    QWidget *own = new QWidget;
+    own->setObjectName(QStringLiteral("OwnLooks"));
+    QVBoxLayout *ownLayout = new QVBoxLayout(own);
+    ownLayout->setContentsMargins(14, 12, 14, 14);
+    ownLayout->setSpacing(8);
+    QLabel *ownLabel = new QLabel(tr("MY LOOKS"));
+    ownLabel->setObjectName(QStringLiteral("SectionLabel"));
+    QPushButton *save = new QPushButton(LumiereIcons::icon(QStringLiteral("plus")),
+                                        tr("Save current look"));
+    save->setObjectName(QStringLiteral("QuietButton"));
+    connect(save, &QPushButton::clicked, m_tonemapPanel,
+            &TonemappingPanel::saveCurrentLook);
+    m_lineIconButtons << qMakePair(static_cast<QAbstractButton *>(save),
+                                   QStringLiteral("plus"));
+    QLabel *files = new QLabel(
+        tr("As a file: <a href=\"load\">load</a> · <a href=\"save\">save</a> "
+           "· <a href=\"folder\">open folder</a>"));
+    files->setObjectName(QStringLiteral("HintLabel"));
+    files->setWordWrap(true);
+    connect(files, &QLabel::linkActivated, this, [this](const QString &link) {
+        if (link == QLatin1String("load"))
+            m_tonemapPanel->loadLookFile();
+        else if (link == QLatin1String("save"))
+            m_tonemapPanel->saveLookFile();
+        else {
+            const QString folder = TonemappingPanel::ownPresetFolder();
+            QDir().mkpath(folder);
+            QDesktopServices::openUrl(QUrl::fromLocalFile(folder));
+        }
+    });
+    ownLayout->addWidget(ownLabel);
+    ownLayout->addWidget(save, 0, Qt::AlignLeft);
+    ownLayout->addWidget(files);
+
+    QWidget *looks = new QWidget;
+    QVBoxLayout *looksLayout = new QVBoxLayout(looks);
+    looksLayout->setContentsMargins(0, 0, 0, 0);
+    looksLayout->setSpacing(0);
+    looksLayout->addWidget(m_presetStrip, 1);
+    looksLayout->addWidget(own);
+
+    m_looksPages = new QStackedWidget;
+    m_looksPages->addWidget(looks);
+    m_looksPages->addWidget(m_historyView);
+    connect(m_looksSwitch, &QButtonGroup::idClicked, m_looksPages,
+            &QStackedWidget::setCurrentIndex);
+
+    QVBoxLayout *layout = new QVBoxLayout(m_looksPanel);
+    layout->setContentsMargins(0, 12, 0, 0);
+    layout->setSpacing(4);
+    QHBoxLayout *top = new QHBoxLayout;
+    top->setContentsMargins(12, 0, 12, 0);
+    top->addWidget(segment);
+    layout->addLayout(top);
+    layout->addWidget(m_looksPages, 1);
+    return m_looksPanel;
 }
 
 void MainWindow::createToolBar() {
@@ -681,36 +787,36 @@ void MainWindow::createToolBar() {
     m_Ui->menuEdit->insertAction(first, redo);
     m_Ui->menuEdit->insertSeparator(first);
 
-    QDockWidget *history = new QDockWidget(tr("History"), this);
-    history->setObjectName(QStringLiteral("HistoryDock"));
-    QUndoView *historyView = new QUndoView(m_undoGroup, history);
-    historyView->setEmptyLabel(tr("Original image"));
-    history->setWidget(historyView);
-    addDockWidget(Qt::RightDockWidgetArea, history);
-    history->hide();
-    QAction *showHistory = history->toggleViewAction();
-    showHistory->setText(tr("&History"));
+    // the history and the histogram live in the Develop workspace
+    m_historyView = new QUndoView(m_undoGroup);
+    m_historyView->setObjectName(QStringLiteral("HistoryView"));
+    m_historyView->setEmptyLabel(tr("Original image"));
+    m_historyView->setFrameShape(QFrame::NoFrame);
+    QAction *showHistory = new QAction(tr("&History"), this);
+    connect(showHistory, &QAction::triggered, this, [this]() {
+        m_looksPages->setCurrentIndex(1);
+        m_looksSwitch->button(1)->setChecked(true);
+    });
     m_Ui->menuView->addAction(showHistory);
 
-    m_histogramDock = new QDockWidget(tr("Histogram"), this);
-    m_histogramDock->setObjectName(QStringLiteral("HistogramDock"));
-    m_histogramPanel = new HistogramPanel(m_histogramDock);
+    m_histogramPanel = new HistogramPanel;
     // coalesce bursts of changes (dragging a slider) into one update
     m_histogramTimer = new QTimer(this);
     m_histogramTimer->setSingleShot(true);
     m_histogramTimer->setInterval(150);
     connect(m_histogramTimer, &QTimer::timeout, this,
             &MainWindow::updateHistogram);
-    m_histogramDock->setWidget(m_histogramPanel);
-    addDockWidget(Qt::RightDockWidgetArea, m_histogramDock);
-    m_histogramDock->hide();
-    // only spend time on it while it is shown
-    connect(m_histogramDock, &QDockWidget::visibilityChanged, this,
-            [this](bool visible) {
-                if (visible) updateHistogram();
-            });
-    QAction *showHistogram = m_histogramDock->toggleViewAction();
-    showHistogram->setText(tr("Histo&gram"));
+    QAction *showHistogram = new QAction(tr("Histo&gram"), this);
+    showHistogram->setCheckable(true);
+    showHistogram->setChecked(
+        LuminanceOptions().value(QStringLiteral("ShowHistogram"), true).toBool());
+    m_histogramPanel->setVisible(showHistogram->isChecked());
+    connect(showHistogram, &QAction::toggled, this, [this](bool shown) {
+        LuminanceOptions().setValue(QStringLiteral("ShowHistogram"), shown);
+        m_histogramPanel->setVisible(shown);
+        // only spend time on it while it is shown
+        if (shown) updateHistogram();
+    });
     m_Ui->menuView->addAction(showHistogram);
 
     // before/after: any two open images, split by a draggable line
@@ -1425,7 +1531,7 @@ QString exposureText(float seconds) {
 }  // namespace
 
 void MainWindow::updateHistogram() {
-    if (!m_histogramDock->isVisible()) return;
+    if (!m_histogramPanel->isVisible()) return;
     GenericViewer *v =
         qobject_cast<GenericViewer *>(m_tabwidget->currentWidget());
     m_histogramPanel->setImage(v ? v->getQImage() : QImage());
@@ -2053,7 +2159,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
                                     saveState());
         LuminanceOptions().setValue(QStringLiteral("MainWindowGeometry"),
                                     saveGeometry());
-        LuminanceOptions().setValue(QStringLiteral("MainWindowSplitterState"),
+        LuminanceOptions().setValue(QStringLiteral("DevelopSplitterState"),
                                     m_centralwidget_splitter->saveState());
         LuminanceOptions().setValue(
             QStringLiteral("MainWindowSplitterGeometry"),
@@ -2598,9 +2704,9 @@ void MainWindow::syncViewers(GenericViewer *sender) {
 }
 
 void MainWindow::showPreviewPanel(bool b) {
-    // the strip of presets under the image replaced the operator previews
+    // the looks replaced the operator previews
     m_tonemapPanel->setRealtimePreviews(false);
-    m_presetStrip->setVisible(b && tm_status.is_hdr_ready);
+    m_looksPanel->setVisible(b);
     if (b && tm_status.is_hdr_ready)
         m_presetStrip->updatePreviews(tm_status.curr_tm_frame->getFrame());
 }

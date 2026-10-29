@@ -203,6 +203,12 @@ class TonemappingPanel : public QWidget {
     //! name and settings file of the built-in and the user's presets
     //! (name, file) of every preset, built in and own
     static QList<QPair<QString, QString>> presets();
+    //! the folder of the user's own looks
+    static QString ownPresetFolder();
+    //! for the Looks panel
+    void saveCurrentLook() { savePreset(); }
+    void loadLookFile() { on_loadsettingsbutton_clicked(); }
+    void saveLookFile() { on_savesettingsbutton_clicked(); }
 
    public Q_SLOTS:
     void setEnabled(bool);

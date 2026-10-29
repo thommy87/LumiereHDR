@@ -393,6 +393,54 @@ QListWidget#CommandList { background: transparent; border: none;
 #CommandHint { color: @text3; font-size: 12px; padding: 8px 18px;
   border-top: 1px solid @line2; }
 
+#LooksPanel, #Inspector, #OwnLooks { background: @panel; }
+#OwnLooks { border-top: 1px solid @line2; }
+#LooksPanel QScrollArea, #PresetGrid, #HistoryView { background: transparent; }
+#Segment { background: @input; border-radius: 8px; }
+QToolButton#SegmentButton { border: none; border-radius: 6px; padding: 5px 8px;
+  color: @text2; font-weight: 500; }
+QToolButton#SegmentButton:checked { background: @chip; color: @text; }
+QToolButton#LookButton { border: none; border-radius: 10px; padding: 4px;
+  color: @text2; }
+QToolButton#LookButton:hover { background: @hover; color: @text; }
+QToolButton#LookButton:checked { background: @selected; color: @text;
+  font-weight: 600; }
+QPushButton#QuietButton { border: none; background: transparent;
+  color: @text; padding: 4px 0; text-align: left; }
+QPushButton#QuietButton:hover { color: @accentText; }
+#HintLabel { color: @text3; font-size: 12px; }
+#FilmStrip { background: @bar; border-top: 1px solid @line2; }
+QListWidget#FilmList { background: transparent; border: none; color: @text2;
+  outline: none; }
+QListWidget#FilmList::item { border-radius: 8px; padding: 4px; }
+QListWidget#FilmList::item:hover { background: @hover; }
+QListWidget#FilmList::item:selected { background: @selected; color: @text; }
+QToolButton#FilmButton { background: @input; border: 1px solid @line;
+  border-radius: 8px; padding: 7px 14px; color: @text; }
+QToolButton#FilmButton:hover { border-color: @text3; }
+QSplitter#DevelopSplitter::handle { background: @line2; }
+
+QSlider::groove:horizontal { height: 4px; background: @line;
+  border-radius: 2px; }
+QSlider::sub-page:horizontal { background: @accentText; border-radius: 2px; }
+QSlider::handle:horizontal { width: 14px; height: 14px; margin: -5px 0;
+  border-radius: 7px; background: @text; }
+QSlider::sub-page:horizontal:disabled { background: @text3; }
+QSlider::handle:horizontal:disabled { background: @text3; }
+QScrollBar:vertical { width: 10px; background: transparent; margin: 0; }
+QScrollBar:horizontal { height: 10px; background: transparent; margin: 0; }
+QScrollBar::handle { background: @line; border-radius: 4px; margin: 2px; }
+QScrollBar::handle:vertical { min-height: 32px; }
+QScrollBar::handle:horizontal { min-width: 32px; }
+QScrollBar::handle:hover { background: @text3; }
+QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
+QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
+QMenu { background: @panel; border: 1px solid @line; padding: 4px; }
+QMenu::item { padding: 6px 28px 6px 12px; border-radius: 6px; color: @text; }
+QMenu::item:selected { background: @selected; }
+QMenu::item:disabled { color: @text3; }
+QMenu::separator { height: 1px; background: @line2; margin: 4px 8px; }
+
 QToolTip { background: @chip; color: @text; border: 1px solid @line;
   border-radius: 6px; padding: 4px 8px; }
 )");

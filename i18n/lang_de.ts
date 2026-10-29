@@ -3597,6 +3597,26 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Looks</source>
+        <translation>Looks</translation>
+    </message>
+    <message>
+        <source>History</source>
+        <translation>Verlauf</translation>
+    </message>
+    <message>
+        <source>MY LOOKS</source>
+        <translation>MEINE LOOKS</translation>
+    </message>
+    <message>
+        <source>Save current look</source>
+        <translation>Aktuellen Look speichern</translation>
+    </message>
+    <message>
+        <source>As a file: &lt;a href="load"&gt;load&lt;/a&gt; · &lt;a href="save"&gt;save&lt;/a&gt; · &lt;a href="folder"&gt;open folder&lt;/a&gt;</source>
+        <translation>Auch als Datei: &lt;a href="load"&gt;laden&lt;/a&gt; · &lt;a href="save"&gt;speichern&lt;/a&gt; · &lt;a href="folder"&gt;Ordner öffnen&lt;/a&gt;</translation>
+    </message>
+    <message>
         <source>Search commands...</source>
         <translation>Befehle suchen...</translation>
     </message>
@@ -7522,6 +7542,21 @@ Error: %1</source>
     <message>
         <source>Exposure:</source>
         <translation>Belichtung:</translation>
+    </message>
+</context>
+<context>
+    <name>FilmStrip</name>
+    <message>
+        <source>Right-click a picture to close it</source>
+        <translation>Rechtsklick auf ein Bild schließt es</translation>
+    </message>
+    <message>
+        <source>HDR · %1</source>
+        <translation>HDR · %1</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Schließen</translation>
     </message>
 </context>
 <context>

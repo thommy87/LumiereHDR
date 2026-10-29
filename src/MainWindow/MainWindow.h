@@ -78,6 +78,10 @@ class TopBar;                // #include "UI/TopBar.h"
 class QStackedWidget;
 class PresetStrip;
 class QUndoGroup;
+class QUndoView;
+class FilmStrip;
+class QButtonGroup;
+class QAbstractButton;
 class QTimer;
 class QDockWidget;
 class HistogramPanel;
@@ -348,6 +352,14 @@ class MainWindow : public QMainWindow {
     void openCommandPalette();
     //! actions drawn with the line icons, which follow the colour scheme
     QList<QPair<QAction *, QString>> m_lineIcons;
+    QList<QPair<QAbstractButton *, QString>> m_lineIconButtons;
+    //! the looks and the history, left of the image
+    QWidget *createLooksPanel();
+    QWidget *m_looksPanel = nullptr;
+    FilmStrip *m_filmStrip = nullptr;
+    QButtonGroup *m_looksSwitch = nullptr;
+    QStackedWidget *m_looksPages = nullptr;
+    QUndoView *m_historyView = nullptr;
     void refreshLineIcons();
     QAction *m_compareAct;
     void applyTabStyle();
@@ -359,7 +371,6 @@ class MainWindow : public QMainWindow {
                       const QString &text);
     void markModified(GenericViewer *viewer);
     // live histogram of the shown image
-    QDockWidget *m_histogramDock;
     HistogramPanel *m_histogramPanel;
     QTimer *m_histogramTimer;
     // dynamic range of the last HDR shown, computed once per frame
