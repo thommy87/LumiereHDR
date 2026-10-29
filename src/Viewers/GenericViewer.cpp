@@ -34,6 +34,7 @@
 
 #include "Libpfs/frame.h"
 #include "Viewers/GenericViewer.h"
+#include "Viewers/BeforeAfterItem.h"
 #include "Viewers/IGraphicsPixmapItem.h"
 #include "Viewers/IGraphicsView.h"
 #include "Viewers/PanIconWidget.h"
@@ -353,6 +354,20 @@ QPixmap GenericViewer::thumbnail(const QSize &size) const {
                        (scaled.height() - size.height()) / 2, size.width(),
                        size.height());
 }
+
+void GenericViewer::setBeforePicture(const QPixmap &before) {
+    if (before.isNull()) {
+        delete mBeforeAfter;
+        mBeforeAfter = nullptr;
+    } else if (mBeforeAfter) {
+        mBeforeAfter->setBefore(before);
+    } else {
+        mBeforeAfter = new BeforeAfterItem(before, mPixmap);
+    }
+    mView->viewport()->update();
+}
+
+QPixmap GenericViewer::picture() const { return mPixmap->pixmap(); }
 
 qint64 GenericViewer::pictureKey() const { return mPixmap->pixmap().cacheKey(); }
 

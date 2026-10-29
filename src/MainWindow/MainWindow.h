@@ -362,6 +362,8 @@ class MainWindow : public QMainWindow {
     QUndoView *m_historyView = nullptr;
     void refreshLineIcons();
     QAction *m_compareAct;
+    QAction *m_beforeAfterAct = nullptr;
+    void updateBeforeAfter();
     void applyTabStyle();
     bool m_resultSaved = false;  // Export done until the next change
     PresetStrip *m_presetStrip;

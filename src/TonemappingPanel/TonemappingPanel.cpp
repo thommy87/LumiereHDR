@@ -352,6 +352,7 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
             QToolButton *reset = new QToolButton(this);
             reset->setIcon(m_Ui->postgammadefault->icon());
             reset->setToolTip(tr("Restore the default value (0)"));
+            reset->setObjectName(QStringLiteral("rowdefault"));
             for (QWidget *w : {static_cast<QWidget *>(label),
                                static_cast<QWidget *>(slider),
                                static_cast<QWidget *>(box)})

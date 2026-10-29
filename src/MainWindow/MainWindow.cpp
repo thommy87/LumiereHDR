@@ -428,9 +428,18 @@ void MainWindow::createCentralWidget() {
     QVBoxLayout *inspectorLayout = new QVBoxLayout(inspector);
     inspectorLayout->setContentsMargins(0, 0, 0, 0);
     inspectorLayout->setSpacing(0);
+    m_histogramPanel->setContentsMargins(12, 10, 12, 4);
     inspectorLayout->addWidget(m_histogramPanel);
     inspectorLayout->addWidget(m_tonemapPanel, 1);
-    m_centralwidget_splitter->addWidget(inspector);
+    // scrolls on small screens instead of making the window taller
+    QScrollArea *inspectorScroll = new QScrollArea;
+    inspectorScroll->setObjectName(QStringLiteral("InspectorScroll"));
+    inspectorScroll->setWidget(inspector);
+    inspectorScroll->setWidgetResizable(true);
+    inspectorScroll->setFrameShape(QFrame::NoFrame);
+    inspectorScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    inspectorScroll->setMinimumWidth(inspector->minimumSizeHint().width() + 12);
+    m_centralwidget_splitter->addWidget(inspectorScroll);
 
     // the image tools sit right above the image they work on
     removeToolBar(m_Ui->toolBar);
@@ -626,6 +635,18 @@ void MainWindow::createShell() {
     tools->addAction(m_Ui->action_Projective_Transformation);
     tools->addAction(m_Ui->actionResizeHDR);
     tools->addSeparator();
+    // before/after in the picture itself: the HDR as it came, left of a
+    // line that can be dragged
+    m_beforeAfterAct = new QAction(tr("&Before / after"), this);
+    m_beforeAfterAct->setCheckable(true);
+    m_beforeAfterAct->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+B")));
+    m_beforeAfterAct->setToolTip(
+        tr("Before / after: the unedited HDR left of a line you can drag"));
+    connect(m_beforeAfterAct, &QAction::toggled, this,
+            &MainWindow::updateBeforeAfter);
+    m_Ui->menuView->addAction(m_beforeAfterAct);
+    addAction(m_beforeAfterAct);
+    tools->addAction(m_beforeAfterAct);
     tools->addAction(m_compareAct);
     m_filmStrip->addButton(m_compareAct);
     m_lineIcons = {{edits.value(0), QStringLiteral("undo")},
@@ -644,13 +665,47 @@ void MainWindow::createShell() {
                     QStringLiteral("perspective")},
                    {m_Ui->actionResizeHDR, QStringLiteral("resize")},
                    {m_compareAct, QStringLiteral("compare")},
+                   {m_beforeAfterAct, QStringLiteral("split")},
                    {m_Ui->fileNewAction, QStringLiteral("layers")},
                    {m_Ui->fileOpenAction, QStringLiteral("folder")},
                    {m_Ui->fileSaveAsAction, QStringLiteral("download")},
                    {m_Ui->actionBatch_HDR, QStringLiteral("batch")},
                    {m_Ui->OptionsAction, QStringLiteral("settings")}};
+    // the small "back to default" buttons beside the sliders
+    for (QToolButton *b : m_tonemapPanel->findChildren<QToolButton *>()) {
+        if (b->objectName().endsWith(QLatin1String("default"))) {
+            b->setProperty("reset", true);
+            b->setAutoRaise(true);
+            b->setIconSize(QSize(16, 16));
+            m_lineIconButtons << qMakePair(static_cast<QAbstractButton *>(b),
+                                           QStringLiteral("reset"));
+        }
+    }
+    if (QToolButton *add = m_tonemapPanel->findChild<QToolButton *>(
+            QStringLiteral("addCustomSizeButton"))) {
+        add->setAutoRaise(true);
+        m_lineIconButtons << qMakePair(static_cast<QAbstractButton *>(add),
+                                       QStringLiteral("plus"));
+    }
     refreshLineIcons();
     showWorkspace(false);
+}
+
+void MainWindow::updateBeforeAfter() {
+    GenericViewer *shown =
+        qobject_cast<GenericViewer *>(m_tabwidget->currentWidget());
+    GenericViewer *hdr = tm_status.curr_tm_frame;
+    const bool possible = shown && !shown->isHDR() && hdr &&
+                          m_tabwidget->indexOf(hdr) >= 0;
+    m_beforeAfterAct->setEnabled(possible);
+    for (int i = 0; i < m_tabwidget->count(); ++i) {
+        GenericViewer *v = qobject_cast<GenericViewer *>(m_tabwidget->widget(i));
+        if (!v) continue;
+        if (v == shown && possible && m_beforeAfterAct->isChecked())
+            v->setBeforePicture(hdr->picture());
+        else if (v->showsBeforePicture())
+            v->setBeforePicture(QPixmap());
+    }
 }
 
 void MainWindow::refreshLineIcons() {
@@ -1451,6 +1506,7 @@ void MainWindow::updateActions(int w) {
     if (g_v && !m_undoGroup->stacks().contains(g_v->undoStack()))
         m_undoGroup->addStack(g_v->undoStack());
     m_undoGroup->setActiveStack(g_v ? g_v->undoStack() : nullptr);
+    if (m_beforeAfterAct) updateBeforeAfter();
 
     updateHistogram();
 }
