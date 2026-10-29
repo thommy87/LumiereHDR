@@ -4764,6 +4764,26 @@ Do you want to continue?</source>
         <source>FITS Image</source>
         <translation>FITS-Bild</translation>
     </message>
+    <message>
+        <source>%1 · %2 × %3 px</source>
+        <translation>%1 · %2 × %3 px</translation>
+    </message>
+    <message>
+        <source>Result</source>
+        <translation>Ergebnis</translation>
+    </message>
+    <message>
+        <source>HDR · %1 × %2 px</source>
+        <translation>HDR · %1 × %2 px</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation>Exportieren</translation>
+    </message>
+    <message>
+        <source>%1 is already there. Replace it?</source>
+        <translation>%1 gibt es schon. Ersetzen?</translation>
+    </message>
 </context>
 <context>
     <name>PreferencesDialog</name>
@@ -7565,6 +7585,213 @@ Error: %1</source>
     <message>
         <source>After</source>
         <translation>Nachher</translation>
+    </message>
+</context>
+<context>
+    <name>ExportPage</name>
+    <message>
+        <source>Queue</source>
+        <translation>Warteschlange</translation>
+    </message>
+    <message>
+        <source>What</source>
+        <translation>Was</translation>
+    </message>
+    <message>
+        <source>Format</source>
+        <translation>Format</translation>
+    </message>
+    <message>
+        <source>Quality</source>
+        <translation>Qualität</translation>
+    </message>
+    <message>
+        <source>Glow on HDR screens</source>
+        <translation>Leuchtet auf HDR-Bildschirmen</translation>
+    </message>
+    <message>
+        <source>Keeps the highlights of the HDR in the file: they glow on HDR screens (TV, monitor, Android, Chrome); on normal screens it depends on the viewer.</source>
+        <translation>Behält die Lichter des HDR in der Datei: Sie leuchten auf HDR-Bildschirmen (Fernseher, Monitor, Android, Chrome); auf normalen Bildschirmen hängt es vom Betrachter ab.</translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation>Farbtiefe</translation>
+    </message>
+    <message>
+        <source>Where</source>
+        <translation>Wohin</translation>
+    </message>
+    <message>
+        <source>Change...</source>
+        <translation>Ändern...</translation>
+    </message>
+    <message>
+        <source>File name</source>
+        <translation>Dateiname</translation>
+    </message>
+    <message>
+        <source>Add to queue</source>
+        <translation>In die Warteschlange</translation>
+    </message>
+    <message>
+        <source>Makes the picture in the background, so you can go on editing; it is saved to the folder above</source>
+        <translation>Erstellt das Bild im Hintergrund, damit du weiter bearbeiten kannst; es wird im Ordner oben gespeichert</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation>Exportieren</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>Exportieren...</translation>
+    </message>
+    <message>
+        <source>JPEG</source>
+        <translation>JPEG</translation>
+    </message>
+    <message>
+        <source>Opens everywhere</source>
+        <translation>Überall lesbar</translation>
+    </message>
+    <message>
+        <source>Ultra HDR</source>
+        <translation>Ultra HDR</translation>
+    </message>
+    <message>
+        <source>JPEG that glows on HDR screens</source>
+        <translation>JPEG, leuchtet auf HDR-Bildschirmen</translation>
+    </message>
+    <message>
+        <source>AVIF</source>
+        <translation>AVIF</translation>
+    </message>
+    <message>
+        <source>Small, HDR possible</source>
+        <translation>Klein, HDR möglich</translation>
+    </message>
+    <message>
+        <source>JPEG XL</source>
+        <translation>JPEG XL</translation>
+    </message>
+    <message>
+        <source>WebP</source>
+        <translation>WebP</translation>
+    </message>
+    <message>
+        <source>For the web</source>
+        <translation>Für das Web</translation>
+    </message>
+    <message>
+        <source>PNG</source>
+        <translation>PNG</translation>
+    </message>
+    <message>
+        <source>Lossless</source>
+        <translation>Verlustfrei</translation>
+    </message>
+    <message>
+        <source>TIFF</source>
+        <translation>TIFF</translation>
+    </message>
+    <message>
+        <source>Lossless, 8 or 16 bit</source>
+        <translation>Verlustfrei, 8 oder 16 Bit</translation>
+    </message>
+    <message>
+        <source>BMP</source>
+        <translation>BMP</translation>
+    </message>
+    <message>
+        <source>Uncompressed</source>
+        <translation>Unkomprimiert</translation>
+    </message>
+    <message>
+        <source>PPM / PBM</source>
+        <translation>PPM / PBM</translation>
+    </message>
+    <message>
+        <source>Plain, for other tools</source>
+        <translation>Einfach, für andere Werkzeuge</translation>
+    </message>
+    <message>
+        <source>OpenEXR</source>
+        <translation>OpenEXR</translation>
+    </message>
+    <message>
+        <source>HDR data for other programs</source>
+        <translation>HDR-Daten für andere Programme</translation>
+    </message>
+    <message>
+        <source>Radiance</source>
+        <translation>Radiance</translation>
+    </message>
+    <message>
+        <source>HDR data, small</source>
+        <translation>HDR-Daten, klein</translation>
+    </message>
+    <message>
+        <source>32 bit float or LogLuv</source>
+        <translation>32 Bit Gleitkomma oder LogLuv</translation>
+    </message>
+    <message>
+        <source>AVIF HDR</source>
+        <translation>AVIF HDR</translation>
+    </message>
+    <message>
+        <source>Glows on HDR screens</source>
+        <translation>Leuchtet auf HDR-Bildschirmen</translation>
+    </message>
+    <message>
+        <source>JPEG XL HDR</source>
+        <translation>JPEG XL HDR</translation>
+    </message>
+    <message>
+        <source>PFS</source>
+        <translation>PFS</translation>
+    </message>
+    <message>
+        <source>For pfstools</source>
+        <translation>Für pfstools</translation>
+    </message>
+    <message>
+        <source>Web page</source>
+        <translation>Webseite</translation>
+    </message>
+    <message>
+        <source>With an HDR viewer</source>
+        <translation>Mit HDR-Betrachter</translation>
+    </message>
+    <message>
+        <source>32 bit float</source>
+        <translation>32 Bit Gleitkomma</translation>
+    </message>
+    <message>
+        <source>LogLuv (smaller)</source>
+        <translation>LogLuv (kleiner)</translation>
+    </message>
+    <message>
+        <source>8 bit</source>
+        <translation>8 Bit</translation>
+    </message>
+    <message>
+        <source>16 bit</source>
+        <translation>16 Bit</translation>
+    </message>
+    <message>
+        <source>This picture · %1</source>
+        <translation>Dieses Bild · %1</translation>
+    </message>
+    <message>
+        <source>This picture</source>
+        <translation>Dieses Bild</translation>
+    </message>
+    <message>
+        <source>The HDR itself (unedited)</source>
+        <translation>Das HDR selbst (unbearbeitet)</translation>
+    </message>
+    <message>
+        <source>Where to save</source>
+        <translation>Wohin speichern</translation>
     </message>
 </context>
 <context>

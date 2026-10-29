@@ -45,6 +45,7 @@ ExportQueueDialog::ExportQueueDialog(QWidget *parent) : QDialog(parent) {
            "the background and saved to the export folder."),
         this);
     intro->setWordWrap(true);
+    intro->setObjectName(QStringLiteral("QueueIntro"));
 
     m_list = new QTreeWidget(this);
     m_list->setColumnCount(4);
@@ -77,6 +78,7 @@ ExportQueueDialog::ExportQueueDialog(QWidget *parent) : QDialog(parent) {
     buttons->addWidget(m_clear);
 
     QDialogButtonBox *close = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    close->setObjectName(QStringLiteral("QueueClose"));
     connect(close, &QDialogButtonBox::rejected, this, &QDialog::hide);
 
     QVBoxLayout *layout = new QVBoxLayout(this);

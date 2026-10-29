@@ -18,6 +18,8 @@
     <file alias="batch.svg">ui/icons/batch.svg</file>
     <file alias="split.svg">ui/icons/split.svg</file>
     <file alias="reset.svg">ui/icons/reset.svg</file>
+    <file alias="minus.svg">ui/icons/minus.svg</file>
+    <file alias="trash.svg">ui/icons/trash.svg</file>
     <file alias="compare.svg">ui/icons/compare.svg</file>
     <file alias="crop.svg">ui/icons/crop.svg</file>
     <file alias="download.svg">ui/icons/download.svg</file>

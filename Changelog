@@ -1,3 +1,23 @@
+Changes LumièreHDR 2.20.0
+NEW: Export, step four of the redesign: "3 Export" at the top opens a
+     workspace of its own: the picture on the left, on the right what to
+     save (this picture or the HDR itself), the format as tiles with a
+     short note each, only the options that format has (quality, depth,
+     glow on HDR screens), the folder and the file name
+NEW: "Export" saves right away; "Add to queue" makes the picture in the
+     background under the file name given; the queue is the list under the
+     picture instead of a separate window
+NEW: "Web page" with an HDR viewer is one of the HDR tiles; Save As
+     (Ctrl+S) and Fast export work as before
+
+Changes LumièreHDR 2.19.0
+NEW: Merge HDR, step three of the redesign: putting photos together into an
+     HDR is now a workspace of its own in the main window instead of a
+     separate window; "1 Merge HDR" at the top opens it, Cancel goes back
+NEW: the photo list and the HDR settings in the new look: line icons for
+     add, remove and clear, a highlighted Next button, missing exposure
+     values marked in orange instead of yellow boxes
+
 Changes LumièreHDR 2.18.1
 NEW: before / after right in the picture (Ctrl+Shift+B or the button above
      the image): left of a line the unedited HDR, right of it the result;
