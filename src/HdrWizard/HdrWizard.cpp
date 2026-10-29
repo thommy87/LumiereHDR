@@ -36,6 +36,7 @@
 #include <QStandardPaths>
 #include <QFile>
 #include <QFileDialog>
+#include <QRegularExpression>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProcess>
@@ -603,6 +604,23 @@ void HdrWizard::enableNextOrWarning(const QStringList &filesWithoutExif) {
 }
 
 void HdrWizard::updateLabelMaybeNext(size_t numFilesWithoutExif) {
+    // one RAW alone already holds 12 to 14 stops: it becomes an HDR directly
+    const bool singleRaw =
+        m_hdrCreationManager->getData().size() == 1 &&
+        matchesLdrFilename(m_hdrCreationManager->getFile(0).filename()) &&
+        !QRegularExpression(QStringLiteral("\\.(jpe?g|tiff?|png|avif|jxl|webp)$"),
+                            QRegularExpression::CaseInsensitiveOption)
+             .match(m_hdrCreationManager->getFile(0).filename())
+             .hasMatch();
+    if (singleRaw) {
+        m_Ui->NextFinishButton->setEnabled(true);
+        m_Ui->confirmloadlabel->setText(
+            tr("<center><h3><b>One RAW photo.</b></h3>It becomes an HDR "
+               "directly, from the 12 to 14 stops the RAW holds. A real "
+               "bracket of several exposures brings out even more detail in "
+               "highlights and shadows.</center>"));
+        return;
+    }
     if (numFilesWithoutExif == 0) {
         m_Ui->NextFinishButton->setEnabled(true);
         m_Ui->confirmloadlabel->setText(
@@ -760,8 +778,12 @@ void HdrWizard::startComputation() {
     m_Ui->NextFinishButton->setEnabled(false);
     m_Ui->cancelButton->setEnabled(false);
 
+    // a single photo (e.g. one RAW) becomes an HDR directly: nothing to
+    // align and no ghosts between photos
+    if (m_hdrCreationManager->getData().size() < 2) m_doAutoAntighosting = false;
     if (m_Ui->autoAG_checkBox->isChecked() &&
-        !m_Ui->checkBoxEditingTools->isChecked()) {
+        !m_Ui->checkBoxEditingTools->isChecked() &&
+        m_hdrCreationManager->getData().size() >= 2) {
         int num_images = m_hdrCreationManager->getData().size();
         QList<QPair<int, int>> HV_offsets;
         for (int i = 0; i < num_images; i++) {

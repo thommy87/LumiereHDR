@@ -2575,6 +2575,10 @@ ERROR: %2</source>
 <context>
     <name>HdrWizard</name>
     <message>
+        <source>&lt;center&gt;&lt;h3&gt;&lt;b&gt;One RAW photo.&lt;/b&gt;&lt;/h3&gt;It becomes an HDR directly, from the 12 to 14 stops the RAW holds. A real bracket of several exposures brings out even more detail in highlights and shadows.&lt;/center&gt;</source>
+        <translation>&lt;center&gt;&lt;h3&gt;&lt;b&gt;Ein einzelnes RAW-Foto.&lt;/b&gt;&lt;/h3&gt;Daraus wird direkt ein HDR, aus den 12 bis 14 Blenden, die das RAW enthält. Eine echte Belichtungsreihe holt noch mehr Details aus Lichtern und Schatten.&lt;/center&gt;</translation>
+    </message>
+    <message>
         <source>&amp;Exposure of this photo (EV)</source>
         <translation>&amp;Belichtung dieses Fotos (EV)</translation>
     </message>
