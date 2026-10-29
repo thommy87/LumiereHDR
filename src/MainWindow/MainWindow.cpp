@@ -121,6 +121,7 @@
 #include <UI/HistogramPanel.h>
 #include "MainWindow/FilmStrip.h"
 #include "MainWindow/ExportPage.h"
+#include "MainWindow/BatchPage.h"
 #include <UI/CommandPalette.h>
 #include <UI/LumiereIcons.h>
 #include <UI/HomePage.h>
@@ -598,8 +599,8 @@ void MainWindow::createShell() {
     });
     connect(m_topBar, &TopBar::searchRequested, this,
             &MainWindow::openCommandPalette);
-    connect(m_topBar, &TopBar::batchRequested, m_Ui->actionBatch_HDR,
-            &QAction::trigger);
+    connect(m_topBar, &TopBar::batchRequested, this,
+            [this]() { showBatchPage(-1); });
     connect(m_topBar, &TopBar::settingsRequested, m_Ui->OptionsAction,
             &QAction::trigger);
 
@@ -1606,12 +1607,14 @@ void MainWindow::updateActions(int w) {
     // a newly opened image shows the workspace; the last one closed brings
     // the Start page back
     const int tabs = m_tabwidget->count();
-    if (tabs == 0 || tabs > m_lastTabCount) showWorkspace(tabs > 0);
+    QWidget *page = m_workspace->currentWidget();
+    const bool onImage =
+        page == m_centralwidget_splitter || page == m_exportPage;
+    if ((tabs == 0 && onImage) || tabs > m_lastTabCount)
+        showWorkspace(tabs > 0);
     m_lastTabCount = tabs;
     m_topBar->setModeEnabled(TopBar::Develop, hasImage);
     m_topBar->setModeEnabled(TopBar::Export, hasImage);
-    if (!hasImage && m_workspace->currentWidget() == m_exportPage)
-        showWorkspace(false);
 
     m_Ui->fileSaveAsAction->setEnabled(hasImage);
     m_Ui->actionRemove_Tab->setEnabled(hasImage);
@@ -2146,12 +2149,33 @@ void MainWindow::load_success(pfs::Frame *new_hdr_frame,
 }
 
 void MainWindow::on_OptionsAction_triggered() {
-    PreferencesDialog *opts = new PreferencesDialog(this);
-    opts->setAttribute(Qt::WA_DeleteOnClose);
-    if (opts->exec() == QDialog::Accepted) {
-        m_Ui->actionShowPreviewPanel->setChecked(
-            LuminanceOptions().isPreviewPanelActive());
+    // the preferences are a page of the window; Save or Cancel goes back
+    if (m_settingsPage) {
+        m_workspace->setCurrentWidget(m_settingsPage);
+        m_topBar->showUtility(TopBar::Settings);
+        return;
     }
+    PreferencesDialog *opts = new PreferencesDialog(nullptr);
+    m_settingsPage = opts->useAsPage();
+    m_workspace->addWidget(m_settingsPage);
+    connect(opts, &QDialog::finished, this, [this](int result) {
+        if (result == QDialog::Accepted)
+            m_Ui->actionShowPreviewPanel->setChecked(
+                LuminanceOptions().isPreviewPanelActive());
+        QWidget *page = m_settingsPage;
+        m_settingsPage = nullptr;
+        const bool shown = m_workspace->currentWidget() == page;
+        m_workspace->removeWidget(page);
+        page->deleteLater();
+        if (shown) leaveUtilityPage();
+    });
+    m_workspace->setCurrentWidget(m_settingsPage);
+    m_topBar->showUtility(TopBar::Settings);
+}
+
+void MainWindow::leaveUtilityPage() {
+    // back to the image if there is one, else to the Start page
+    showWorkspace(m_tabwidget->count() > 0);
 }
 
 void MainWindow::on_Transplant_Exif_Data_action_triggered() {
@@ -2272,29 +2296,29 @@ void MainWindow::on_actionBring_All_to_Front_triggered() {
     }
 }
 
-void MainWindow::on_actionBatch_HDR_triggered() {
-    BatchHDRDialog *batch_hdr_dialog = new BatchHDRDialog(this, QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection()));
-    batch_hdr_dialog->exec();
-    const QStringList created = batch_hdr_dialog->writtenFiles();
-    delete batch_hdr_dialog;
+void MainWindow::showBatchPage(int kind) {
+    // batch processing is a page of the window; it keeps working while
+    // the other pages are looked at
+    if (!m_batchPage) {
+        m_batchPage = new BatchPage(
+            QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection()));
+        m_workspace->addWidget(m_batchPage);
+        connect(m_batchPage, &BatchPage::closed, this, [this]() {
+            if (m_workspace->currentWidget() == m_batchPage)
+                leaveUtilityPage();
+        });
+    }
+    if (kind >= 0) m_batchPage->showKind(static_cast<BatchPage::Kind>(kind));
+    m_workspace->setCurrentWidget(m_batchPage);
+    m_topBar->showUtility(TopBar::Batch);
+}
 
-    // go straight on from brackets to finished pictures
-    if (created.isEmpty()) return;
-    if (QMessageBox::question(
-            this, tr("Batch HDR"),
-            tr("%n HDR image(s) created. Tone map them now with Batch tone "
-               "mapping?",
-               "", created.size())) != QMessageBox::Yes)
-        return;
-    BatchTMDialog batchdialog(this, QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection()));
-    batchdialog.addHdrFiles(created);
-    batchdialog.exec();
+void MainWindow::on_actionBatch_HDR_triggered() {
+    showBatchPage(BatchPage::Hdr);
 }
 
 void MainWindow::on_actionBatch_Tone_Mapping_triggered() {
-    BatchTMDialog *batchdialog = new BatchTMDialog(this, QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection()));
-    batchdialog->exec();
-    delete batchdialog;
+    showBatchPage(BatchPage::Looks);
 }
 
 void MainWindow::cropToSelection() {

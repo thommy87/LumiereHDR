@@ -426,20 +426,46 @@ QPushButton#QuietButton:hover { color: @accentText; }
   background: @input; border: 1px solid @line; border-radius: 8px;
   padding: 6px 12px; color: @text; }
 #Inspector QPushButton:hover { border-color: @text3; }
-#MergeWorkspace QGroupBox { border: none; border-top: 1px solid @line2;
-  margin-top: 22px; padding-top: 6px; font-weight: 600; }
-#MergeWorkspace QGroupBox::title { subcontrol-origin: margin; left: 6px;
-  padding: 0; color: @text; font-size: 14px; }
-#MergeWorkspace QComboBox, #MergeWorkspace QDoubleSpinBox, #MergeWorkspace QSpinBox,
-#MergeWorkspace QLineEdit { background: @input; border: 1px solid @line;
-  border-radius: 6px; padding: 3px 6px; color: @text; min-height: 22px; }
-#MergeWorkspace QComboBox:focus, #MergeWorkspace QDoubleSpinBox:focus,
-#MergeWorkspace QSpinBox:focus, #MergeWorkspace QLineEdit:focus {
-  border-color: @accentText; }
-#MergeWorkspace QPushButton, #MergeWorkspace QToolButton#queueButton {
+#MergeWorkspace QGroupBox,
+#SettingsContent QGroupBox,
+#BatchWorkspace QGroupBox { border: none; border-top: 1px solid @line2;
+  margin-top: 22px; padding-top: 6px; font-weight: 600; }#MergeWorkspace QGroupBox::title,
+#SettingsContent QGroupBox::title,
+#BatchWorkspace QGroupBox::title { subcontrol-origin: margin; left: 6px;
+  padding: 0; color: @text; font-size: 14px; }#MergeWorkspace QComboBox,
+#SettingsContent QComboBox,
+#BatchWorkspace QComboBox,
+#MergeWorkspace QDoubleSpinBox,
+#SettingsContent QDoubleSpinBox,
+#BatchWorkspace QDoubleSpinBox,
+#MergeWorkspace QSpinBox,
+#SettingsContent QSpinBox,
+#BatchWorkspace QSpinBox,
+#MergeWorkspace QLineEdit,
+#SettingsContent QLineEdit,
+#BatchWorkspace QLineEdit { background: @input; border: 1px solid @line;
+  border-radius: 6px; padding: 3px 6px; color: @text; min-height: 22px; }#MergeWorkspace QComboBox:focus,
+#SettingsContent QComboBox:focus,
+#BatchWorkspace QComboBox:focus,
+#MergeWorkspace QDoubleSpinBox:focus,
+#SettingsContent QDoubleSpinBox:focus,
+#BatchWorkspace QDoubleSpinBox:focus,
+#MergeWorkspace QSpinBox:focus,
+#SettingsContent QSpinBox:focus,
+#BatchWorkspace QSpinBox:focus,
+#MergeWorkspace QLineEdit:focus,
+#SettingsContent QLineEdit:focus,
+#BatchWorkspace QLineEdit:focus {
+  border-color: @accentText; }#MergeWorkspace QPushButton,
+#SettingsContent QPushButton,
+#BatchWorkspace QPushButton,
+#MergeWorkspace QToolButton#queueButton,
+#SettingsContent QToolButton#queueButton,
+#BatchWorkspace QToolButton#queueButton {
   background: @input; border: 1px solid @line; border-radius: 8px;
-  padding: 6px 12px; color: @text; }
-#MergeWorkspace QPushButton:hover { border-color: @text3; }
+  padding: 6px 12px; color: @text; }#MergeWorkspace QPushButton:hover,
+#SettingsContent QPushButton:hover,
+#BatchWorkspace QPushButton:hover { border-color: @text3; }
 #Inspector QToolButton#defaultButton, #Inspector QToolButton#undoButton,
 #Inspector QToolButton#redoButton { background: transparent; border: none;
   border-radius: 6px; padding: 4px 8px; color: @accentText; }
@@ -447,20 +473,34 @@ QPushButton#QuietButton:hover { color: @accentText; }
 #Inspector QToolButton#redoButton:hover { background: @hover; }
 #Inspector QToolButton#defaultButton:disabled, #Inspector QToolButton#undoButton:disabled,
 #Inspector QToolButton#redoButton:disabled { color: @text3; }
-#Inspector QPushButton:disabled { color: @text3; }
-#MergeWorkspace { background: @ground; }
-#MergeWorkspace QTableWidget, #MergeWorkspace QTextEdit { background: @panel;
-  border: 1px solid @line2; border-radius: 10px; }
-#MergeWorkspace QHeaderView::section { background: @panel; color: @text3;
-  border: none; border-bottom: 1px solid @line2; padding: 6px; }
-#MergeWorkspace QToolButton#loadImagesButton,
+#Inspector QPushButton:disabled { color: @text3; }#MergeWorkspace,
+#SettingsContent,
+#BatchWorkspace { background: @ground; }#MergeWorkspace QTableWidget,
+#SettingsContent QTableWidget,
+#BatchWorkspace QTableWidget,
+#MergeWorkspace QTextEdit,
+#SettingsContent QTextEdit,
+#BatchWorkspace QTextEdit { background: @panel;
+  border: 1px solid @line2; border-radius: 10px; }#MergeWorkspace QHeaderView::section,
+#SettingsContent QHeaderView::section,
+#BatchWorkspace QHeaderView::section { background: @panel; color: @text3;
+  border: none; border-bottom: 1px solid @line2; padding: 6px; }#MergeWorkspace QToolButton#loadImagesButton,
+#SettingsContent QToolButton#loadImagesButton,
+#BatchWorkspace QToolButton#loadImagesButton,
 #MergeWorkspace QToolButton#removeImageButton,
-#MergeWorkspace QToolButton#clearListButton { background: @input;
-  border: 1px solid @line; border-radius: 8px; padding: 6px; }
-QPushButton[primary="true"], #MergeWorkspace QPushButton[primary="true"] {
-  background: @accent; border-color: @accent; color: white; font-weight: 600; }
-QPushButton[primary="true"]:disabled,
-#MergeWorkspace QPushButton[primary="true"]:disabled { background: @chip; border-color: @line;
+#SettingsContent QToolButton#removeImageButton,
+#BatchWorkspace QToolButton#removeImageButton,
+#MergeWorkspace QToolButton#clearListButton,
+#SettingsContent QToolButton#clearListButton,
+#BatchWorkspace QToolButton#clearListButton { background: @input;
+  border: 1px solid @line; border-radius: 8px; padding: 6px; }QPushButton[primary="true"],
+#MergeWorkspace QPushButton[primary="true"],
+#SettingsContent QPushButton[primary="true"],
+#BatchWorkspace QPushButton[primary="true"] {
+  background: @accent; border-color: @accent; color: white; font-weight: 600; }QPushButton[primary="true"]:disabled,
+#MergeWorkspace QPushButton[primary="true"]:disabled,
+#SettingsContent QPushButton[primary="true"]:disabled,
+#BatchWorkspace QPushButton[primary="true"]:disabled { background: @chip; border-color: @line;
   color: @text3; }
 QToolButton[reset="true"] { border: none; border-radius: 6px; padding: 3px; }
 QToolButton[reset="true"]:hover { background: @hover; }
@@ -489,6 +529,22 @@ QToolButton[reset="true"]:hover { background: @hover; }
   border-color: @accentText; }
 #FormatName { color: @text; font-size: 14px; font-weight: 600; }
 #FormatHint { color: @text2; font-size: 12px; }
+#PageTitle { color: @text; font-size: 22px; font-weight: 600; }
+#PageSubtitle { color: @text2; font-size: 13px; }
+#BatchPage, #SettingsWorkspace { background: @ground; }
+#SettingsNav { background: @bar; border-right: 1px solid @line2; }
+QToolButton#SettingsNavButton { border: none; border-radius: 8px;
+  padding: 0 12px; color: @text2; font-weight: 500; text-align: left; }
+QToolButton#SettingsNavButton:hover { background: @hover; color: @text; }
+QToolButton#SettingsNavButton:checked { background: @chip; color: @text; }
+#SettingsContent QStackedWidget > QWidget { background: transparent; }
+#BatchWorkspace QProgressBar { background: @input; border: none;
+  border-radius: 3px; max-height: 6px; text-align: center; color: transparent; }
+#BatchWorkspace QProgressBar::chunk { background: @accentText; border-radius: 3px; }
+#TopBar QToolButton:checked { background: @chip; color: @text; }
+#BatchWorkspace QToolButton { background: @input;
+  border: 1px solid @line; border-radius: 8px; padding: 5px; }
+#BatchWorkspace QToolButton:hover { border-color: @text3; }
 #FilmStrip { background: @bar; border-top: 1px solid @line2; }
 QListWidget#FilmList { background: transparent; border: none; color: @text2;
   outline: none; }

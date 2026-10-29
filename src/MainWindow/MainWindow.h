@@ -371,6 +371,11 @@ class MainWindow : public QMainWindow {
     //! the Merge HDR workspace while a merge is going on
     HdrWizard *m_mergeWizard = nullptr;
     void showMergeWorkspace();
+    //! batch processing and the preferences, as pages of the window
+    class BatchPage *m_batchPage = nullptr;
+    QWidget *m_settingsPage = nullptr;
+    void showBatchPage(int kind);
+    void leaveUtilityPage();
     //! the Export workspace and the picture it saves
     ExportPage *m_exportPage = nullptr;
     QPointer<LdrViewer> m_exportResult;

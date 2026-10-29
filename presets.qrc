@@ -16,6 +16,10 @@
 <qresource prefix="/ui/icons">
     <file alias="actual.svg">ui/icons/actual.svg</file>
     <file alias="batch.svg">ui/icons/batch.svg</file>
+    <file alias="wrench.svg">ui/icons/wrench.svg</file>
+    <file alias="colors.svg">ui/icons/colors.svg</file>
+    <file alias="camera.svg">ui/icons/camera.svg</file>
+    <file alias="monitor.svg">ui/icons/monitor.svg</file>
     <file alias="split.svg">ui/icons/split.svg</file>
     <file alias="reset.svg">ui/icons/reset.svg</file>
     <file alias="minus.svg">ui/icons/minus.svg</file>

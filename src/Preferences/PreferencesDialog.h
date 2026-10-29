@@ -41,10 +41,16 @@ class PreferencesDialog : public QDialog {
    private:
     QScopedPointer<Ui::PreferencesDialog> m_Ui;
     class QCheckBox *m_lensCorrection = nullptr;
+    class QLabel *m_pageTitle = nullptr;
 
    public:
     PreferencesDialog(QWidget *parent, int tab = 0);
     ~PreferencesDialog();
+
+    //! shown as a page of the main window: the sections as a list on the
+    //! left, the open one with its name as a heading; returns the page,
+    //! which holds the dialog
+    QWidget *useAsPage();
 
    private:
     void from_options_to_gui();

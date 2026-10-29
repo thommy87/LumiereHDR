@@ -37,6 +37,9 @@ class TopBar : public QWidget {
     void setMode(Mode mode);
     Mode mode() const;
     void setModeEnabled(Mode mode, bool enabled);
+    //! a page that is not one of the steps: batch or the preferences
+    enum Utility { NoUtility, Batch, Settings };
+    void showUtility(Utility utility);
     //! the menus of the menu bar, offered under the menu button
     void setMenus(const QList<QMenu *> &menus);
 

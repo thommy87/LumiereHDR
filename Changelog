@@ -1,3 +1,21 @@
+Changes LumièreHDR 3.0.0
+The new LumièreHDR: a complete redesign, one window that leads from the
+photos to the finished picture.
+NEW: a bar at the top with the three steps, 1 Merge HDR, 2 Develop and
+     3 Export, plus Start; search for any command with Ctrl+K; batch,
+     preferences and all menus at the right end
+NEW: a Start page with the three ways in and the recently used pictures
+NEW: Merge HDR, Develop and Export are pages of the window instead of
+     separate dialogs: looks as previews, before / after in the picture,
+     the histogram above the settings, a film strip of the open pictures,
+     export with format tiles and the queue under the picture
+NEW: batch processing is a page of its own: "HDRs from brackets" and
+     "Looks on HDRs" behind one switch; made HDRs go straight on to the
+     looks; it keeps working while you look at other pages
+NEW: the preferences are a page of their own, the sections as a list on
+     the left; Save or Cancel goes back
+NEW: line icons and one look throughout, in a dark and a light scheme
+
 Changes LumièreHDR 2.20.0
 NEW: Export, step four of the redesign: "3 Export" at the top opens a
      workspace of its own: the picture on the left, on the right what to
