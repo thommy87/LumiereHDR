@@ -596,8 +596,7 @@ reinhard02|\nreinhard05|mai|mantiuk06|mantiuk08|\nvanhateren|lischinski] (Defaul
         }
         if (vm.count("hdrCurveFilename"))
             hdrcreationconfig.inputResponseCurveFilename =
-                QString::fromStdString(
-                    vm["hdrCurveFilename"].as<std::string>());
+                vm["hdrCurveFilename"].as<std::string>();
         if (vm.count("tmo")) {
             const char *value = vm["tmo"].as<std::string>().c_str();
             if (strcmp(value, "ashikhmin") == 0)

@@ -28,14 +28,15 @@
 //! \author Davide Anastasia <davideanastasia@users.sourceforge.net>
 
 #include <HdrCreation/fusionoperator.h>
-#include <QString>
+#include <string>
 
 struct FusionOperatorConfig {
     libhdr::fusion::WeightFunctionType weightFunction;
     libhdr::fusion::ResponseCurveType responseCurve;
     libhdr::fusion::FusionOperator fusionOperator;
-    QString inputResponseCurveFilename;
-    QString outputResponseCurveFilename;
+    // file names in the local 8-bit encoding (QFile::encodeName)
+    std::string inputResponseCurveFilename;
+    std::string outputResponseCurveFilename;
 };
 
 #endif

@@ -297,9 +297,10 @@ HdrCreationManager::HdrCreationManager(bool fromCommandLine)
 }
 
 void HdrCreationManager::setConfig(const FusionOperatorConfig &cfg) {
-    if (!cfg.inputResponseCurveFilename.isEmpty()) {
+    if (!cfg.inputResponseCurveFilename.empty()) {
         setLoadResponseCurve(true);
-        setResponseCurveInputFilename(cfg.inputResponseCurveFilename);
+        setResponseCurveInputFilename(QFile::decodeName(
+            QByteArray::fromStdString(cfg.inputResponseCurveFilename)));
     } else {
         m_response->setType(cfg.responseCurve);
     }
