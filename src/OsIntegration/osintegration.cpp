@@ -76,6 +76,9 @@ void OsIntegration::init(QWidget *mainWindow) {
         m_winProgressbar->init(mainWindow);
     }
 #endif
+#ifdef LHDR_WIN_TASKBAR_NATIVE
+    m_taskbar.init(mainWindow);
+#endif
 }
 
 void OsIntegration::setProgress(int value, int max) {
@@ -83,6 +86,9 @@ void OsIntegration::setProgress(int value, int max) {
     if (m_winProgressbar) {
         m_winProgressbar->setProgressValue(value, max);
     }
+#endif
+#ifdef LHDR_WIN_TASKBAR_NATIVE
+    m_taskbar.setProgress(value, max);
 #endif
 }
 
@@ -92,6 +98,9 @@ void OsIntegration::setProgressValue(int value) {
         m_winProgressbar->setProgressValue(value,
                                            m_progressMax - m_progressMin);
     }
+#endif
+#ifdef LHDR_WIN_TASKBAR_NATIVE
+    m_taskbar.setProgress(value - m_progressMin, m_progressMax - m_progressMin);
 #endif
 }
 
@@ -105,6 +114,9 @@ void OsIntegration::addRecentFile(const QString &filename) {
     if (m_winProgressbar) {
         m_winProgressbar->addRecentFile(filename);
     }
+#endif
+#ifdef LHDR_WIN_TASKBAR_NATIVE
+    m_taskbar.addRecentFile(filename);
 #endif
 }
 

@@ -3581,6 +3581,14 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>HDR preview (HDR screens)...</source>
+        <translation>HDR-Vorschau (HDR-Bildschirme) …</translation>
+    </message>
+    <message>
+        <source>Shows this result with glowing highlights, as an Ultra HDR file looks on an HDR screen such as an HDR TV</source>
+        <translation>Zeigt dieses Ergebnis mit leuchtenden Lichtern, so wie eine Ultra-HDR-Datei auf einem HDR-Bildschirm wie einem HDR-Fernseher aussieht</translation>
+    </message>
+    <message>
         <source>Save as %1</source>
         <translation>Speichern als %1</translation>
     </message>
@@ -7463,6 +7471,10 @@ Error: %1</source>
 </context>
 <context>
     <name>HdrDisplayWindow</name>
+    <message>
+        <source>Ultra HDR preview</source>
+        <translation>Ultra-HDR-Vorschau</translation>
+    </message>
     <message>
         <source>&lt;b&gt;Only on HDR screens:&lt;/b&gt; this preview shows real HDR brightness only on an HDR monitor or HDR TV with &quot;Use HDR&quot; switched on in the Windows display settings. On a normal screen it looks like the usual view.</source>
         <translation>&lt;b&gt;Nur auf HDR-Bildschirmen:&lt;/b&gt; Diese Vorschau zeigt echte HDR-Helligkeit nur auf einem HDR-Monitor oder HDR-Fernseher, bei dem in den Windows-Anzeigeeinstellungen „HDR verwenden“ eingeschaltet ist. Auf einem normalen Bildschirm sieht sie aus wie die gewöhnliche Ansicht.</translation>
