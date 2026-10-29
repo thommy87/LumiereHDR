@@ -53,7 +53,7 @@ struct TonemapOperatorRegister : public TonemapOperator {
 class TonemapOperatorMantiuk06
     : public TonemapOperatorRegister<mantiuk06, TonemapOperatorMantiuk06> {
    public:
-    void tonemapFrame(pfs::Frame &workingFrame, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingFrame, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -73,7 +73,7 @@ class TonemapOperatorMantiuk06
 
 struct TonemapOperatorMantiuk08
     : public TonemapOperatorRegister<mantiuk08, TonemapOperatorMantiuk08> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -99,7 +99,7 @@ struct TonemapOperatorMantiuk08
 
 struct TonemapOperatorFattal02
     : public TonemapOperatorRegister<fattal, TonemapOperatorFattal02> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -134,7 +134,7 @@ struct TonemapOperatorFattal02
 
 struct TonemapOperatorFerradans11
     : public TonemapOperatorRegister<ferradans, TonemapOperatorFerradans11> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -150,7 +150,7 @@ struct TonemapOperatorFerradans11
 
 struct TonemapOperatorMai11
     : public TonemapOperatorRegister<mai, TonemapOperatorMai11> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -164,7 +164,7 @@ struct TonemapOperatorMai11
 
 struct TonemapOperatorDrago03
     : public TonemapOperatorRegister<drago, TonemapOperatorDrago03> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);  // this guy should not be here!
 
@@ -179,7 +179,7 @@ struct TonemapOperatorDrago03
 
 class TonemapOperatorDurand02
     : public TonemapOperatorRegister<durand, TonemapOperatorDurand02> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -196,7 +196,7 @@ class TonemapOperatorDurand02
 
 struct TonemapOperatorReinhard02
     : public TonemapOperatorRegister<reinhard02, TonemapOperatorReinhard02> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -223,7 +223,7 @@ struct TonemapOperatorReinhard02
 
 struct TonemapOperatorReinhard05
     : public TonemapOperatorRegister<reinhard05, TonemapOperatorReinhard05> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -241,7 +241,7 @@ struct TonemapOperatorReinhard05
 
 struct TonemapOperatorAshikhmin02
     : public TonemapOperatorRegister<ashikhmin, TonemapOperatorAshikhmin02> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -258,7 +258,7 @@ struct TonemapOperatorAshikhmin02
 
 struct TonemapOperatorPattanaik00
     : public TonemapOperatorRegister<pattanaik, TonemapOperatorPattanaik00> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -284,7 +284,7 @@ struct TonemapOperatorPattanaik00
 
 struct TonemapOperatorFerwerda96
     : public TonemapOperatorRegister<ferwerda, TonemapOperatorFerwerda96> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -301,7 +301,7 @@ struct TonemapOperatorFerwerda96
 
 struct TonemapOperatorKimKautz08
     : public TonemapOperatorRegister<kimkautz, TonemapOperatorKimKautz08> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -319,7 +319,7 @@ struct TonemapOperatorKimKautz08
 
 struct TonemapOperatorVanHateren06
     : public TonemapOperatorRegister<vanhateren, TonemapOperatorVanHateren06> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 
@@ -336,7 +336,7 @@ struct TonemapOperatorVanHateren06
 
 struct TonemapOperatorLischinski06
     : public TonemapOperatorRegister<lischinski, TonemapOperatorLischinski06> {
-    void tonemapFrame(pfs::Frame &workingframe, TonemappingOptions *opts,
+    void tonemapFrame(pfs::Frame &workingframe, TonemapParams *opts,
                       pfs::Progress &ph) {
         ph.setMaximum(100);
 

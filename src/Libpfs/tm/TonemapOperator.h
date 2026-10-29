@@ -34,7 +34,7 @@
 
 #include <stdexcept>
 
-#include "Core/TonemappingOptions.h"
+#include "Libpfs/tm/TonemapParams.h"
 
 // Forward declaration
 namespace pfs {
@@ -57,7 +57,7 @@ class TonemapOperator {
     //! \note input frame is MODIFIED
     //! If you want to keep the original frame, make a copy before
     //!
-    virtual void tonemapFrame(pfs::Frame &, TonemappingOptions *,
+    virtual void tonemapFrame(pfs::Frame &, TonemapParams *,
                               pfs::Progress &ph) = 0;
 
    protected:

@@ -40,6 +40,7 @@
 #include <Fileformat/pfsoutldrimage.h>
 #include <HdrHTML/pfsouthdrhtml.h>
 #include <Libpfs/manip/gamma_levels.h>
+#include <Core/TonemappingOptions.h>
 #include <Libpfs/tm/TonemapOperator.h>
 #include <Libpfs/exception.h>
 #include "commandline.h"

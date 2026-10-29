@@ -34,6 +34,7 @@
 #include "Libpfs/manip/resize.h"
 
 #include "Core/TMWorker.h"
+#include "Core/TonemappingOptions.h"
 #include "Libpfs/tm/TonemapOperator.h"
 
 #include "Fileformat/pfsoutldrimage.h"
