@@ -3,6 +3,7 @@ FIX: progress shows on the Windows taskbar button again (Qt 6), and saved
      files appear in its jump list
 NEW: HDR preview of a result: the edit with glowing highlights, as its
      Ultra HDR file looks on an HDR screen or TV
+NEW: Linux AppImage with every release (x86_64, distributions from 2024 on)
 
 Changes LumièreHDR 2.16.0
 FIX: RAW photos have their real colours: after the own demosaicing the
