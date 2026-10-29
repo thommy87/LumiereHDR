@@ -50,9 +50,8 @@ void generate_hdrhtml(pfs::Frame *frame, string page_name, string out_dir,
                       string image_dir, string object_output,
                       string html_output, int quality, bool verbose
                       ) {
-#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    // HDRHTMLDIR is a runtime QString here; keep the paths in std::string
-    // instead of copying them into fixed-size buffers
+    // HDRHTMLDIR is found at run time, next to the program; keep the paths
+    // in std::string instead of fixed-size buffers
     const std::string p_t =
         (QString(HDRHTMLDIR) + "/hdrhtml_default_templ/hdrhtml_page_templ.html")
             .toStdString();
@@ -62,12 +61,6 @@ void generate_hdrhtml(pfs::Frame *frame, string page_name, string out_dir,
 
     const char *page_template = p_t.c_str();
     const char *image_template = i_t.c_str();
-#else
-    const char *page_template =
-        HDRHTMLDIR "/hdrhtml_default_templ/hdrhtml_page_templ.html";
-    const char *image_template =
-        HDRHTMLDIR "/hdrhtml_default_templ/hdrhtml_image_templ.html";
-#endif
 
     if (quality < 1 || quality > 5)
         throw pfs::Exception(
