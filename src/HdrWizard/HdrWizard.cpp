@@ -92,8 +92,8 @@ static QString buildEVString(float newEV) {
 }
 
 static void updateTableItem(QTableWidgetItem *tableItem, float newEV) {
-    tableItem->setBackground(QBrush(Qt::white));
-    tableItem->setForeground(QBrush(Qt::black));
+    tableItem->setData(Qt::BackgroundRole, QVariant());
+    tableItem->setData(Qt::ForegroundRole, QVariant());
     tableItem->setText(buildEVString(newEV));
 }
 }
@@ -302,7 +302,7 @@ void HdrWizard::updateTableGrid() {
     int currentRow = m_Ui->tableWidget->currentRow();
 
     // empty grid...
-    m_Ui->tableWidget->clear();
+    m_Ui->tableWidget->clearContents();
     m_Ui->tableWidget->setRowCount(0);
 
     // insert the row at the bottom of the table widget
@@ -337,8 +337,7 @@ void HdrWizard::updateTableGrid() {
             QTableWidgetItem *tableitem =
                 new QTableWidgetItem(QString(tr("Unknown")));
             tableitem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-            tableitem->setBackground(QBrush(Qt::yellow));
-            tableitem->setForeground(QBrush(Qt::red));
+            tableitem->setForeground(QBrush(QColor(232, 160, 64)));
             m_Ui->tableWidget->setItem(counter, 1, tableitem);
         }
 
@@ -636,7 +635,7 @@ void HdrWizard::updateLabelMaybeNext(size_t numFilesWithoutExif) {
 }
 
 void HdrWizard::errorWhileLoading(const QString &error) {
-    m_Ui->tableWidget->clear();
+    m_Ui->tableWidget->clearContents();
     m_Ui->tableWidget->setRowCount(0);
     m_Ui->tableWidget->setEnabled(true);
     m_Ui->progressBar->setValue(0);

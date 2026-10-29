@@ -80,6 +80,7 @@ class PresetStrip;
 class QUndoGroup;
 class QUndoView;
 class FilmStrip;
+class HdrWizard;
 class QButtonGroup;
 class QAbstractButton;
 class QTimer;
@@ -363,6 +364,9 @@ class MainWindow : public QMainWindow {
     void refreshLineIcons();
     QAction *m_compareAct;
     QAction *m_beforeAfterAct = nullptr;
+    //! the Merge HDR workspace while a merge is going on
+    HdrWizard *m_mergeWizard = nullptr;
+    void showMergeWorkspace();
     void updateBeforeAfter();
     void applyTabStyle();
     bool m_resultSaved = false;  // Export done until the next change

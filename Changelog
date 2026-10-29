@@ -1,3 +1,11 @@
+Changes LumièreHDR 2.19.0
+NEW: Merge HDR, step three of the redesign: putting photos together into an
+     HDR is now a workspace of its own in the main window instead of a
+     separate window; "1 Merge HDR" at the top opens it, Cancel goes back
+NEW: the photo list and the HDR settings in the new look: line icons for
+     add, remove and clear, a highlighted Next button, missing exposure
+     values marked in orange instead of yellow boxes
+
 Changes LumièreHDR 2.18.1
 NEW: before / after right in the picture (Ctrl+Shift+B or the button above
      the image): left of a line the unedited HDR, right of it the result;
