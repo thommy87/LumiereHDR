@@ -2575,6 +2575,14 @@ ERROR: %2</source>
 <context>
     <name>HdrWizard</name>
     <message>
+        <source>&amp;Exposure of this photo (EV)</source>
+        <translation>&amp;Belichtung dieses Fotos (EV)</translation>
+    </message>
+    <message>
+        <source>How this photo was exposed, compared with the others: taken from the camera data. Change it only when it is missing or wrong; it tells the merge how to weigh the photo and does not make the photo itself brighter or darker.</source>
+        <translation>Wie dieses Foto im Vergleich zu den anderen belichtet wurde, aus den Kameradaten übernommen. Nur ändern, wenn der Wert fehlt oder falsch ist: Er sagt dem Zusammenführen, wie das Foto einzuordnen ist, und macht das Foto selbst nicht heller oder dunkler.</translation>
+    </message>
+    <message>
         <source>AVIF, JPEG XL, WebP (*.avif *.jxl *.webp *.AVIF *.JXL *.WEBP);;</source>
         <translation>AVIF, JPEG XL, WebP (*.avif *.jxl *.webp *.AVIF *.JXL *.WEBP);;</translation>
     </message>

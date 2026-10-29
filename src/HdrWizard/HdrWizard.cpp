@@ -179,6 +179,17 @@ void HdrWizard::setupConnections() {
 
     connect(m_Ui->tableWidget, &QTableWidget::currentCellChanged, this,
             &HdrWizard::inputHdrFileSelected);
+    // the EV says how the photo was exposed, for merging; it does not make
+    // the photo brighter, which the preview could otherwise suggest
+    m_Ui->EVgroupBox->setTitle(tr("&Exposure of this photo (EV)"));
+    const QString evTip =
+        tr("How this photo was exposed, compared with the others: taken from "
+           "the camera data. Change it only when it is missing or wrong; it "
+           "tells the merge how to weigh the photo and does not make the "
+           "photo itself brighter or darker.");
+    m_Ui->EVgroupBox->setToolTip(evTip);
+    m_Ui->EVSlider->setToolTip(evTip);
+    m_Ui->ImageEVdsb->setToolTip(evTip);
     connect(m_Ui->EVSlider, &QAbstractSlider::valueChanged, this,
             &HdrWizard::updateEVSlider);
     connect(m_Ui->ImageEVdsb, SIGNAL(valueChanged(double)), this,
