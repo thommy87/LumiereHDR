@@ -14,35 +14,17 @@
  * ----------------------------------------------------------------------
  */
 
-#ifndef WELCOMEPANEL_H
-#define WELCOMEPANEL_H
+#ifndef LUMIEREICONS_H
+#define LUMIEREICONS_H
 
-#include <QWidget>
+#include <QIcon>
+#include <QString>
 
-class QAction;
-class QLabel;
-class QPushButton;
-
-//! \brief Shown in the image area while no image is open: the two ways to
-//! start, as large buttons, and a hint that photos can be dropped here.
-class WelcomePanel : public QWidget {
-    Q_OBJECT
-   public:
-    explicit WelcomePanel(QWidget *parent = nullptr);
-
-    //! The buttons run \a newHdr and \a open.
-    void setActions(QAction *newHdr, QAction *open);
-
-   protected:
-    void changeEvent(QEvent *event) override;
-
-   private:
-    void retranslate();
-
-    QLabel *m_title;
-    QLabel *m_hint;
-    QPushButton *m_newButton;
-    QPushButton *m_openButton;
-};
+//! \brief The line icons of the interface (ui/icons/<name>.svg), drawn in
+//! the text colour of the current palette, so they suit light and dark.
+//! Icons made before a change of colour scheme must be fetched again.
+namespace LumiereIcons {
+QIcon icon(const QString &name);
+}
 
 #endif

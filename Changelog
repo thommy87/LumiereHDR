@@ -1,3 +1,17 @@
+Changes LumièreHDR 2.17.0
+NEW: a new main window, step one of the redesign: a bar across the top
+     with the workspaces Start, Merge HDR, Develop and Export, search,
+     batch, settings and all menus behind one button
+NEW: Start page with large cards (photos to HDR, open, batch), a place to
+     drop files, the recently used files with a preview, and links
+NEW: Ctrl+K finds every command and setting by its name and runs it
+NEW: the image tools (undo, view, levels, white balance, checks, rotate,
+     crop, perspective, size, compare) sit above the image as simple line
+     icons in the colour of the scheme; text under them stays an option
+NEW: darker, calmer dark mode with the accent blue of the logo
+CHANGE: switching between Lanczos and bilinear interpolation is now
+     Ctrl+Shift+I (Ctrl+K opens the search)
+
 Changes LumièreHDR 2.16.3
 NEW: a start screen while no image is open: "Create HDR" and "Open HDR
      image" as large buttons, and a hint that photos can be dropped there

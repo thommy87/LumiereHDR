@@ -3597,6 +3597,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Search commands...</source>
+        <translation>Befehle suchen...</translation>
+    </message>
+    <message>
         <source>HDR preview (HDR screens)...</source>
         <translation>HDR-Vorschau (HDR-Bildschirme) …</translation>
     </message>
@@ -7521,30 +7525,112 @@ Error: %1</source>
     </message>
 </context>
 <context>
-    <name>WelcomePanel</name>
+    <name>HomePage</name>
     <message>
-        <source>Start with your photos</source>
-        <translation>Fotos laden und loslegen</translation>
+        <source>What would you like to start with?</source>
+        <translation>Womit geht es los?</translation>
     </message>
     <message>
-        <source>Create HDR from bracketed photos...</source>
-        <translation>HDR aus Belichtungsreihe erstellen...</translation>
+        <source>Turn several exposures into one picture that holds all the light of the scene.</source>
+        <translation>Aus mehreren Belichtungen ein Bild machen, das das ganze Licht der Szene enthält.</translation>
     </message>
     <message>
-        <source>Merge several exposures of the same scene, or one RAW photo, into an HDR image</source>
-        <translation>Mehrere Belichtungen derselben Szene oder ein RAW-Foto zu einem HDR-Bild zusammenführen</translation>
+        <source>Bracketed photos to HDR</source>
+        <translation>Belichtungsreihe zu HDR</translation>
     </message>
     <message>
-        <source>Open HDR image...</source>
-        <translation>HDR-Bild öffnen...</translation>
+        <source>3 to 9 photos of the same scene, or one RAW photo</source>
+        <translation>3 bis 9 Fotos derselben Szene oder ein RAW-Foto</translation>
     </message>
     <message>
-        <source>Open an HDR image you already have (EXR, HDR, TIFF, ...)</source>
-        <translation>Ein vorhandenes HDR-Bild öffnen (EXR, HDR, TIFF, ...)</translation>
+        <source>Open HDR image</source>
+        <translation>HDR-Bild öffnen</translation>
     </message>
     <message>
-        <source>or drop photos or an HDR image here</source>
-        <translation>oder Fotos bzw. ein HDR-Bild hierher ziehen</translation>
+        <source>EXR, HDR, TIFF, PFM, AVIF, JPEG XL and more</source>
+        <translation>EXR, HDR, TIFF, PFM, AVIF, JPEG XL und mehr</translation>
+    </message>
+    <message>
+        <source>Batch processing</source>
+        <translation>Stapelverarbeitung</translation>
+    </message>
+    <message>
+        <source>Whole folders: find brackets, make HDRs, apply looks</source>
+        <translation>Ganze Ordner: Reihen finden, HDRs erstellen, Looks anwenden</translation>
+    </message>
+    <message>
+        <source>Or simply drop photos or HDR files here</source>
+        <translation>Oder einfach Fotos oder HDR-Dateien hierher ziehen</translation>
+    </message>
+    <message>
+        <source>RECENTLY USED</source>
+        <translation>ZULETZT VERWENDET</translation>
+    </message>
+</context>
+<context>
+    <name>TopBar</name>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>1  Merge HDR</source>
+        <translation>1  HDR erstellen</translation>
+    </message>
+    <message>
+        <source>2  Develop</source>
+        <translation>2  Entwickeln</translation>
+    </message>
+    <message>
+        <source>3  Export</source>
+        <translation>3  Exportieren</translation>
+    </message>
+    <message>
+        <source>Start page: new HDR, open an image, recent files</source>
+        <translation>Startseite: neues HDR, Bild öffnen, zuletzt verwendet</translation>
+    </message>
+    <message>
+        <source>Merge bracketed photos, or one RAW photo, into an HDR image</source>
+        <translation>Belichtungsreihe oder ein RAW-Foto zu einem HDR-Bild zusammenführen</translation>
+    </message>
+    <message>
+        <source>Give the HDR image its look: style, light, colours</source>
+        <translation>Dem HDR-Bild seinen Look geben: Stil, Licht, Farben</translation>
+    </message>
+    <message>
+        <source>Save the result as JPEG, TIFF, Ultra HDR and more</source>
+        <translation>Das Ergebnis als JPEG, TIFF, Ultra HDR und mehr speichern</translation>
+    </message>
+    <message>
+        <source>Search   Ctrl+K</source>
+        <translation>Suchen   Strg+K</translation>
+    </message>
+    <message>
+        <source>Find any command or setting by its name</source>
+        <translation>Jeden Befehl und jede Einstellung über den Namen finden</translation>
+    </message>
+    <message>
+        <source>Batch processing</source>
+        <translation>Stapelverarbeitung</translation>
+    </message>
+    <message>
+        <source>Preferences</source>
+        <translation>Einstellungen</translation>
+    </message>
+    <message>
+        <source>All menus</source>
+        <translation>Alle Menüs</translation>
+    </message>
+</context>
+<context>
+    <name>CommandPalette</name>
+    <message>
+        <source>Search a command or setting</source>
+        <translation>Befehl oder Einstellung suchen</translation>
+    </message>
+    <message>
+        <source>Up/Down to choose · Enter to run · Esc to close</source>
+        <translation>Pfeiltasten wählen · Enter ausführen · Esc schließen</translation>
     </message>
 </context>
 </TS>

@@ -20,8 +20,10 @@ SET(FILES_H
     ${CMAKE_CURRENT_SOURCE_DIR}/ExportToHtmlDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/StepBar.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/WelcomePanel.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/HomePage.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/LumiereIcons.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/TopBar.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/CommandPalette.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CompareDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/HistogramPanel.h
 )
@@ -38,8 +40,10 @@ SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/ExportToHtmlDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/StepBar.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/WelcomePanel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/HomePage.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LumiereIcons.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TopBar.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CommandPalette.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompareDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HistogramPanel.cpp
 )
@@ -58,6 +62,6 @@ qt_wrap_cpp(FILES_MOC ${FILES_H})
 qt_wrap_ui(FILES_UI_H ${FILES_UI})
 
 ADD_LIBRARY(ui STATIC ${FILES_H} ${FILES_CPP} ${FILES_MOC} ${FILES_UI_H})
-TARGET_LINK_LIBRARIES(ui Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Concurrent Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets Qt${QT_MAJOR}::Sql)
+TARGET_LINK_LIBRARIES(ui Qt${QT_MAJOR}::Core Qt${QT_MAJOR}::Concurrent Qt${QT_MAJOR}::Gui Qt${QT_MAJOR}::Widgets Qt${QT_MAJOR}::Sql Qt${QT_MAJOR}::Svg)
 SET(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${FILES_CPP} ${FILES_H} ${FILES_UI} PARENT_SCOPE)
 SET(LUMINANCE_MODULES_GUI ${LUMINANCE_MODULES_GUI} ui PARENT_SCOPE)
