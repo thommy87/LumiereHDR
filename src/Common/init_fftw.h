@@ -23,6 +23,7 @@
 #define INIT_FFTW_H
 
 #include <mutex>
+#include <string>
 
 class FFTW_MUTEX {
    public:
@@ -34,5 +35,9 @@ class FFTW_MUTEX {
 };
 
 void init_fftw();
+
+//! Where FFTW keeps its plans between runs; the program sets it at start
+void set_fftw_wisdom_file(const std::string &filename);
+std::string fftw_wisdom_file();
 
 #endif

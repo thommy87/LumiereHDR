@@ -46,6 +46,7 @@
 
 #include "Common/LuminanceOptions.h"
 #include "Common/config.h"
+#include "Common/init_fftw.h"
 
 #if defined(Q_OS_WIN)
 const QString LuminanceOptions::LUMINANCE_HDR_HOME_FOLDER = "LuminanceHDR";
@@ -172,6 +173,8 @@ void LuminanceOptions::initSettings() {
     else {
         m_settingHolder = new QSettings();
     }
+    // the tone mapping core has no Qt; tell it where FFTW keeps its plans
+    set_fftw_wisdom_file(getFftwWisdomFileName().toStdString());
 }
 
 void LuminanceOptions::setValue(const QString &key, const QVariant &value) {

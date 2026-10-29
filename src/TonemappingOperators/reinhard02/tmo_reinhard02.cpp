@@ -51,7 +51,6 @@
 #include <Libpfs/progress.h>
 #include <Libpfs/utils/msec_timer.h>
 #include <TonemappingOperators/pfstmo.h>
-#include "Common/LuminanceOptions.h"
 #include "../../sleef.c"
 #include "../../opthelper.h"
 #ifdef TIMER_PROFILING
@@ -171,14 +170,14 @@ void Reinhard02::build_gaussian_fft() {
         p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, m_filter_fft[scale], m_filter_fft[scale], -1, FFTW_WISDOM_ONLY);
         if(!p) {
             // no wisdom available, load wisdom from file
-            fftwf_import_wisdom_from_filename(LuminanceOptions().getFftwWisdomFileName().toStdString().c_str());
+            fftwf_import_wisdom_from_filename(fftw_wisdom_file().c_str());
             // test again for wisdom
             p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, m_filter_fft[scale], m_filter_fft[scale], -1, FFTW_WISDOM_ONLY);
             if(!p) {
                 // build plan with FFTW_MEASURE
                 p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, m_filter_fft[scale], m_filter_fft[scale], -1, FFTW_MEASURE);
                 // save the wisdom
-                fftwf_export_wisdom_to_filename(LuminanceOptions().getFftwWisdomFileName().toStdString().c_str());
+                fftwf_export_wisdom_to_filename(fftw_wisdom_file().c_str());
             }
         }
         FFTW_MUTEX::fftw_mutex_plan.unlock();
@@ -207,14 +206,14 @@ void Reinhard02::build_image_fft() {
     p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, m_image_fft, m_image_fft, -1, FFTW_WISDOM_ONLY);
     if(!p) {
         // no wisdom available, load wisdom from file
-        fftwf_import_wisdom_from_filename(LuminanceOptions().getFftwWisdomFileName().toStdString().c_str());
+        fftwf_import_wisdom_from_filename(fftw_wisdom_file().c_str());
         // test again for wisdom
         p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, m_image_fft, m_image_fft, -1, FFTW_WISDOM_ONLY);
         if(!p) {
             // build plan with FFTW_MEASURE
             p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, m_image_fft, m_image_fft, -1, FFTW_MEASURE);
             // save the wisdom
-            fftwf_export_wisdom_to_filename(LuminanceOptions().getFftwWisdomFileName().toStdString().c_str());
+            fftwf_export_wisdom_to_filename(fftw_wisdom_file().c_str());
         }
     }
     FFTW_MUTEX::fftw_mutex_plan.unlock();
@@ -241,14 +240,14 @@ void Reinhard02::convolve_filter(int scale, fftwf_complex *convolution_fft) {
     p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, convolution_fft, convolution_fft, 1, FFTW_WISDOM_ONLY);
     if(!p) {
         // no wisdom available, load wisdom from file
-        fftwf_import_wisdom_from_filename(LuminanceOptions().getFftwWisdomFileName().toStdString().c_str());
+        fftwf_import_wisdom_from_filename(fftw_wisdom_file().c_str());
         // test again for wisdom
         p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, convolution_fft, convolution_fft, 1, FFTW_WISDOM_ONLY);
         if(!p) {
             // build plan with FFTW_MEASURE
             p = fftwf_plan_dft_2d(m_cvts.ymax, m_cvts.xmax, convolution_fft, convolution_fft, 1, FFTW_MEASURE);
             // save the wisdom
-            fftwf_export_wisdom_to_filename(LuminanceOptions().getFftwWisdomFileName().toStdString().c_str());
+            fftwf_export_wisdom_to_filename(fftw_wisdom_file().c_str());
         }
     }
     FFTW_MUTEX::fftw_mutex_plan.unlock();
