@@ -45,7 +45,8 @@
 #define KEY_OPTIONS_VERSION "LuminanceOptionsVersion"
 #define KEY_UPDATE_CHECKED_ON "UpdateChecked"
 #define KEY_UPDATE_CHECK_ENABLED "UpdateCheckEnabled"
-#define KEY_TOOLBAR_MODE "MainWindowToolbarVisualizationMode"
+// a new key: the image toolbar starts with icons only in the new layout
+#define KEY_TOOLBAR_MODE "ImageToolbarMode"
 #define KEY_TM_TOOLBAR_MODE "TonemappingWindowToolbarVisualizationMode"
 #define KEY_MANUAL_AG_MASK_COLOR "ManualAntiGhostingMaskColor"
 #define KEY_MANUAL_AG_LASSO_COLOR "ManualAntiGhostingLassoColor"

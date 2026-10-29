@@ -73,8 +73,8 @@ class HelpBrowser;           // #include "HelpBrowser/helpbrowser.h"
 class TMOProgressIndicator;  // #include
                              // "TonemappingPanel/TMOProgressIndicator.h"
 class TonemappingPanel;      // #include "TonemappingPanel/TonemappingPanel.h"
-class StepBar;               // #include "UI/StepBar.h"
-class WelcomePanel;          // #include "UI/WelcomePanel.h"
+class StartPage;             // #include "UI/StartPage.h"
+class TopBar;                // #include "UI/TopBar.h"
 class QStackedWidget;
 class PresetStrip;
 class QUndoGroup;
@@ -337,11 +337,19 @@ class MainWindow : public QMainWindow {
 
     // Tone Mapping Panel
     TonemappingPanel *m_tonemapPanel;
-    // Import -> Tone -> Export workflow bar
-    StepBar *m_stepBar;
-    //! start buttons in the image area while no image is open
-    WelcomePanel *m_welcome;
-    QStackedWidget *m_imageArea;
+    //! workspaces, search, batch and settings across the top
+    TopBar *m_topBar = nullptr;
+    //! the Start workspace, or the image with its panels
+    QStackedWidget *m_workspace;
+    StartPage *m_startPage = nullptr;
+    int m_lastTabCount = 0;
+    void createShell();
+    void showWorkspace(bool images);
+    void openCommandPalette();
+    //! actions drawn with the line icons, which follow the colour scheme
+    QList<QPair<QAction *, QString>> m_lineIcons;
+    void refreshLineIcons();
+    QAction *m_compareAct;
     void applyTabStyle();
     bool m_resultSaved = false;  // Export done until the next change
     PresetStrip *m_presetStrip;

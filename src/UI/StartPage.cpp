@@ -17,6 +17,8 @@
 #include "StartPage.h"
 
 #include <QAction>
+#include <QApplication>
+#include <QPainter>
 #include <QEvent>
 #include <QFileInfo>
 #include <QGridLayout>
@@ -66,7 +68,19 @@ QPixmap thumbnail(const QString &file) {
             }
         }
     }
-    return LumiereIcons::icon(QStringLiteral("layers")).pixmap(40, 40);
+    // same size as a preview, so the row stays even
+    QPixmap tile(kThumb * 2);
+    tile.setDevicePixelRatio(2.0);
+    tile.fill(Qt::transparent);
+    QPainter p(&tile);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(Qt::NoPen);
+    p.setBrush(QApplication::palette().color(QPalette::Button));
+    p.drawRoundedRect(QRectF(QPointF(0, 0), QSizeF(kThumb)), 6, 6);
+    const QPixmap icon =
+        LumiereIcons::icon(QStringLiteral("layers")).pixmap(32, 32);
+    p.drawPixmap((kThumb.width() - 32) / 2, (kThumb.height() - 32) / 2, icon);
+    return tile;
 }
 }  // namespace
 

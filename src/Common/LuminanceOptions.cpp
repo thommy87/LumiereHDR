@@ -275,35 +275,36 @@ const QColor kAccent(40, 116, 184);
 
 QPalette darkPalette() {
     QPalette p;
-    // disabled text still reads at 4.5:1 on the window and on buttons
-    const QColor window(38, 41, 46), base(28, 30, 34), text(232, 234, 237),
-        disabled(156, 160, 166);
+    // panels a step above the near-black image ground; disabled text still
+    // reads at 4.5:1 on panels and buttons
+    const QColor window(21, 23, 27), base(28, 31, 36), button(34, 37, 43),
+        text(236, 238, 241), disabled(138, 144, 154);
     p.setColor(QPalette::Window, window);
     p.setColor(QPalette::WindowText, text);
     p.setColor(QPalette::Base, base);
     p.setColor(QPalette::AlternateBase, window);
-    p.setColor(QPalette::ToolTipBase, QColor(50, 54, 60));
+    p.setColor(QPalette::ToolTipBase, button);
     p.setColor(QPalette::ToolTipText, text);
     p.setColor(QPalette::PlaceholderText, disabled);
     p.setColor(QPalette::Text, text);
-    p.setColor(QPalette::Button, QColor(48, 52, 58));
+    p.setColor(QPalette::Button, button);
     p.setColor(QPalette::ButtonText, text);
     p.setColor(QPalette::BrightText, QColor(255, 107, 107));
-    p.setColor(QPalette::Light, QColor(62, 66, 73));
-    p.setColor(QPalette::Midlight, QColor(52, 56, 62));
-    p.setColor(QPalette::Mid, QColor(32, 34, 38));
-    p.setColor(QPalette::Dark, QColor(22, 24, 27));
+    p.setColor(QPalette::Light, QColor(52, 57, 68));
+    p.setColor(QPalette::Midlight, QColor(43, 47, 54));
+    p.setColor(QPalette::Mid, QColor(35, 38, 44));
+    p.setColor(QPalette::Dark, QColor(15, 16, 19));
     p.setColor(QPalette::Shadow, QColor(0, 0, 0));
     p.setColor(QPalette::Highlight, kAccent);
     p.setColor(QPalette::HighlightedText, Qt::white);
-    // the accent itself is too dark for text on the dark base
-    p.setColor(QPalette::Link, QColor(110, 170, 230));
-    p.setColor(QPalette::LinkVisited, QColor(150, 190, 235));
+    // the accent itself is too dark for text on the dark panels
+    p.setColor(QPalette::Link, QColor(124, 184, 242));
+    p.setColor(QPalette::LinkVisited, QColor(169, 209, 247));
     for (QPalette::ColorRole role :
          {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
         p.setColor(QPalette::Disabled, role, disabled);
     }
-    p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(70, 74, 80));
+    p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(52, 57, 68));
     return p;
 }
 
@@ -319,6 +320,100 @@ QPalette lightPalette(const QStyle *style) {
         p.setColor(QPalette::Disabled, role, QColor(125, 125, 125));
     }
     return p;
+}
+
+//! the look of the new main window parts (top bar, start page, command
+//! search, image toolbar); everything else keeps the style's own drawing
+QString lumiereStyleSheet(bool dark) {
+    struct Tokens {
+        const char *ground, *bar, *panel, *input, *chip, *line, *line2,
+            *text, *text2, *text3, *accentText, *hover, *selected;
+    };
+    static const Tokens kDark = {"#0F1013", "#131418", "#15171B", "#1C1F24",
+                                 "#22252B", "#2B2F36", "#23262C", "#ECEEF1",
+                                 "#A7ADB7", "#8A909A", "#7CB8F2",
+                                 "rgba(255,255,255,0.06)", "#1E2836"};
+    static const Tokens kLight = {"#F1F2F4", "#FFFFFF", "#FFFFFF", "#F6F7F9",
+                                  "#E9ECF0", "#D5D9DF", "#E4E7EB", "#16181C",
+                                  "#474D57", "#5E6470", "#1F64A3",
+                                  "rgba(0,0,0,0.05)", "#E3EEF9"};
+    const Tokens &t = dark ? kDark : kLight;
+    QString qss = QStringLiteral(R"(
+#TopBar { background: @bar; border-bottom: 1px solid @line2; }
+#TopBar QLabel#TopBarName { color: @text; font-weight: 600; font-size: 14px; }
+#TopBar QToolButton { border: none; border-radius: 8px; color: @text2;
+  padding: 0 8px; min-height: 36px; }
+#TopBar QToolButton:hover { background: @hover; color: @text; }
+#TopBar QToolButton::menu-indicator { image: none; width: 0; }
+#TopBar QToolButton#ModeButton { padding: 0 16px; font-weight: 500; }
+#TopBar QToolButton#ModeButton:checked { background: @chip; color: @text; }
+#TopBar QToolButton#ModeButton:disabled { color: @text3; }
+#TopBar QToolButton#SearchButton { background: @input; border: 1px solid @line;
+  color: @text3; padding: 0 12px; min-width: 150px; text-align: left; }
+#TopBar QToolButton#SearchButton:hover { border-color: @text3; }
+
+#StartPage, #StartScroll, #StartCanvas, #StartColumn { background: @ground; }
+#StartTitle { color: @text; font-size: 28px; font-weight: 600; }
+#StartSubtitle { color: @text2; font-size: 15px; }
+QPushButton#StartCard { background: @panel; border: 1px solid @line;
+  border-radius: 14px; text-align: left; }
+QPushButton#StartCard:hover { border-color: @text3; }
+QPushButton#StartCard:focus { border: 2px solid @accentText; }
+QPushButton#StartCard[primary="true"] { border-color: @accent; }
+#StartCardIcon { background: @chip; border-radius: 12px; }
+QPushButton#StartCard[primary="true"] #StartCardIcon { background: @accent; }
+#StartCardTitle { color: @text; font-size: 16px; font-weight: 600; }
+#StartCardText { color: @text2; font-size: 13px; }
+#Keycap { color: @text2; border: 1px solid @line; border-radius: 4px;
+  padding: 1px 6px; font-size: 11px; }
+#StartDrop { color: @text3; border: 1px dashed @line; border-radius: 14px;
+  font-size: 13px; }
+#SectionLabel { color: @text3; font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; }
+QToolButton#RecentTile { border: none; border-radius: 10px; color: @text2;
+  padding: 6px; }
+QToolButton#RecentTile:hover { background: @hover; color: @text; }
+QToolButton#LinkButton { border: none; color: @accentText; padding: 4px 0; }
+QToolButton#LinkButton:hover { text-decoration: underline; }
+
+#ImageToolBar { background: @bar; border: none;
+  border-bottom: 1px solid @line2; spacing: 2px; padding: 4px 8px; }
+#ImageToolBar QToolButton { border: none; border-radius: 8px; padding: 6px; }
+#ImageToolBar QToolButton:hover { background: @hover; }
+#ImageToolBar QToolButton:checked { background: @chip; }
+#ImageToolBar::separator { background: @line; width: 1px; margin: 8px 6px; }
+
+#CommandPalette { background: @panel; border: 1px solid @line;
+  border-radius: 16px; }
+QLineEdit#CommandQuery { background: transparent; border: none;
+  border-bottom: 1px solid @line2; color: @text; font-size: 17px;
+  padding: 0 12px; min-height: 58px; }
+QListWidget#CommandList { background: transparent; border: none;
+  outline: none; }
+#CommandHint { color: @text3; font-size: 12px; padding: 8px 18px;
+  border-top: 1px solid @line2; }
+
+QToolTip { background: @chip; color: @text; border: 1px solid @line;
+  border-radius: 6px; padding: 4px 8px; }
+)");
+    const QList<QPair<QString, QString>> values = {
+        {QStringLiteral("@ground"), QLatin1String(t.ground)},
+        {QStringLiteral("@bar"), QLatin1String(t.bar)},
+        {QStringLiteral("@panel"), QLatin1String(t.panel)},
+        {QStringLiteral("@input"), QLatin1String(t.input)},
+        {QStringLiteral("@chip"), QLatin1String(t.chip)},
+        {QStringLiteral("@line2"), QLatin1String(t.line2)},
+        {QStringLiteral("@line"), QLatin1String(t.line)},
+        {QStringLiteral("@text3"), QLatin1String(t.text3)},
+        {QStringLiteral("@text2"), QLatin1String(t.text2)},
+        {QStringLiteral("@text"), QLatin1String(t.text)},
+        {QStringLiteral("@accentText"), QLatin1String(t.accentText)},
+        {QStringLiteral("@accent"), kAccent.name()},
+        {QStringLiteral("@hover"), QLatin1String(t.hover)},
+        {QStringLiteral("@selected"), QLatin1String(t.selected)}};
+    // longer names first, so @line2 is not read as @line plus "2"
+    for (const auto &v : values) qss.replace(v.first, v.second);
+    return qss;
 }
 }  // namespace
 
@@ -351,10 +446,10 @@ void LuminanceOptions::applyTheme(bool /*init*/) {
                                  : QStringLiteral("luminance-hdr"));
 
     // the native macOS style draws its own colours
-    if (theme.compare(QLatin1String("Macintosh")) == 0) return;
-
-    QApplication::setPalette(dark ? darkPalette()
-                                  : lightPalette(QApplication::style()));
+    if (theme.compare(QLatin1String("Macintosh")) != 0)
+        QApplication::setPalette(dark ? darkPalette()
+                                      : lightPalette(QApplication::style()));
+    qApp->setStyleSheet(lumiereStyleSheet(dark));
 }
 
 // write system default language the first time around (discard "_country")
@@ -909,7 +1004,7 @@ void LuminanceOptions::setShowFattalWarning(const bool b) {
 }
 
 int LuminanceOptions::getMainWindowToolBarMode() {
-    return m_settingHolder->value(KEY_TOOLBAR_MODE, Qt::ToolButtonTextUnderIcon)
+    return m_settingHolder->value(KEY_TOOLBAR_MODE, Qt::ToolButtonIconOnly)
         .toInt();
 }
 

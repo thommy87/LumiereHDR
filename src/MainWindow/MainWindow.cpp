@@ -112,8 +112,10 @@
 #include <UI/ImageQualityDialog.h>
 #include <UI/CompareDialog.h>
 #include <UI/HistogramPanel.h>
-#include <UI/StepBar.h>
-#include <UI/WelcomePanel.h>
+#include <UI/CommandPalette.h>
+#include <UI/LumiereIcons.h>
+#include <UI/StartPage.h>
+#include <UI/TopBar.h>
 #include <UI/SupportedCamerasDialog.h>
 #include <UI/TiffModeDialog.h>
 #include <UI/UMessageBox.h>
@@ -330,6 +332,7 @@ void MainWindow::init() {
     createMenus();
     createToolBar();
     createCentralWidget();
+    createShell();
     createStatusBar();
     setupIO();
     setupTM();
@@ -375,35 +378,20 @@ void MainWindow::createCentralWidget() {
     m_bottom_splitter = new QSplitter;         //(this);
     m_bottom_splitter->setOrientation(Qt::Vertical);
 
-    m_stepBar = new StepBar;
-    m_stepBar->setImportActions(m_Ui->fileNewAction, m_Ui->fileOpenAction);
-    m_stepBar->setExportActions(m_Ui->fileSaveAsAction,
-                                m_Ui->fileSaveAllAction);
-
-    // the workflow steps sit in the toolbar row instead of a strip of
-    // their own above the image
-    QToolBar *workflow = new QToolBar(tr("Workflow"), this);
-    workflow->setObjectName(QStringLiteral("WorkflowToolBar"));
-    workflow->addWidget(m_stepBar);
-    // first in the row: new/open/save live here now, the main toolbar
-    // keeps the view and adjustment tools
-    insertToolBar(m_Ui->toolBar, workflow);
-    m_Ui->menuToolbars->addAction(workflow->toggleViewAction());
-    setCentralWidget(m_centralwidget_splitter);
+    // the Start page and the image workspace take turns in the window
+    m_startPage = new StartPage;
+    m_workspace = new QStackedWidget;
+    m_workspace->addWidget(m_startPage);
+    m_workspace->addWidget(m_centralwidget_splitter);
+    setCentralWidget(m_workspace);
 
     m_PreviewPanel = new PreviewPanel();
 
     // create tonemapping panel
     m_tonemapPanel = new TonemappingPanel(
         sm_NumMainWindows, m_PreviewPanel);  //(m_centralwidget_splitter);
-    connect(m_stepBar, &StepBar::toneRequested, m_tonemapPanel,
-            &TonemappingPanel::tonemap);
-    // any new tone mapping brings the workflow back to the Tone step
     connect(m_tonemapPanel, &TonemappingPanel::startTonemapping, this,
-            [this](TonemappingOptions *) {
-                m_resultSaved = false;
-                m_stepBar->setCurrentStep(StepBar::Tone);
-            });
+            [this](TonemappingOptions *) { m_resultSaved = false; });
 
     connect(m_Ui->actionRealtimePreviews, &QAction::toggled, m_tonemapPanel,
             &TonemappingPanel::setRealtimePreviews);
@@ -423,13 +411,19 @@ void MainWindow::createCentralWidget() {
     m_centralwidget_splitter->addWidget(m_tonemapPanel);
     m_centralwidget_splitter->addWidget(m_bottom_splitter);
 
-    // the image tabs, or the start buttons while no image is open
-    m_welcome = new WelcomePanel;
-    m_welcome->setActions(m_Ui->fileNewAction, m_Ui->fileOpenAction);
-    m_imageArea = new QStackedWidget;
-    m_imageArea->addWidget(m_welcome);
-    m_imageArea->addWidget(m_tabwidget);
-    m_bottom_splitter->addWidget(m_imageArea);
+    // the image tools sit right above the image they work on
+    removeToolBar(m_Ui->toolBar);
+    m_Ui->toolBar->setObjectName(QStringLiteral("ImageToolBar"));
+    m_Ui->toolBar->setMovable(false);
+    m_Ui->toolBar->setIconSize(QSize(20, 20));
+    QWidget *imageColumn = new QWidget;
+    QVBoxLayout *imageLayout = new QVBoxLayout(imageColumn);
+    imageLayout->setContentsMargins(0, 0, 0, 0);
+    imageLayout->setSpacing(0);
+    imageLayout->addWidget(m_Ui->toolBar);
+    imageLayout->addWidget(m_tabwidget, 1);
+    m_Ui->toolBar->show();
+    m_bottom_splitter->addWidget(imageColumn);
 
     m_bottom_splitter->setStretchFactor(0, 10);
     m_bottom_splitter->setStretchFactor(1, 1);
@@ -521,6 +515,150 @@ void MainWindow::createCentralWidget() {
     m_PreviewscrollArea->hide();
 }
 
+void MainWindow::createShell() {
+    m_topBar = new TopBar;
+    QList<QMenu *> menus;
+    for (QAction *a : menuBar()->actions())
+        if (a->menu()) menus << a->menu();
+    m_topBar->setMenus(menus);
+
+    // the bar takes the place of the menu bar; its menus stay reachable
+    // under the menu button, and their shortcuts keep working through
+    // the window itself
+#ifndef Q_OS_MACOS
+    menuBar()->hide();
+    std::function<void(QMenu *)> addShortcuts = [&](QMenu *menu) {
+        for (QAction *a : menu->actions()) {
+            if (a->menu())
+                addShortcuts(a->menu());
+            else if (!a->shortcuts().isEmpty())
+                addAction(a);
+        }
+    };
+    for (QMenu *m : menus) addShortcuts(m);
+#endif
+    QToolBar *bar = new QToolBar(this);
+    bar->setObjectName(QStringLiteral("TopBarToolBar"));
+    bar->setMovable(false);
+    bar->setFloatable(false);
+    bar->setContextMenuPolicy(Qt::PreventContextMenu);
+    bar->toggleViewAction()->setVisible(false);
+    bar->setStyleSheet(
+        QStringLiteral("QToolBar { border: none; padding: 0; margin: 0; }"));
+    bar->addWidget(m_topBar);
+    addToolBar(Qt::TopToolBarArea, bar);
+
+    connect(m_topBar, &TopBar::modeRequested, this, [this](TopBar::Mode mode) {
+        switch (mode) {
+            case TopBar::Start:
+                showWorkspace(false);
+                break;
+            case TopBar::Develop:
+                showWorkspace(true);
+                break;
+            case TopBar::Merge:
+                // the HDR wizard for now; it gets a workspace of its own
+                m_topBar->setMode(m_workspace->currentWidget() == m_startPage
+                                      ? TopBar::Start
+                                      : TopBar::Develop);
+                m_Ui->fileNewAction->trigger();
+                break;
+            case TopBar::Export:
+                m_topBar->setMode(TopBar::Develop);
+                m_Ui->fileSaveAsAction->trigger();
+                break;
+        }
+    });
+    connect(m_topBar, &TopBar::searchRequested, this,
+            &MainWindow::openCommandPalette);
+    connect(m_topBar, &TopBar::batchRequested, m_Ui->actionBatch_HDR,
+            &QAction::trigger);
+    connect(m_topBar, &TopBar::settingsRequested, m_Ui->OptionsAction,
+            &QAction::trigger);
+
+    QAction *search = new QAction(tr("Search commands..."), this);
+    search->setShortcut(QKeySequence(QStringLiteral("Ctrl+K")));
+    connect(search, &QAction::triggered, this,
+            &MainWindow::openCommandPalette);
+    m_Ui->menuHelp->insertAction(m_Ui->menuHelp->actions().value(0), search);
+    addAction(search);
+
+    m_startPage->setCardActions(m_Ui->fileNewAction, m_Ui->fileOpenAction,
+                                m_Ui->actionBatch_HDR);
+    m_startPage->setLinkActions({m_Ui->actionFits_Importer,
+                                 m_Ui->actionSupported_Cameras,
+                                 m_Ui->actionOnline_Documentation});
+    connect(m_startPage, &StartPage::recentFileRequested, this,
+            [this](const QString &file) {
+                QMetaObject::invokeMethod(m_IOWorker, "read_hdr_frame",
+                                          Qt::QueuedConnection,
+                                          Q_ARG(QString, file));
+            });
+    m_startPage->setRecentFiles(
+        LuminanceOptions().value(KEY_RECENT_FILES).toStringList());
+
+    // the image toolbar: view, edits and checks, in the order of the work
+    QToolBar *tools = m_Ui->toolBar;
+    QAction *first = tools->actions().value(0);
+    const QList<QAction *> edits = {m_Ui->menuEdit->actions().value(0),
+                                    m_Ui->menuEdit->actions().value(1)};
+    tools->insertActions(first, edits);
+    tools->insertSeparator(first);
+    tools->addSeparator();
+    tools->addAction(m_Ui->rotateccw);
+    tools->addAction(m_Ui->rotatecw);
+    tools->addAction(m_Ui->cropToSelectionAction);
+    tools->addAction(m_Ui->action_Projective_Transformation);
+    tools->addAction(m_Ui->actionResizeHDR);
+    tools->addSeparator();
+    tools->addAction(m_compareAct);
+    m_lineIcons = {{edits.value(0), QStringLiteral("undo")},
+                   {edits.value(1), QStringLiteral("redo")},
+                   {m_Ui->fitToWindowAct, QStringLiteral("fit")},
+                   {m_Ui->actionFill_to_Window, QStringLiteral("fill")},
+                   {m_Ui->normalSizeAct, QStringLiteral("actual")},
+                   {m_Ui->actionFix_Histogram, QStringLiteral("levels")},
+                   {m_Ui->actionWhite_Balance, QStringLiteral("eyedropper")},
+                   {m_Ui->actionSoft_Proofing, QStringLiteral("proof")},
+                   {m_Ui->actionGamut_Check, QStringLiteral("gamut")},
+                   {m_Ui->rotateccw, QStringLiteral("rotate-left")},
+                   {m_Ui->rotatecw, QStringLiteral("rotate-right")},
+                   {m_Ui->cropToSelectionAction, QStringLiteral("crop")},
+                   {m_Ui->action_Projective_Transformation,
+                    QStringLiteral("perspective")},
+                   {m_Ui->actionResizeHDR, QStringLiteral("resize")},
+                   {m_compareAct, QStringLiteral("compare")},
+                   {m_Ui->fileNewAction, QStringLiteral("layers")},
+                   {m_Ui->fileOpenAction, QStringLiteral("folder")},
+                   {m_Ui->fileSaveAsAction, QStringLiteral("download")},
+                   {m_Ui->actionBatch_HDR, QStringLiteral("batch")},
+                   {m_Ui->OptionsAction, QStringLiteral("settings")}};
+    refreshLineIcons();
+    showWorkspace(false);
+}
+
+void MainWindow::refreshLineIcons() {
+    for (const auto &entry : std::as_const(m_lineIcons))
+        if (entry.first) entry.first->setIcon(LumiereIcons::icon(entry.second));
+}
+
+void MainWindow::showWorkspace(bool images) {
+    if (images && m_tabwidget->count() == 0) images = false;
+    m_workspace->setCurrentWidget(images
+                                      ? static_cast<QWidget *>(
+                                            m_centralwidget_splitter)
+                                      : m_startPage);
+    m_topBar->setMode(images ? TopBar::Develop : TopBar::Start);
+}
+
+void MainWindow::openCommandPalette() {
+    QList<QMenu *> menus;
+    for (QAction *a : menuBar()->actions())
+        if (a->menu()) menus << a->menu();
+    CommandPalette *palette = new CommandPalette(menus, this);
+    palette->show();
+}
+
 void MainWindow::createToolBar() {
     // main toolbars setup
     QActionGroup *toolBarOptsGroup = new QActionGroup(this);
@@ -576,7 +714,8 @@ void MainWindow::createToolBar() {
     m_Ui->menuView->addAction(showHistogram);
 
     // before/after: any two open images, split by a draggable line
-    QAction *compare = new QAction(tr("&Compare images..."), this);
+    QAction *compare = m_compareAct =
+        new QAction(tr("&Compare images..."), this);
     compare->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+C")));
     compare->setStatusTip(
         tr("Compare two open images, for example the HDR and a result"));
@@ -1097,7 +1236,6 @@ void MainWindow::save_hdr_failed(const QString &fname) {
 void MainWindow::save_ldr_success(GenericViewer *saved_ldr,
                                   const QString &fname) {
     m_resultSaved = true;
-    m_stepBar->setCurrentStep(StepBar::Export);
     if (!saved_ldr->isHDR())
         m_tabwidget->setTabText(m_tabwidget->indexOf(saved_ldr),
                                 QFileInfo(fname).fileName());
@@ -1158,8 +1296,13 @@ void MainWindow::updateActions(int w) {
         !luminance_opts.getPrinterProfileFileName().isEmpty();
 
     updateMagnificationButtons(g_v);  // g_v ? g_v : 0
-    m_imageArea->setCurrentWidget(hasImage ? static_cast<QWidget *>(m_tabwidget)
-                                           : m_welcome);
+    // a newly opened image shows the workspace; the last one closed brings
+    // the Start page back
+    const int tabs = m_tabwidget->count();
+    if (tabs == 0 || tabs > m_lastTabCount) showWorkspace(tabs > 0);
+    m_lastTabCount = tabs;
+    m_topBar->setModeEnabled(TopBar::Develop, hasImage);
+    m_topBar->setModeEnabled(TopBar::Export, hasImage);
 
     m_Ui->fileSaveAsAction->setEnabled(hasImage);
     m_Ui->actionRemove_Tab->setEnabled(hasImage);
@@ -1203,15 +1346,6 @@ void MainWindow::updateActions(int w) {
         m_undoGroup->addStack(g_v->undoStack());
     m_undoGroup->setActiveStack(g_v ? g_v->undoStack() : nullptr);
 
-    // workflow bar: no image -> import; while working on a picture ->
-    // tone map; after saving the result shown -> export
-    m_stepBar->setCurrentStep(
-        !hasImage ? StepBar::Import
-        : (isLdr && (m_resultSaved || !tm_status.is_hdr_ready))
-            ? StepBar::Export
-            : StepBar::Tone);
-    m_stepBar->setToneEnabled(tm_status.is_hdr_ready);
-    m_stepBar->setExportEnabled(hasImage);
     updateHistogram();
 }
 
@@ -1987,8 +2121,10 @@ void MainWindow::applyTabStyle() {
 bool MainWindow::event(QEvent *event) {
     bool result = QMainWindow::event(event);
     // the colour scheme can change while the app runs
-    if (event->type() == QEvent::PaletteChange && m_tabwidget != nullptr)
+    if (event->type() == QEvent::PaletteChange && m_tabwidget != nullptr) {
         applyTabStyle();
+        refreshLineIcons();
+    }
     if (event->type() == QEvent::WindowActivate && m_firstWindow == 1) {
         m_firstWindow = 2;
         if (LuminanceOptions().doShowWindowsOnWindows64Message()) {
@@ -2607,6 +2743,7 @@ void MainWindow::setCurrentFile(const QString &fileName) {
 void MainWindow::updateRecentFileActions() {
     QStringList files =
         LuminanceOptions().value(KEY_RECENT_FILES).toStringList();
+    if (m_startPage) m_startPage->setRecentFiles(files);
 
     int numRecentFiles = qMin(files.size(), (int)MAX_RECENT_FILES);
     separatorRecentFiles->setVisible(numRecentFiles > 0);
