@@ -3597,6 +3597,14 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>MainWindow</name>
     <message>
+        <source>&amp;Before / after</source>
+        <translation>&amp;Vorher / nachher</translation>
+    </message>
+    <message>
+        <source>Before / after: the unedited HDR left of a line you can drag</source>
+        <translation>Vorher / nachher: links der Linie das unbearbeitete HDR, die Linie lässt sich ziehen</translation>
+    </message>
+    <message>
         <source>Looks</source>
         <translation>Looks</translation>
     </message>
@@ -6217,6 +6225,10 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
 <context>
     <name>TonemappingPanel</name>
     <message>
+        <source>Style</source>
+        <translation>Stil</translation>
+    </message>
+    <message>
         <source>&amp;Warmth</source>
         <translation>&amp;Wärme</translation>
     </message>
@@ -7542,6 +7554,17 @@ Error: %1</source>
     <message>
         <source>Exposure:</source>
         <translation>Belichtung:</translation>
+    </message>
+</context>
+<context>
+    <name>BeforeAfterItem</name>
+    <message>
+        <source>Before</source>
+        <translation>Vorher</translation>
+    </message>
+    <message>
+        <source>After</source>
+        <translation>Nachher</translation>
     </message>
 </context>
 <context>

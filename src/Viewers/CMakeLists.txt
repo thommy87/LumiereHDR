@@ -10,7 +10,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/PanIconWidget.h)
 SET(FILES_HXX # NOT to go into MOC
 ${CMAKE_CURRENT_SOURCE_DIR}/Histogram.h
 ${CMAKE_CURRENT_SOURCE_DIR}/ISelectionAnchor.h
-${CMAKE_CURRENT_SOURCE_DIR}/ISelectionBox.h)
+${CMAKE_CURRENT_SOURCE_DIR}/ISelectionBox.h
+${CMAKE_CURRENT_SOURCE_DIR}/BeforeAfterItem.h)
 SET(FILES_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/GenericViewer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/HdrViewer.cpp
@@ -21,7 +22,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/IGraphicsView.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/ISelectionAnchor.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/ISelectionBox.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/LuminanceRangeWidget.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/PanIconWidget.cpp)
+${CMAKE_CURRENT_SOURCE_DIR}/PanIconWidget.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/BeforeAfterItem.cpp)
 
 # the HDR preview draws with Direct3D; Windows only
 IF(WIN32)

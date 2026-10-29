@@ -1,3 +1,11 @@
+Changes LumièreHDR 2.18.1
+NEW: before / after right in the picture (Ctrl+Shift+B or the button above
+     the image): left of a line the unedited HDR, right of it the result;
+     drag the line to compare any part
+NEW: the settings on the right in the new look: "Style" and "Basics" as
+     sections, clear fields, small reset arrows beside the sliders; the
+     panel scrolls on small screens instead of making the window taller
+
 Changes LumièreHDR 2.18.0
 NEW: Develop, step two of the redesign: the looks on the left as a grid of
      previews of the picture, with "Save current look" and looks as files;

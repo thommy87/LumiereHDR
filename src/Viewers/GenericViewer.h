@@ -46,6 +46,7 @@ class Frame;  // #include "Libpfs/frame.h"
 class PanIconWidget;        // #include "Common/PanIconWidget.h"
 class IGraphicsView;        // #include "Viewers/IGraphicsView.h"
 class IGraphicsPixmapItem;  // #include "Viewers/IGraphicsPixmapItem.h"
+class BeforeAfterItem;      // #include "Viewers/BeforeAfterItem.h"
 class TonemappingOptions;
 
 class GenericViewer : public QWidget {
@@ -149,7 +150,12 @@ class GenericViewer : public QWidget {
     //! the shown picture, scaled down to cover \a size; and a key that
     //! changes whenever the picture does
     QPixmap thumbnail(const QSize &size) const;
+    QPixmap picture() const;
     qint64 pictureKey() const;
+    //! shows \a before left of a draggable line over the picture; a null
+    //! pixmap takes it away
+    void setBeforePicture(const QPixmap &before);
+    bool showsBeforePicture() const { return mBeforeAfter != nullptr; }
 
     //! \brief set new QImage
     void setQImage(const QImage &qimage);
@@ -200,6 +206,7 @@ class GenericViewer : public QWidget {
     IGraphicsView *mView;
     ViewerMode mViewerMode;
     IGraphicsPixmapItem *mPixmap;
+    BeforeAfterItem *mBeforeAfter = nullptr;
 
     QString mFileName;
 

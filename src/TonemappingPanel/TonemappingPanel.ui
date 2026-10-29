@@ -43,7 +43,7 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Tonemap</string>
+      <string>Style</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="leftMargin">

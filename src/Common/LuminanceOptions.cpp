@@ -393,7 +393,7 @@ QListWidget#CommandList { background: transparent; border: none;
 #CommandHint { color: @text3; font-size: 12px; padding: 8px 18px;
   border-top: 1px solid @line2; }
 
-#LooksPanel, #Inspector, #OwnLooks { background: @panel; }
+#LooksPanel, #Inspector, #OwnLooks, #InspectorScroll { background: @panel; }
 #OwnLooks { border-top: 1px solid @line2; }
 #LooksPanel QScrollArea, #PresetGrid, #HistoryView { background: transparent; }
 #Segment { background: @input; border-radius: 8px; }
@@ -409,6 +409,33 @@ QPushButton#QuietButton { border: none; background: transparent;
   color: @text; padding: 4px 0; text-align: left; }
 QPushButton#QuietButton:hover { color: @accentText; }
 #HintLabel { color: @text3; font-size: 12px; }
+#Inspector QToolBox::tab { background: transparent; border: none;
+  border-top: 1px solid @line2; color: @text; font-weight: 600; }
+#Inspector QToolBox::tab:selected { color: @text; }
+#Inspector QGroupBox { border: none; border-top: 1px solid @line2;
+  margin-top: 22px; padding-top: 6px; font-weight: 600; }
+#Inspector QGroupBox::title { subcontrol-origin: margin; left: 6px;
+  padding: 0; color: @text; font-size: 14px; }
+#Inspector QComboBox, #Inspector QDoubleSpinBox, #Inspector QSpinBox,
+#Inspector QLineEdit { background: @input; border: 1px solid @line;
+  border-radius: 6px; padding: 3px 6px; color: @text; min-height: 22px; }
+#Inspector QComboBox:focus, #Inspector QDoubleSpinBox:focus,
+#Inspector QSpinBox:focus, #Inspector QLineEdit:focus {
+  border-color: @accentText; }
+#Inspector QPushButton, #Inspector QToolButton#queueButton {
+  background: @input; border: 1px solid @line; border-radius: 8px;
+  padding: 6px 12px; color: @text; }
+#Inspector QPushButton:hover { border-color: @text3; }
+#Inspector QToolButton#defaultButton, #Inspector QToolButton#undoButton,
+#Inspector QToolButton#redoButton { background: transparent; border: none;
+  border-radius: 6px; padding: 4px 8px; color: @accentText; }
+#Inspector QToolButton#defaultButton:hover, #Inspector QToolButton#undoButton:hover,
+#Inspector QToolButton#redoButton:hover { background: @hover; }
+#Inspector QToolButton#defaultButton:disabled, #Inspector QToolButton#undoButton:disabled,
+#Inspector QToolButton#redoButton:disabled { color: @text3; }
+#Inspector QPushButton:disabled { color: @text3; }
+QToolButton[reset="true"] { border: none; border-radius: 6px; padding: 3px; }
+QToolButton[reset="true"]:hover { background: @hover; }
 #FilmStrip { background: @bar; border-top: 1px solid @line2; }
 QListWidget#FilmList { background: transparent; border: none; color: @text2;
   outline: none; }
