@@ -674,6 +674,9 @@
           </item>
           <item row="1" column="2">
            <widget class="QToolButton" name="exportFormatToolbutton">
+            <property name="toolTip">
+             <string>Image format options</string>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
@@ -932,6 +935,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="user_qual_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1021,6 +1027,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="med_passes_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1152,6 +1161,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="wb_method_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1284,6 +1296,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="TK_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1402,6 +1417,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="green_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1488,6 +1506,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="highlights_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1584,6 +1605,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="level_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1721,6 +1745,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="brightness_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1834,6 +1861,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="user_black_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -1953,6 +1983,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="user_sat_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -2108,6 +2141,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="threshold_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -2249,6 +2285,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="red_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -2365,6 +2404,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <widget class="QToolButton" name="blue_toolButton">
+                 <property name="toolTip">
+                  <string>Reset to default</string>
+                 </property>
                  <property name="enabled">
                   <bool>false</bool>
                  </property>

@@ -32,7 +32,6 @@
 #include <QSqlError>
 #include <QString>
 #include <QStringList>
-#include <QMessageBox>
 
 #include "BatchHDR/BatchHDRDialog.h"
 #include "BatchTM/BatchTMDialog.h"
@@ -189,14 +188,9 @@ int main(int argc, char **argv) {
     // lumierehdr broke
     if (!isBatchHDR && !isBatchTM && !batchTMByName && !batchHDRByName) {
 
-        if (LuminanceOptions().isWarnNewDomosaicingAlgos()) {
-            LuminanceOptions().setWarnNewDomosaicingAlgos(false);
-            QMessageBox::warning(NULL, "", QObject::tr("This version of LumièreHDR has been compiled with support for extra "\
-                        "demosaicing algorithms.\n"\
-                        "Please go to Tools->Preferences->Raw Conversion->Quality and select one of the new available methods."\
-                        ), QMessageBox::Ok);
-        }
-
+        // no warning box about the extra demosaicing methods on first start:
+        // it greeted new users with jargon before they saw the window, and
+        // the methods are listed in Preferences anyway
         // TODO: create update checker...
         // TODO: pass update checker to MainWindow
         MainWindow *mainWindow = new MainWindow;

@@ -572,7 +572,7 @@
     <string>Set various options of LumièreHDR</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+P</string>
+    <string>Ctrl+,</string>
    </property>
   </action>
   <action name="actionResizeHDR">
@@ -804,7 +804,7 @@
     <string>Click and drag inside image area to create a selection, then use this button to crop to a new HDR image</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+X</string>
+    <string>Ctrl+Shift+X</string>
    </property>
   </action>
   <action name="removeSelectionAction">
@@ -838,9 +838,6 @@
    </property>
    <property name="text">
     <string>Make a &amp;Donation</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+D</string>
    </property>
   </action>
   <action name="actionLock">
@@ -907,7 +904,7 @@
     <string>Show/Hide Preview Panel</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+V</string>
+    <string>Ctrl+Shift+P</string>
    </property>
   </action>
   <action name="actionFix_Histogram">
@@ -1123,7 +1120,7 @@
     <string>Export to web page with embedded HDR viewer</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+L</string>
+    <string>Ctrl+Shift+E</string>
    </property>
   </action>
   <action name="actionShow_Full_Screen">
