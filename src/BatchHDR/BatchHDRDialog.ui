@@ -228,6 +228,9 @@ See documentation for more information.</string>
           </item>
           <item row="0" column="2">
            <widget class="QToolButton" name="formatSettingsButton">
+            <property name="toolTip">
+             <string>Image format options</string>
+            </property>
             <property name="text">
              <string notr="true">...</string>
             </property>

@@ -21,6 +21,7 @@ SET(FILES_H
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StepBar.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/WelcomePanel.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CompareDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/HistogramPanel.h
 )
@@ -38,6 +39,7 @@ SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StepBar.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/WelcomePanel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompareDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HistogramPanel.cpp
 )
