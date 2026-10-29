@@ -5466,6 +5466,10 @@ p, li { white-space: pre-wrap; }
         <source>Color profile (*.icc *.ICC *.icm *.ICM)</source>
         <translation>Farbprofil (*.icc *.ICC *.icm *.ICM)</translation>
     </message>
+    <message>
+        <source>&amp;Save</source>
+        <translation>&amp;Speichern</translation>
+    </message>
 </context>
 <context>
     <name>PreviewSettings</name>
@@ -7585,6 +7589,36 @@ Error: %1</source>
     <message>
         <source>After</source>
         <translation>Nachher</translation>
+    </message>
+</context>
+<context>
+    <name>BatchPage</name>
+    <message>
+        <source>Batch processing</source>
+        <translation>Stapelverarbeitung</translation>
+    </message>
+    <message>
+        <source>Many pictures at once, while you do something else.</source>
+        <translation>Viele Bilder auf einmal, während du etwas anderes machst.</translation>
+    </message>
+    <message>
+        <source>HDRs from brackets</source>
+        <translation>HDRs aus Reihen</translation>
+    </message>
+    <message>
+        <source>Looks on HDRs</source>
+        <translation>Looks auf HDRs</translation>
+    </message>
+    <message>
+        <source>Batch HDR</source>
+        <translation>Stapel-HDR</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n HDR image(s) created. Give them a look now?</source>
+        <translation>
+            <numerusform>%n HDR-Bild erstellt. Gleich einen Look anwenden?</numerusform>
+            <numerusform>%n HDR-Bilder erstellt. Gleich Looks anwenden?</numerusform>
+        </translation>
     </message>
 </context>
 <context>

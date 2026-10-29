@@ -87,8 +87,10 @@ TopBar::TopBar(QWidget *parent) : QWidget(parent) {
     connect(m_search, &QToolButton::clicked, this, &TopBar::searchRequested);
 
     m_batch = iconButton(this);
+    m_batch->setCheckable(true);
     connect(m_batch, &QToolButton::clicked, this, &TopBar::batchRequested);
     m_settings = iconButton(this);
+    m_settings->setCheckable(true);
     connect(m_settings, &QToolButton::clicked, this,
             &TopBar::settingsRequested);
     m_menu = iconButton(this);
@@ -127,6 +129,16 @@ TopBar::TopBar(QWidget *parent) : QWidget(parent) {
 
 void TopBar::setMode(Mode mode) {
     m_modeButtons[mode]->setChecked(true);
+    m_batch->setChecked(false);
+    m_settings->setChecked(false);
+}
+
+void TopBar::showUtility(Utility utility) {
+    m_modes->setExclusive(false);
+    for (QAbstractButton *b : m_modes->buttons()) b->setChecked(false);
+    m_modes->setExclusive(true);
+    m_batch->setChecked(utility == Batch);
+    m_settings->setChecked(utility == Settings);
 }
 
 TopBar::Mode TopBar::mode() const {

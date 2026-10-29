@@ -32,6 +32,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStyleFactory>
+#include <QLabel>
+#include <QStyle>
+#include <QToolButton>
 #include <QWhatsThis>
 
 #include <cmath>
@@ -42,6 +45,7 @@
 #include "Common/config.h"
 #include "Common/global.h"
 #include "Preferences/PreferencesDialog.h"
+#include "UI/LumiereIcons.h"
 
 // UI
 #include "Preferences/ui_PreferencesDialog.h"
@@ -546,6 +550,76 @@ void PreferencesDialog::toolButton_clicked(int index) {
     m_Ui->stackedPagesWidget->setCurrentIndex(index);
     QToolButton *tb = dynamic_cast<QToolButton *>(tabEntries[index]);
     tb->setFocus();
+    tb->setChecked(true);
+    if (m_pageTitle) m_pageTitle->setText(tb->text().remove(QLatin1Char('&')));
+}
+
+QWidget *PreferencesDialog::useAsPage() {
+    setWindowFlags(Qt::Widget);
+    setObjectName(QStringLiteral("SettingsContent"));
+    setMinimumSize(0, 0);
+    setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QWidget *page = new QWidget;
+    page->setObjectName(QStringLiteral("SettingsWorkspace"));
+    page->setAttribute(Qt::WA_StyledBackground);
+
+    QWidget *nav = new QWidget;
+    nav->setObjectName(QStringLiteral("SettingsNav"));
+    nav->setAttribute(Qt::WA_StyledBackground);
+    nav->setFixedWidth(240);
+    QVBoxLayout *navLayout = new QVBoxLayout(nav);
+    navLayout->setContentsMargins(12, 20, 12, 20);
+    navLayout->setSpacing(2);
+    QLabel *heading = new QLabel(tr("Preferences").toUpper());
+    heading->setObjectName(QStringLiteral("SectionLabel"));
+    heading->setContentsMargins(12, 0, 0, 10);
+    navLayout->addWidget(heading);
+    const QList<QPair<QToolButton *, QString>> entries = {
+        {m_Ui->toolButtonInterface, QStringLiteral("monitor")},
+        {m_Ui->toolButtonQueue, QStringLiteral("export")},
+        {m_Ui->toolButtonTM, QStringLiteral("sun")},
+        {m_Ui->toolButtonRAW, QStringLiteral("camera")},
+        {m_Ui->toolButtonCMS, QStringLiteral("colors")},
+        {m_Ui->toolButtonExtTool, QStringLiteral("wrench")}};
+    for (const auto &entry : entries) {
+        QToolButton *b = entry.first;
+        m_Ui->gridLayout_16->removeWidget(b);
+        b->setParent(nav);
+        b->setObjectName(QStringLiteral("SettingsNavButton"));
+        b->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        b->setIcon(LumiereIcons::icon(entry.second));
+        b->setIconSize(QSize(20, 20));
+        b->setCheckable(true);
+        b->setAutoExclusive(true);
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        b->setMinimumSize(0, 40);
+        b->setMaximumSize(QWIDGETSIZE_MAX, 40);
+        b->show();
+        navLayout->addWidget(b);
+    }
+    navLayout->addStretch();
+
+    // the open section's name as a heading where the buttons were
+    m_Ui->verticalLayout->removeItem(m_Ui->gridLayout_16);
+    m_pageTitle = new QLabel;
+    m_pageTitle->setObjectName(QStringLiteral("PageTitle"));
+    m_Ui->verticalLayout->insertWidget(0, m_pageTitle);
+    m_Ui->verticalLayout->setContentsMargins(32, 24, 32, 20);
+    m_Ui->verticalLayout->setSpacing(14);
+
+    QHBoxLayout *row = new QHBoxLayout(page);
+    row->setContentsMargins(0, 0, 0, 0);
+    row->setSpacing(0);
+    row->addWidget(nav);
+    row->addWidget(this, 1);
+
+    m_Ui->okButton->setText(tr("&Save"));
+    m_Ui->okButton->setProperty("primary", true);
+    m_Ui->okButton->style()->unpolish(m_Ui->okButton);
+    m_Ui->okButton->style()->polish(m_Ui->okButton);
+    toolButton_clicked(m_Ui->stackedPagesWidget->currentIndex());
+    return page;
 }
 
 void PreferencesDialog::from_options_to_gui() {
