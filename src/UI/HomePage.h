@@ -14,8 +14,8 @@
  * ----------------------------------------------------------------------
  */
 
-#ifndef STARTPAGE_H
-#define STARTPAGE_H
+#ifndef HOMEPAGE_H
+#define HOMEPAGE_H
 
 #include <QStringList>
 #include <QWidget>
@@ -27,10 +27,11 @@ class QPushButton;
 
 //! \brief The Start workspace: the ways to begin as large cards, a place to
 //! drop files, the recently used files with a preview, and a few links.
-class StartPage : public QWidget {
+//! (Not "StartPage": that name is taken by a Windows GDI function.)
+class HomePage : public QWidget {
     Q_OBJECT
    public:
-    explicit StartPage(QWidget *parent = nullptr);
+    explicit HomePage(QWidget *parent = nullptr);
 
     //! the cards run \a newHdr, \a open and \a batch
     void setCardActions(QAction *newHdr, QAction *open, QAction *batch);

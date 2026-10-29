@@ -20,7 +20,7 @@ SET(FILES_H
     ${CMAKE_CURRENT_SOURCE_DIR}/ExportToHtmlDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/StartPage.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/HomePage.h
     ${CMAKE_CURRENT_SOURCE_DIR}/LumiereIcons.h
     ${CMAKE_CURRENT_SOURCE_DIR}/TopBar.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CommandPalette.h
@@ -40,7 +40,7 @@ SET(FILES_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/ExportToHtmlDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SupportedCamerasDialog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SavedParametersDialog.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/StartPage.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/HomePage.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LumiereIcons.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TopBar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CommandPalette.cpp

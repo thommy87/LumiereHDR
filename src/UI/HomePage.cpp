@@ -14,7 +14,7 @@
  * ----------------------------------------------------------------------
  */
 
-#include "StartPage.h"
+#include "HomePage.h"
 
 #include <QAction>
 #include <QApplication>
@@ -84,7 +84,7 @@ QPixmap thumbnail(const QString &file) {
 }
 }  // namespace
 
-StartPage::StartPage(QWidget *parent) : QWidget(parent) {
+HomePage::HomePage(QWidget *parent) : QWidget(parent) {
     setObjectName(QStringLiteral("StartPage"));
     setAttribute(Qt::WA_StyledBackground);
 
@@ -167,7 +167,7 @@ StartPage::StartPage(QWidget *parent) : QWidget(parent) {
     rebuildRecent();
 }
 
-StartPage::Card StartPage::makeCard() {
+HomePage::Card HomePage::makeCard() {
     Card c;
     c.action = nullptr;
     c.button = new QPushButton(this);
@@ -197,7 +197,7 @@ StartPage::Card StartPage::makeCard() {
     return c;
 }
 
-void StartPage::setCardActions(QAction *newHdr, QAction *open,
+void HomePage::setCardActions(QAction *newHdr, QAction *open,
                                QAction *batch) {
     QAction *actions[3] = {newHdr, open, batch};
     for (int i = 0; i < 3; ++i) {
@@ -208,7 +208,7 @@ void StartPage::setCardActions(QAction *newHdr, QAction *open,
     retranslate();
 }
 
-void StartPage::setLinkActions(const QList<QAction *> &links) {
+void HomePage::setLinkActions(const QList<QAction *> &links) {
     QHBoxLayout *layout = static_cast<QHBoxLayout *>(m_links->layout());
     for (QAction *a : links) {
         QToolButton *b = new QToolButton(m_links);
@@ -220,13 +220,13 @@ void StartPage::setLinkActions(const QList<QAction *> &links) {
     }
 }
 
-void StartPage::setRecentFiles(const QStringList &files) {
+void HomePage::setRecentFiles(const QStringList &files) {
     if (files == m_recent) return;
     m_recent = files;
     rebuildRecent();
 }
 
-void StartPage::rebuildRecent() {
+void HomePage::rebuildRecent() {
     while (QLayoutItem *item = m_recentGrid->takeAt(0)) {
         delete item->widget();
         delete item;
@@ -253,7 +253,7 @@ void StartPage::rebuildRecent() {
     m_recentGrid->setColumnStretch(5, 1);
 }
 
-void StartPage::retranslate() {
+void HomePage::retranslate() {
     m_title->setText(tr("What would you like to start with?"));
     m_subtitle->setText(tr("Turn several exposures into one picture that "
                            "holds all the light of the scene."));
@@ -279,14 +279,14 @@ void StartPage::retranslate() {
     m_recentLabel->setText(tr("RECENTLY USED"));
 }
 
-void StartPage::refreshIcons() {
+void HomePage::refreshIcons() {
     for (Card &c : m_cards)
         if (!c.iconName.isEmpty())
             c.icon->setPixmap(LumiereIcons::icon(c.iconName).pixmap(26, 26));
     rebuildRecent();
 }
 
-void StartPage::changeEvent(QEvent *event) {
+void HomePage::changeEvent(QEvent *event) {
     if (event->type() == QEvent::LanguageChange) retranslate();
     if (event->type() == QEvent::PaletteChange) refreshIcons();
     QWidget::changeEvent(event);

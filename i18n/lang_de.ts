@@ -7525,7 +7525,7 @@ Error: %1</source>
     </message>
 </context>
 <context>
-    <name>StartPage</name>
+    <name>HomePage</name>
     <message>
         <source>What would you like to start with?</source>
         <translation>Womit geht es los?</translation>

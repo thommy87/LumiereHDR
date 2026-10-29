@@ -114,7 +114,7 @@
 #include <UI/HistogramPanel.h>
 #include <UI/CommandPalette.h>
 #include <UI/LumiereIcons.h>
-#include <UI/StartPage.h>
+#include <UI/HomePage.h>
 #include <UI/TopBar.h>
 #include <UI/SupportedCamerasDialog.h>
 #include <UI/TiffModeDialog.h>
@@ -379,7 +379,7 @@ void MainWindow::createCentralWidget() {
     m_bottom_splitter->setOrientation(Qt::Vertical);
 
     // the Start page and the image workspace take turns in the window
-    m_startPage = new StartPage;
+    m_startPage = new HomePage;
     m_workspace = new QStackedWidget;
     m_workspace->addWidget(m_startPage);
     m_workspace->addWidget(m_centralwidget_splitter);
@@ -588,7 +588,7 @@ void MainWindow::createShell() {
     m_startPage->setLinkActions({m_Ui->actionFits_Importer,
                                  m_Ui->actionSupported_Cameras,
                                  m_Ui->actionOnline_Documentation});
-    connect(m_startPage, &StartPage::recentFileRequested, this,
+    connect(m_startPage, &HomePage::recentFileRequested, this,
             [this](const QString &file) {
                 QMetaObject::invokeMethod(m_IOWorker, "read_hdr_frame",
                                           Qt::QueuedConnection,
