@@ -51,6 +51,7 @@
 #include <QMimeData>
 #include <QSignalMapper>
 #include <QStackedWidget>
+#include <QStyle>
 #include <QString>
 #include <QTextStream>
 #include <QDockWidget>
@@ -581,11 +582,7 @@ void MainWindow::createShell() {
                 showWorkspace(true);
                 break;
             case TopBar::Merge:
-                // the HDR wizard for now; it gets a workspace of its own
-                m_topBar->setMode(m_workspace->currentWidget() == m_startPage
-                                      ? TopBar::Start
-                                      : TopBar::Develop);
-                m_Ui->fileNewAction->trigger();
+                createNewHdr(QStringList());
                 break;
             case TopBar::Export:
                 m_topBar->setMode(TopBar::Develop);
@@ -1106,27 +1103,66 @@ void MainWindow::on_fileNewAction_triggered() {
 }
 
 void MainWindow::createNewHdr(const QStringList &files) {
-    QScopedPointer<HdrWizard> wizard(
+    // Merge HDR is a workspace of the window, not a dialog on top: it stays
+    // while the other workspaces are looked at, until it is done
+    if (m_mergeWizard) {
+        showMergeWorkspace();
+        return;
+    }
+    m_mergeWizard =
         new HdrWizard(this, files, m_inputFilesName, m_inputExpoTimes,
-                      QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection())));
-    if (wizard->exec() == QDialog::Accepted) {
-        const bool inThisWindow = !tm_status.is_hdr_ready;
-        emit load_success(wizard->getPfsFrameHDR(), wizard->getCaptionTEXT(),
-                          wizard->getInputFilesNames(), true);
-        // keep what was set in the preview, instead of starting over dark
-        if (inThisWindow) {
-            wizard->applyPreviewLook(
-                qobject_cast<HdrViewer *>(m_tabwidget->currentWidget()));
-            // and show a finished picture right away, as other HDR programs
-            // do: the first preset (Natural) on the new HDR
-            for (const auto &preset : m_tonemapPanel->presets()) {
-                if (preset.second == TonemappingPanel::uneditedPreset())
-                    continue;
-                m_tonemapPanel->applyPresetFile(preset.second, preset.first);
-                break;
+                      QSqlDatabase::database(m_tonemapPanel->getDatabaseConnection()));
+    m_mergeWizard->setWindowFlags(Qt::Widget);
+    m_mergeWizard->setObjectName(QStringLiteral("MergeWorkspace"));
+    const QList<QPair<QString, QString>> wizardIcons = {
+        {QStringLiteral("loadImagesButton"), QStringLiteral("plus")},
+        {QStringLiteral("removeImageButton"), QStringLiteral("minus")},
+        {QStringLiteral("clearListButton"), QStringLiteral("trash")}};
+    for (const auto &entry : wizardIcons)
+        if (QToolButton *b =
+                m_mergeWizard->findChild<QToolButton *>(entry.first))
+            b->setIcon(LumiereIcons::icon(entry.second));
+    if (QPushButton *next = m_mergeWizard->findChild<QPushButton *>(
+            QStringLiteral("NextFinishButton"))) {
+        next->setProperty("primary", true);
+        next->style()->unpolish(next);
+        next->style()->polish(next);
+    }
+    m_workspace->addWidget(m_mergeWizard);
+    connect(m_mergeWizard, &QDialog::finished, this, [this](int result) {
+        HdrWizard *wizard = m_mergeWizard;
+        m_mergeWizard = nullptr;
+        m_topBar->setModeEnabled(TopBar::Merge, true);
+        if (result == QDialog::Accepted) {
+            const bool inThisWindow = !tm_status.is_hdr_ready;
+            emit load_success(wizard->getPfsFrameHDR(),
+                              wizard->getCaptionTEXT(),
+                              wizard->getInputFilesNames(), true);
+            // keep what was set in the preview, instead of starting over dark
+            if (inThisWindow) {
+                wizard->applyPreviewLook(
+                    qobject_cast<HdrViewer *>(m_tabwidget->currentWidget()));
+                // and show a finished picture right away, as other HDR
+                // programs do: the first preset (Natural) on the new HDR
+                for (const auto &preset : m_tonemapPanel->presets()) {
+                    if (preset.second == TonemappingPanel::uneditedPreset())
+                        continue;
+                    m_tonemapPanel->applyPresetFile(preset.second, preset.first);
+                    break;
+                }
             }
         }
-    }
+        m_workspace->removeWidget(wizard);
+        wizard->deleteLater();
+        showWorkspace(m_tabwidget->count() > 0);
+    });
+    showMergeWorkspace();
+}
+
+void MainWindow::showMergeWorkspace() {
+    m_workspace->setCurrentWidget(m_mergeWizard);
+    m_mergeWizard->show();
+    m_topBar->setMode(TopBar::Merge);
 }
 
 void MainWindow::on_fileOpenAction_triggered() {

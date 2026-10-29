@@ -426,6 +426,20 @@ QPushButton#QuietButton:hover { color: @accentText; }
   background: @input; border: 1px solid @line; border-radius: 8px;
   padding: 6px 12px; color: @text; }
 #Inspector QPushButton:hover { border-color: @text3; }
+#MergeWorkspace QGroupBox { border: none; border-top: 1px solid @line2;
+  margin-top: 22px; padding-top: 6px; font-weight: 600; }
+#MergeWorkspace QGroupBox::title { subcontrol-origin: margin; left: 6px;
+  padding: 0; color: @text; font-size: 14px; }
+#MergeWorkspace QComboBox, #MergeWorkspace QDoubleSpinBox, #MergeWorkspace QSpinBox,
+#MergeWorkspace QLineEdit { background: @input; border: 1px solid @line;
+  border-radius: 6px; padding: 3px 6px; color: @text; min-height: 22px; }
+#MergeWorkspace QComboBox:focus, #MergeWorkspace QDoubleSpinBox:focus,
+#MergeWorkspace QSpinBox:focus, #MergeWorkspace QLineEdit:focus {
+  border-color: @accentText; }
+#MergeWorkspace QPushButton, #MergeWorkspace QToolButton#queueButton {
+  background: @input; border: 1px solid @line; border-radius: 8px;
+  padding: 6px 12px; color: @text; }
+#MergeWorkspace QPushButton:hover { border-color: @text3; }
 #Inspector QToolButton#defaultButton, #Inspector QToolButton#undoButton,
 #Inspector QToolButton#redoButton { background: transparent; border: none;
   border-radius: 6px; padding: 4px 8px; color: @accentText; }
@@ -434,6 +448,20 @@ QPushButton#QuietButton:hover { color: @accentText; }
 #Inspector QToolButton#defaultButton:disabled, #Inspector QToolButton#undoButton:disabled,
 #Inspector QToolButton#redoButton:disabled { color: @text3; }
 #Inspector QPushButton:disabled { color: @text3; }
+#MergeWorkspace { background: @ground; }
+#MergeWorkspace QTableWidget, #MergeWorkspace QTextEdit { background: @panel;
+  border: 1px solid @line2; border-radius: 10px; }
+#MergeWorkspace QHeaderView::section { background: @panel; color: @text3;
+  border: none; border-bottom: 1px solid @line2; padding: 6px; }
+#MergeWorkspace QToolButton#loadImagesButton,
+#MergeWorkspace QToolButton#removeImageButton,
+#MergeWorkspace QToolButton#clearListButton { background: @input;
+  border: 1px solid @line; border-radius: 8px; padding: 6px; }
+QPushButton[primary="true"], #MergeWorkspace QPushButton[primary="true"] {
+  background: @accent; border-color: @accent; color: white; font-weight: 600; }
+QPushButton[primary="true"]:disabled,
+#MergeWorkspace QPushButton[primary="true"]:disabled { background: @chip; border-color: @line;
+  color: @text3; }
 QToolButton[reset="true"] { border: none; border-radius: 6px; padding: 3px; }
 QToolButton[reset="true"]:hover { background: @hover; }
 #FilmStrip { background: @bar; border-top: 1px solid @line2; }
