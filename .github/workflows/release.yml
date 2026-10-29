@@ -1,6 +1,7 @@
 name: Release
 
-# Builds the Windows package from a version tag (e.g. v2.7.0), signs it
+# Builds the Windows package and a Linux AppImage from a version tag
+# (e.g. v2.7.0), signs the Windows package
 # through SignPath when the project is set up there, and drafts a GitHub
 # release. Signing needs the SIGNPATH_API_TOKEN secret and the
 # SIGNPATH_ORGANIZATION_ID repository variable; without them the package
@@ -15,7 +16,8 @@ on:
     branches: ["phase-*/**", master]
     paths:
       [".github/workflows/release.yml", "build_files/windows/**",
-       "build_files/Modules/Version.cmake"]
+       "build_files/Modules/Version.cmake",
+       "build_files/Modules/Internationalization.cmake"]
   # dry run of the packaging whenever the release workflow itself changes
   pull_request:
     paths: [".github/workflows/release.yml", "build_files/windows/**"]
@@ -61,9 +63,65 @@ jobs:
           echo "build=$build" >> "$GITHUB_OUTPUT"
           echo "tag=$tag release=$release build=$build"
 
+  appimage:
+    name: Linux AppImage
+    needs: decide
+    if: needs.decide.outputs.build == '1'
+    runs-on: ubuntu-24.04
+    env:
+      RELEASE_TAG: ${{ needs.decide.outputs.tag }}
+      IS_RELEASE: ${{ needs.decide.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        timeout-minutes: 25
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build \
+            libboost-program-options-dev libboost-thread-dev libboost-chrono-dev \
+            libboost-system-dev libboost-date-time-dev libboost-atomic-dev \
+            libexiv2-dev libtiff-dev libpng-dev libopenexr-dev libgsl-dev libjpeg-dev \
+            libcfitsio-dev libraw-dev libfftw3-dev liblcms2-dev libeigen3-dev \
+            libavif-dev libjxl-dev libwebp-dev liblensfun-dev libomp-dev \
+            qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
+            libqt6svg6-dev qt6-5compat-dev libgl-dev libqt6sql6-sqlite \
+            qt6-qpa-plugins file desktop-file-utils
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build --parallel
+          DESTDIR="$PWD/AppDir" cmake --install build
+          # the Lensfun lens database, read by the RAW lens correction
+          if [ -d /usr/share/lensfun/version_1 ]; then
+            mkdir -p AppDir/usr/share/lensfun
+            cp -r /usr/share/lensfun/version_1 AppDir/usr/share/lensfun/
+          fi
+      - name: Make the AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: 1
+          EXTRA_QT_PLUGINS: svg
+        run: |
+          base=https://github.com/linuxdeploy
+          wget -q $base/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q $base/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          export QMAKE=$(command -v qmake6 || echo /usr/lib/qt6/bin/qmake)
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
+            --desktop-file AppDir/usr/share/applications/net.sourceforge.qtpfsgui.LuminanceHDR.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/luminance-hdr.png \
+            --plugin qt --output appimage
+          version="${RELEASE_TAG#v}"
+          [ "$IS_RELEASE" = 1 ] || version="0.0.0-${GITHUB_SHA::7}"
+          mv ./Lumi*-x86_64.AppImage "LumiereHDR-${version}-x86_64.AppImage"
+          ls -l LumiereHDR-*.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lumierehdr-appimage
+          path: LumiereHDR-*.AppImage
+
   windows:
     name: Windows package
-    needs: decide
+    needs: [decide, appimage]
     if: needs.decide.outputs.build == '1'
     runs-on: windows-latest
     env:
@@ -191,6 +249,13 @@ jobs:
           wait-for-completion-timeout-in-seconds: 18000
           output-artifact-directory: installer-signed
 
+      - name: Fetch the AppImage
+        if: env.IS_RELEASE == '1'
+        uses: actions/download-artifact@v4
+        with:
+          name: lumierehdr-appimage
+          path: appimage
+
       - name: Draft GitHub release
         if: env.IS_RELEASE == '1'
         shell: bash
@@ -198,4 +263,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           setup=$(ls installer-signed/*.exe 2>/dev/null || ls installer/*.exe)
-          gh release create "$RELEASE_TAG" "$DIST.zip" $setup --draft --target "$GITHUB_SHA"             --title "LumièreHDR ${RELEASE_TAG#v}"             --notes "Windows x64: installer (setup.exe) or portable zip. Code signing policy: see CODE_SIGNING_POLICY.md."
+          gh release create "$RELEASE_TAG" "$DIST.zip" $setup appimage/*.AppImage --draft --target "$GITHUB_SHA" \
+            --title "LumièreHDR ${RELEASE_TAG#v}" \
+            --notes "Windows x64: installer (setup.exe) or portable zip. Linux x86_64: AppImage (make it executable and start it; needs a distribution from 2024 or newer). Code signing policy: see CODE_SIGNING_POLICY.md."

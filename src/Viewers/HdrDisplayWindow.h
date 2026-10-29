@@ -41,7 +41,10 @@ class HdrDisplayCanvas : public QWidget {
     explicit HdrDisplayCanvas(QWidget *parent = nullptr);
     ~HdrDisplayCanvas() override;
 
-    void setImage(std::shared_ptr<pfs::Frame> hdr);
+    //! \a inNits: the picture already holds nits (an edited result made
+    //! HDR, as an Ultra HDR file shows); else a merged HDR, placed by its
+    //! log-average
+    void setImage(std::shared_ptr<pfs::Frame> hdr, bool inNits = false);
     void setExposure(float stops);
     //! the screen the picture is on: HDR or not, and its peak brightness
     QString screenStatus() const { return m_status; }
@@ -65,6 +68,7 @@ class HdrDisplayCanvas : public QWidget {
     std::unique_ptr<pfs::Frame> m_fitted;  // the image at the window's size
     float m_middleGrey = 0.18f;            // log-average of the picture
     float m_exposure = 0.f;
+    bool m_inNits = false;
     QString m_status;
 };
 
@@ -73,7 +77,8 @@ class HdrDisplayWindow : public QDialog {
     Q_OBJECT
 
    public:
-    HdrDisplayWindow(std::shared_ptr<pfs::Frame> hdr, QWidget *parent = nullptr);
+    HdrDisplayWindow(std::shared_ptr<pfs::Frame> hdr, QWidget *parent = nullptr,
+                     bool inNits = false);
 
    private:
     HdrDisplayCanvas *m_canvas;

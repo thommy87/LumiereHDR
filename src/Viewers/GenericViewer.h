@@ -177,6 +177,9 @@ class GenericViewer : public QWidget {
 
     void startDragging();
 
+   public:
+    QToolBar *toolBar() const { return mToolBar; }
+
    protected:
     virtual void retranslateUi();
     virtual void changeEvent(QEvent *event);

@@ -582,13 +582,9 @@ void HDRHTMLSet::add_image(int width, int height, float *R, float *G, float *B,
 
     // Load LUT for the basis tone-curves
     ostringstream lut_filename;
-#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    QString h_t_b = HDRHTMLDIR;
-    h_t_b.append("\\hdrhtml_t_b");
-    lut_filename << h_t_b.toStdString().c_str() << basis_no + 1 << ".csv";
-#else
-    lut_filename << HDRHTMLDIR "/hdrhtml_t_b" << basis_no + 1 << ".csv";
-#endif
+    // the folder is found at run time, next to the program
+    lut_filename << (QString(HDRHTMLDIR) + "/hdrhtml_t_b").toStdString()
+                 << basis_no + 1 << ".csv";
     CSVTable basis_table;
     try {
         basis_table.read(lut_filename.str().c_str(), basis_no + 1);
@@ -798,13 +794,8 @@ void HDRHTMLSet::generate_webpage(const char *page_template,
 
     // Load the table of the opacity coefficients
     ostringstream lut_filename;
-#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    QString h_c_b = HDRHTMLDIR;
-    h_c_b.append("\\hdrhtml_c_b");
-    lut_filename << h_c_b.toStdString().c_str() << image_list.front().basis + 1 << ".csv";
-#else
-    lut_filename << HDRHTMLDIR "/hdrhtml_c_b" << image_list.front().basis + 1 << ".csv";
-#endif
+    lut_filename << (QString(HDRHTMLDIR) + "/hdrhtml_c_b").toStdString()
+                 << image_list.front().basis + 1 << ".csv";
     CSVTable coeff_table;
     coeff_table.read(lut_filename.str().c_str(), image_list.front().basis + 1);
 

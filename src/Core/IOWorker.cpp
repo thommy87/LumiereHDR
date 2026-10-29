@@ -357,12 +357,18 @@ pfs::Params getRawSettings(const LuminanceOptions &opts) {
 
     if (opts.isRawLensCorrection()) {
         p.set("raw.lens_correction", true);
-        // the installer puts the Lensfun database next to the program
-        const QString bundled =
-            QCoreApplication::applicationDirPath() + QStringLiteral("/lensfun");
-        if (QDir(bundled).exists())
-            p.set("raw.lensfun_database",
-                  std::string(QFile::encodeName(bundled).constData()));
+        // the Windows installer puts the Lensfun database next to the
+        // program, the AppImage under share/lensfun
+        const QString app = QCoreApplication::applicationDirPath();
+        for (const QString &bundled :
+             {app + QStringLiteral("/lensfun"),
+              app + QStringLiteral("/../share/lensfun/version_1")}) {
+            if (QDir(bundled).exists()) {
+                p.set("raw.lensfun_database",
+                      std::string(QFile::encodeName(bundled).constData()));
+                break;
+            }
+        }
     }
 
     if (opts.isRawUseChromaAber()) {

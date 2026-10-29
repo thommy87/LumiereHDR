@@ -97,8 +97,10 @@ HdrDisplayCanvas::HdrDisplayCanvas(QWidget *parent)
 
 HdrDisplayCanvas::~HdrDisplayCanvas() = default;
 
-void HdrDisplayCanvas::setImage(std::shared_ptr<pfs::Frame> hdr) {
+void HdrDisplayCanvas::setImage(std::shared_ptr<pfs::Frame> hdr,
+                                bool inNits) {
     m_hdr = std::move(hdr);
+    m_inNits = inNits;
     m_fitted.reset();
     // the log-average brightness becomes mid grey, as a camera exposes it
     m_middleGrey = 0.18f;
@@ -260,8 +262,12 @@ void HdrDisplayCanvas::render() {
         const float white = d.hdrScreen ? kSdrWhiteNits / kNitsPerUnit : 1.f;
         const float peak = d.hdrScreen ? d.peakNits / kNitsPerUnit : 1.f;
         const float knee = 0.75f * peak;
+        // nits: 80 nits per scRGB unit on an HDR screen; on another one
+        // normal white (203 nits) becomes white
         const float scale =
-            0.18f * white / m_middleGrey * std::pow(2.f, m_exposure);
+            (m_inNits ? (d.hdrScreen ? 1.f / kNitsPerUnit : 1.f / 203.f)
+                      : 0.18f * white / m_middleGrey) *
+            std::pow(2.f, m_exposure);
         for (int y = 0; y < ih; ++y) {
             const int ty = y + oy;
             if (ty < 0 || ty >= int(height)) continue;
@@ -297,9 +303,9 @@ void HdrDisplayCanvas::render() {
 }
 
 HdrDisplayWindow::HdrDisplayWindow(std::shared_ptr<pfs::Frame> hdr,
-                                   QWidget *parent)
+                                   QWidget *parent, bool inNits)
     : QDialog(parent) {
-    setWindowTitle(tr("HDR preview"));
+    setWindowTitle(inNits ? tr("Ultra HDR preview") : tr("HDR preview"));
     setWindowFlags(windowFlags() | Qt::WindowMaximizeButtonHint);
     setAttribute(Qt::WA_DeleteOnClose);
     resize(1100, 760);
@@ -316,7 +322,7 @@ HdrDisplayWindow::HdrDisplayWindow(std::shared_ptr<pfs::Frame> hdr,
     hint->setMargin(6);
 
     m_canvas = new HdrDisplayCanvas(this);
-    m_canvas->setImage(std::move(hdr));
+    m_canvas->setImage(std::move(hdr), inNits);
 
     m_exposure = new QSlider(Qt::Horizontal, this);
     m_exposure->setRange(-40, 40);  // tenths of a stop

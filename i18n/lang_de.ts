@@ -2575,6 +2575,18 @@ ERROR: %2</source>
 <context>
     <name>HdrWizard</name>
     <message>
+        <source>&lt;center&gt;&lt;h3&gt;&lt;b&gt;One RAW photo.&lt;/b&gt;&lt;/h3&gt;It becomes an HDR directly, from the 12 to 14 stops the RAW holds. A real bracket of several exposures brings out even more detail in highlights and shadows.&lt;/center&gt;</source>
+        <translation>&lt;center&gt;&lt;h3&gt;&lt;b&gt;Ein einzelnes RAW-Foto.&lt;/b&gt;&lt;/h3&gt;Daraus wird direkt ein HDR, aus den 12 bis 14 Blenden, die das RAW enthält. Eine echte Belichtungsreihe holt noch mehr Details aus Lichtern und Schatten.&lt;/center&gt;</translation>
+    </message>
+    <message>
+        <source>&amp;Exposure of this photo (EV)</source>
+        <translation>&amp;Belichtung dieses Fotos (EV)</translation>
+    </message>
+    <message>
+        <source>How this photo was exposed, compared with the others: taken from the camera data. Change it only when it is missing or wrong; it tells the merge how to weigh the photo and does not make the photo itself brighter or darker.</source>
+        <translation>Wie dieses Foto im Vergleich zu den anderen belichtet wurde, aus den Kameradaten übernommen. Nur ändern, wenn der Wert fehlt oder falsch ist: Er sagt dem Zusammenführen, wie das Foto einzuordnen ist, und macht das Foto selbst nicht heller oder dunkler.</translation>
+    </message>
+    <message>
         <source>AVIF, JPEG XL, WebP (*.avif *.jxl *.webp *.AVIF *.JXL *.WEBP);;</source>
         <translation>AVIF, JPEG XL, WebP (*.avif *.jxl *.webp *.AVIF *.JXL *.WEBP);;</translation>
     </message>
@@ -3580,6 +3592,14 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>MainWindow</name>
+    <message>
+        <source>HDR preview (HDR screens)...</source>
+        <translation>HDR-Vorschau (HDR-Bildschirme) …</translation>
+    </message>
+    <message>
+        <source>Shows this result with glowing highlights, as an Ultra HDR file looks on an HDR screen such as an HDR TV</source>
+        <translation>Zeigt dieses Ergebnis mit leuchtenden Lichtern, so wie eine Ultra-HDR-Datei auf einem HDR-Bildschirm wie einem HDR-Fernseher aussieht</translation>
+    </message>
     <message>
         <source>Save as %1</source>
         <translation>Speichern als %1</translation>
@@ -7463,6 +7483,10 @@ Error: %1</source>
 </context>
 <context>
     <name>HdrDisplayWindow</name>
+    <message>
+        <source>Ultra HDR preview</source>
+        <translation>Ultra-HDR-Vorschau</translation>
+    </message>
     <message>
         <source>&lt;b&gt;Only on HDR screens:&lt;/b&gt; this preview shows real HDR brightness only on an HDR monitor or HDR TV with &quot;Use HDR&quot; switched on in the Windows display settings. On a normal screen it looks like the usual view.</source>
         <translation>&lt;b&gt;Nur auf HDR-Bildschirmen:&lt;/b&gt; Diese Vorschau zeigt echte HDR-Helligkeit nur auf einem HDR-Monitor oder HDR-Fernseher, bei dem in den Windows-Anzeigeeinstellungen „HDR verwenden“ eingeschaltet ist. Auf einem normalen Bildschirm sieht sie aus wie die gewöhnliche Ansicht.</translation>

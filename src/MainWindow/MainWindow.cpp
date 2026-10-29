@@ -94,6 +94,10 @@
 
 #include <TransplantExif/TransplantExifDialog.h>
 #include <Viewers/HdrViewer.h>
+#include <Libpfs/io/hdrencoding.h>
+#ifdef Q_OS_WIN
+#include <Viewers/HdrDisplayWindow.h>
+#endif
 #include "MainWindow/ExportQueueDialog.h"
 #include <Libpfs/utils/clamp.h>
 #include <Libpfs/utils/chain.h>
@@ -2336,6 +2340,37 @@ void MainWindow::addLdrFrame(pfs::Frame *frame,
         num_ldr_generated++;
 
         n = new LdrViewer(frame, tm_options, this, true);
+#ifdef Q_OS_WIN
+        {
+            // the edit as an HDR screen shows its Ultra HDR file
+            QAction *preview =
+                n->toolBar()->addAction(tr("HDR preview (HDR screens)..."));
+            preview->setToolTip(
+                tr("Shows this result with glowing highlights, as an Ultra HDR "
+                   "file looks on an HDR screen such as an HDR TV"));
+            GenericViewer *viewer = n;
+            connect(preview, &QAction::triggered, this, [this, viewer]() {
+                HdrViewer *hdr =
+                    qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
+                if (!hdr || !viewer->getFrame()) return;
+                const pfs::Frame &result = *viewer->getFrame();
+                const std::vector<float> nits =
+                    pfs::io::hdr::resultToNits2020(result, *hdr->getFrame());
+                auto picture = std::make_shared<pfs::Frame>(result.getWidth(),
+                                                            result.getHeight());
+                pfs::Channel *r, *g, *b;
+                picture->createXYZChannels(r, g, b);
+                for (size_t i = 0; i < r->size(); ++i) {
+                    float c[3] = {nits[i * 3], nits[i * 3 + 1], nits[i * 3 + 2]};
+                    pfs::io::hdr::rec2020To709(c[0], c[1], c[2]);
+                    (*r)(i) = std::max(c[0], 0.f);
+                    (*g)(i) = std::max(c[1], 0.f);
+                    (*b)(i) = std::max(c[2], 0.f);
+                }
+                (new HdrDisplayWindow(picture, this, true))->show();
+            });
+        }
+#endif
 
         watchViewer(n);
         connect(n, &GenericViewer::changed, this, &MainWindow::syncViewers);

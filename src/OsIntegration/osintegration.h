@@ -32,6 +32,9 @@
 #ifdef LHDR_WIN_TASKBAR
 #include "ecwin7.h"
 #endif
+#ifdef LHDR_WIN_TASKBAR_NATIVE
+#include "wintaskbar.h"
+#endif
 
 class OsIntegration : public QObject {
     Q_OBJECT
@@ -64,6 +67,9 @@ class OsIntegration : public QObject {
 
 #ifdef LHDR_WIN_TASKBAR
     EcWin7 *m_winProgressbar;
+#endif
+#ifdef LHDR_WIN_TASKBAR_NATIVE
+    WinTaskbar m_taskbar;
 #endif
 };
 #endif  // OSINTEGRATION_H

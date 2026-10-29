@@ -20,5 +20,8 @@
  *
  */
 
+// the folder may be given relative to the program
+#include <QCoreApplication>
+
 #define HDRHTMLDIR @HDRHTMLDIR@
 
