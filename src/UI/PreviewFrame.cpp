@@ -26,9 +26,11 @@
 PreviewFrame::PreviewFrame(QWidget *parent) : QFrame(parent), m_index(0) {
     m_flowLayout = new FlowLayout;
     setLayout(m_flowLayout);
-    QPalette *palette = new QPalette();
-    palette->setColor(QPalette::WindowText, Qt::red);
-    setPalette(*palette);
+    // the frame of the chosen preview in the accent colour of the scheme
+    QPalette framePalette = palette();
+    framePalette.setColor(QPalette::WindowText,
+                          framePalette.color(QPalette::Highlight));
+    setPalette(framePalette);
 }
 
 PreviewFrame::~PreviewFrame() {}

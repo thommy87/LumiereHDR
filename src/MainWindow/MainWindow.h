@@ -74,6 +74,8 @@ class TMOProgressIndicator;  // #include
                              // "TonemappingPanel/TMOProgressIndicator.h"
 class TonemappingPanel;      // #include "TonemappingPanel/TonemappingPanel.h"
 class StepBar;               // #include "UI/StepBar.h"
+class WelcomePanel;          // #include "UI/WelcomePanel.h"
+class QStackedWidget;
 class PresetStrip;
 class QUndoGroup;
 class QTimer;
@@ -337,6 +339,9 @@ class MainWindow : public QMainWindow {
     TonemappingPanel *m_tonemapPanel;
     // Import -> Tone -> Export workflow bar
     StepBar *m_stepBar;
+    //! start buttons in the image area while no image is open
+    WelcomePanel *m_welcome;
+    QStackedWidget *m_imageArea;
     void applyTabStyle();
     bool m_resultSaved = false;  // Export done until the next change
     PresetStrip *m_presetStrip;

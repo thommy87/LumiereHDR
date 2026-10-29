@@ -269,13 +269,15 @@ bool LuminanceOptions::isSystemDark() {
 }
 
 namespace {
-// LumiereHDR accent, the light blue of the logo's star
-const QColor kAccent(61, 143, 209);
+// LumiereHDR accent, the light blue of the logo's star, a shade darker so
+// white text on it (selections, the current step) reads at 4.5:1
+const QColor kAccent(40, 116, 184);
 
 QPalette darkPalette() {
     QPalette p;
+    // disabled text still reads at 4.5:1 on the window and on buttons
     const QColor window(38, 41, 46), base(28, 30, 34), text(232, 234, 237),
-        disabled(128, 132, 138);
+        disabled(156, 160, 166);
     p.setColor(QPalette::Window, window);
     p.setColor(QPalette::WindowText, text);
     p.setColor(QPalette::Base, base);
@@ -294,8 +296,9 @@ QPalette darkPalette() {
     p.setColor(QPalette::Shadow, QColor(0, 0, 0));
     p.setColor(QPalette::Highlight, kAccent);
     p.setColor(QPalette::HighlightedText, Qt::white);
-    p.setColor(QPalette::Link, kAccent.lighter(120));
-    p.setColor(QPalette::LinkVisited, kAccent.lighter(140));
+    // the accent itself is too dark for text on the dark base
+    p.setColor(QPalette::Link, QColor(110, 170, 230));
+    p.setColor(QPalette::LinkVisited, QColor(150, 190, 235));
     for (QPalette::ColorRole role :
          {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
         p.setColor(QPalette::Disabled, role, disabled);
@@ -309,6 +312,12 @@ QPalette lightPalette(const QStyle *style) {
     p.setColor(QPalette::Highlight, kAccent);
     p.setColor(QPalette::HighlightedText, Qt::white);
     p.setColor(QPalette::Link, kAccent.darker(120));
+    // the standard light grey for disabled text is barely visible; this one
+    // reads, yet stays clearly lighter than the black of enabled text
+    for (QPalette::ColorRole role :
+         {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
+        p.setColor(QPalette::Disabled, role, QColor(125, 125, 125));
+    }
     return p;
 }
 }  // namespace

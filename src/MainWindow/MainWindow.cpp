@@ -44,6 +44,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QSignalMapper>
+#include <QStackedWidget>
 #include <QString>
 #include <QTextStream>
 #include <QDockWidget>
@@ -112,6 +113,7 @@
 #include <UI/CompareDialog.h>
 #include <UI/HistogramPanel.h>
 #include <UI/StepBar.h>
+#include <UI/WelcomePanel.h>
 #include <UI/SupportedCamerasDialog.h>
 #include <UI/TiffModeDialog.h>
 #include <UI/UMessageBox.h>
@@ -421,7 +423,13 @@ void MainWindow::createCentralWidget() {
     m_centralwidget_splitter->addWidget(m_tonemapPanel);
     m_centralwidget_splitter->addWidget(m_bottom_splitter);
 
-    m_bottom_splitter->addWidget(m_tabwidget);
+    // the image tabs, or the start buttons while no image is open
+    m_welcome = new WelcomePanel;
+    m_welcome->setActions(m_Ui->fileNewAction, m_Ui->fileOpenAction);
+    m_imageArea = new QStackedWidget;
+    m_imageArea->addWidget(m_welcome);
+    m_imageArea->addWidget(m_tabwidget);
+    m_bottom_splitter->addWidget(m_imageArea);
 
     m_bottom_splitter->setStretchFactor(0, 10);
     m_bottom_splitter->setStretchFactor(1, 1);
@@ -475,10 +483,15 @@ void MainWindow::createCentralWidget() {
             &TonemappingPanel::updatedHDR);
     connect(this, &QObject::destroyed, m_PreviewPanel, &QObject::deleteLater);
 
-    m_centralwidget_splitter->restoreState(
+    const QByteArray splitterState =
         LuminanceOptions()
             .value(QStringLiteral("MainWindowSplitterState"))
-            .toByteArray());
+            .toByteArray();
+    if (splitterState.isEmpty())
+        // first start: a panel of comfortable width, the rest for the image
+        m_centralwidget_splitter->setSizes({380, 1000});
+    else
+        m_centralwidget_splitter->restoreState(splitterState);
     m_centralwidget_splitter->restoreGeometry(
         LuminanceOptions()
             .value(QStringLiteral("MainWindowSplitterGeometry"))
@@ -1145,6 +1158,8 @@ void MainWindow::updateActions(int w) {
         !luminance_opts.getPrinterProfileFileName().isEmpty();
 
     updateMagnificationButtons(g_v);  // g_v ? g_v : 0
+    m_imageArea->setCurrentWidget(hasImage ? static_cast<QWidget *>(m_tabwidget)
+                                           : m_welcome);
 
     m_Ui->fileSaveAsAction->setEnabled(hasImage);
     m_Ui->actionRemove_Tab->setEnabled(hasImage);

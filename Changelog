@@ -1,3 +1,18 @@
+Changes LumièreHDR 2.16.3
+NEW: a start screen while no image is open: "Create HDR" and "Open HDR
+     image" as large buttons, and a hint that photos can be dropped there
+FIX: better contrast: the accent blue is a shade darker so white text on it
+     reads well; greyed-out text is readable in light and dark mode
+FIX: Ctrl+L was taken twice (Adjust Levels and Export to HTML); shortcuts
+     no longer clash with the usual Paste, Cut and Print: Preferences
+     Ctrl+, / Preview panel Ctrl+Shift+P / Crop Ctrl+Shift+X / Export to
+     HTML Ctrl+Shift+E; Donate has none
+FIX: the small reset and format buttons in Preferences and Batch HDR say
+     what they do
+FIX: no warning box about demosaicing methods on the first start
+FIX: the clipping warning under the histogram and the frame of a chosen
+     preview follow the light or dark colour scheme
+
 Changes LumièreHDR 2.16.2
 DEV: the calculation core (image library, HDR merging, tone mapping
      operators) no longer uses Qt for scaling, colour conversion, FFTW

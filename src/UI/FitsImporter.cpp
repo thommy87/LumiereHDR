@@ -89,13 +89,15 @@ FitsImporter::FitsImporter(QWidget *parent)
     m_previewLabel = new QLabel(this);
     m_previewLabel->resize(600, 400);
     m_previewLabel->setScaledContents(true);
-    QPalette *palette = new QPalette();
-    palette->setColor(QPalette::WindowText, Qt::red);
-    m_previewLabel->setPalette(*palette);
+    // the frame of the chosen preview in the accent colour of the scheme
+    QPalette framePalette = palette();
+    framePalette.setColor(QPalette::WindowText,
+                          framePalette.color(QPalette::Highlight));
+    m_previewLabel->setPalette(framePalette);
     m_previewLabel->setFrameStyle(QFrame::Box);
     m_previewLabel->setLineWidth(3);
     m_previewLabel->hide();
-    m_Ui->previewLabel->setPalette(*palette);
+    m_Ui->previewLabel->setPalette(framePalette);
     m_previewFrame = new PreviewFrame;
     m_Ui->verticalLayoutPreviews->addWidget(m_previewFrame);
 

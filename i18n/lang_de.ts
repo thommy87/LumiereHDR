@@ -157,6 +157,10 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>BatchHDRDialog</name>
     <message>
+        <source>Image format options</source>
+        <translation>Bildformat-Optionen</translation>
+    </message>
+    <message>
         <source>Skipped %1: %2</source>
         <translation>Übersprungen %1: %2</translation>
     </message>
@@ -4732,6 +4736,14 @@ Do you want to continue?</source>
 <context>
     <name>PreferencesDialog</name>
     <message>
+        <source>Image format options</source>
+        <translation>Bildformat-Optionen</translation>
+    </message>
+    <message>
+        <source>Reset to default</source>
+        <translation>Auf Standard zurücksetzen</translation>
+    </message>
+    <message>
         <source>Correct the lens (distortion, vignetting, colour fringes) with the Lensfun database</source>
         <translation>Objektiv korrigieren (Verzeichnung, Vignettierung, Farbsäume) mit der Lensfun-Datenbank</translation>
     </message>
@@ -7506,6 +7518,33 @@ Error: %1</source>
     <message>
         <source>Exposure:</source>
         <translation>Belichtung:</translation>
+    </message>
+</context>
+<context>
+    <name>WelcomePanel</name>
+    <message>
+        <source>Start with your photos</source>
+        <translation>Fotos laden und loslegen</translation>
+    </message>
+    <message>
+        <source>Create HDR from bracketed photos...</source>
+        <translation>HDR aus Belichtungsreihe erstellen...</translation>
+    </message>
+    <message>
+        <source>Merge several exposures of the same scene, or one RAW photo, into an HDR image</source>
+        <translation>Mehrere Belichtungen derselben Szene oder ein RAW-Foto zu einem HDR-Bild zusammenführen</translation>
+    </message>
+    <message>
+        <source>Open HDR image...</source>
+        <translation>HDR-Bild öffnen...</translation>
+    </message>
+    <message>
+        <source>Open an HDR image you already have (EXR, HDR, TIFF, ...)</source>
+        <translation>Ein vorhandenes HDR-Bild öffnen (EXR, HDR, TIFF, ...)</translation>
+    </message>
+    <message>
+        <source>or drop photos or an HDR image here</source>
+        <translation>oder Fotos bzw. ein HDR-Bild hierher ziehen</translation>
     </message>
 </context>
 </TS>

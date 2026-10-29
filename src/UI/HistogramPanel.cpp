@@ -86,13 +86,14 @@ void HistogramPanel::setImage(const QImage &source) {
         }
     }
     const double total = double(image.width()) * image.height();
-    auto show = [](QLabel *label, const QString &text, double percent) {
+    // a warning orange per scheme, each readable at 4.5:1
+    const bool darkScheme = palette().color(QPalette::Window).lightness() < 128;
+    const QString warn = darkScheme
+                             ? QStringLiteral("color: #ff8c50; font-weight: bold;")
+                             : QStringLiteral("color: #b83c00; font-weight: bold;");
+    auto show = [&warn](QLabel *label, const QString &text, double percent) {
         label->setText(text.arg(QLocale().toString(percent, 'f', 1)));
-        // warning colour from the palette keeps both schemes readable
-        label->setStyleSheet(percent > kWarnPercent
-                                 ? QStringLiteral("color: #e8590c; "
-                                                  "font-weight: bold;")
-                                 : QString());
+        label->setStyleSheet(percent > kWarnPercent ? warn : QString());
     };
     show(m_highlights, tr("Clipped highlights: %1 %"), 100.0 * bright / total);
     show(m_shadows, tr("Clipped shadows: %1 %"), 100.0 * dark / total);
