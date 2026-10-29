@@ -13,4 +13,35 @@
     <file alias="tab-close-light.svg">ui/tab-close-light.svg</file>
     <file alias="tab-close-dark.svg">ui/tab-close-dark.svg</file>
 </qresource>
+<qresource prefix="/ui/icons">
+    <file alias="actual.svg">ui/icons/actual.svg</file>
+    <file alias="batch.svg">ui/icons/batch.svg</file>
+    <file alias="compare.svg">ui/icons/compare.svg</file>
+    <file alias="crop.svg">ui/icons/crop.svg</file>
+    <file alias="download.svg">ui/icons/download.svg</file>
+    <file alias="export.svg">ui/icons/export.svg</file>
+    <file alias="eyedropper.svg">ui/icons/eyedropper.svg</file>
+    <file alias="fill.svg">ui/icons/fill.svg</file>
+    <file alias="fit.svg">ui/icons/fit.svg</file>
+    <file alias="folder.svg">ui/icons/folder.svg</file>
+    <file alias="fullscreen.svg">ui/icons/fullscreen.svg</file>
+    <file alias="gamut.svg">ui/icons/gamut.svg</file>
+    <file alias="help.svg">ui/icons/help.svg</file>
+    <file alias="home.svg">ui/icons/home.svg</file>
+    <file alias="layers.svg">ui/icons/layers.svg</file>
+    <file alias="levels.svg">ui/icons/levels.svg</file>
+    <file alias="menu.svg">ui/icons/menu.svg</file>
+    <file alias="perspective.svg">ui/icons/perspective.svg</file>
+    <file alias="plus.svg">ui/icons/plus.svg</file>
+    <file alias="proof.svg">ui/icons/proof.svg</file>
+    <file alias="redo.svg">ui/icons/redo.svg</file>
+    <file alias="resize.svg">ui/icons/resize.svg</file>
+    <file alias="rotate-left.svg">ui/icons/rotate-left.svg</file>
+    <file alias="rotate-right.svg">ui/icons/rotate-right.svg</file>
+    <file alias="search.svg">ui/icons/search.svg</file>
+    <file alias="settings.svg">ui/icons/settings.svg</file>
+    <file alias="star.svg">ui/icons/star.svg</file>
+    <file alias="sun.svg">ui/icons/sun.svg</file>
+    <file alias="undo.svg">ui/icons/undo.svg</file>
+</qresource>
 </RCC>
