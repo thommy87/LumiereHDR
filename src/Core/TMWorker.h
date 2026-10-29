@@ -55,6 +55,7 @@ struct ExportJob {
     QString exportDir;
     QString hdrName;
     QString inputFileName;
+    QString fileName;  // without extension; empty: name and look settings
     QVector<float> expoTimes;
     InterpolationMethod method = BilinearInterp;
 };

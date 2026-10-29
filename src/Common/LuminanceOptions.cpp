@@ -464,6 +464,31 @@ QPushButton[primary="true"]:disabled,
   color: @text3; }
 QToolButton[reset="true"] { border: none; border-radius: 6px; padding: 3px; }
 QToolButton[reset="true"]:hover { background: @hover; }
+#ExportStage { background: @ground; }
+#ExportQueueBox { background: @bar; border-top: 1px solid @line2; }
+#ExportQueueBox QTreeWidget, #ExportQueueBox QHeaderView {
+  background: transparent; border: none; }
+#ExportQueueBox QHeaderView::section { background: transparent; color: @text3;
+  border: none; border-bottom: 1px solid @line2; padding: 4px 6px; }
+#ExportSide, #ExportScroll, #ExportPanel { background: @panel; }
+#ExportSide { border-left: 1px solid @line2; }
+#ExportActions { background: @panel; border-top: 1px solid @line2; }
+#ExportPanel QComboBox, #ExportPanel QLineEdit { background: @input;
+  border: 1px solid @line; border-radius: 8px; padding: 6px 8px; color: @text; }
+#ExportPage QPushButton { background: @input; border: 1px solid @line;
+  border-radius: 8px; padding: 6px 14px; color: @text; }
+#ExportPage QPushButton:hover { border-color: @text3; }
+#ExportPage QPushButton[primary="true"] { background: @accent;
+  border-color: @accent; color: white; font-weight: 600; }
+#ExportPage QPushButton#QuietButton { background: transparent; border: none;
+  color: @accentText; padding: 4px 0; }
+#ExportPage QPushButton#FormatTile { background: @input; border: 1px solid @line;
+  border-radius: 10px; padding: 0; text-align: left; }
+#ExportPage QPushButton#FormatTile:hover { border-color: @text3; }
+#ExportPage QPushButton#FormatTile:checked { background: @selected;
+  border-color: @accentText; }
+#FormatName { color: @text; font-size: 14px; font-weight: 600; }
+#FormatHint { color: @text2; font-size: 12px; }
 #FilmStrip { background: @bar; border-top: 1px solid @line2; }
 QListWidget#FilmList { background: transparent; border: none; color: @text2;
   outline: none; }

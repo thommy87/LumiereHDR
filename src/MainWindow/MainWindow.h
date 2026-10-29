@@ -39,6 +39,7 @@
 #include <QHash>
 #include <memory>
 #include <QMainWindow>
+#include <QPointer>
 #include <QMap>
 #include <QProgressBar>
 #include <QScopedPointer>
@@ -62,6 +63,7 @@ class MainWindow;
 
 namespace pfs {
 class Frame;  // #include "Libpfs/frame.h"
+class Params;
 }
 
 class IOWorker;  // #include "Core/IOWorker.h"
@@ -80,6 +82,8 @@ class PresetStrip;
 class QUndoGroup;
 class QUndoView;
 class FilmStrip;
+class ExportPage;
+class LdrViewer;
 class HdrWizard;
 class QButtonGroup;
 class QAbstractButton;
@@ -367,6 +371,16 @@ class MainWindow : public QMainWindow {
     //! the Merge HDR workspace while a merge is going on
     HdrWizard *m_mergeWizard = nullptr;
     void showMergeWorkspace();
+    //! the Export workspace and the picture it saves
+    ExportPage *m_exportPage = nullptr;
+    QPointer<LdrViewer> m_exportResult;
+    void showExportWorkspace();
+    void exportFromPage();
+    void queueFromPage();
+    QString proposedResultName(LdrViewer *viewer);
+    void addExportJob(const TonemappingOptions &options,
+                      const pfs::Params &params, const QString &dir,
+                      const QString &fileName = QString());
     void updateBeforeAfter();
     void applyTabStyle();
     bool m_resultSaved = false;  // Export done until the next change

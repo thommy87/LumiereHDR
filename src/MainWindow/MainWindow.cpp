@@ -120,6 +120,7 @@
 #include <UI/CompareDialog.h>
 #include <UI/HistogramPanel.h>
 #include "MainWindow/FilmStrip.h"
+#include "MainWindow/ExportPage.h"
 #include <UI/CommandPalette.h>
 #include <UI/LumiereIcons.h>
 #include <UI/HomePage.h>
@@ -391,6 +392,12 @@ void MainWindow::createCentralWidget() {
     m_workspace = new QStackedWidget;
     m_workspace->addWidget(m_startPage);
     m_workspace->addWidget(m_centralwidget_splitter);
+    m_exportPage = new ExportPage;
+    m_workspace->addWidget(m_exportPage);
+    connect(m_exportPage, &ExportPage::exportRequested, this,
+            &MainWindow::exportFromPage);
+    connect(m_exportPage, &ExportPage::queueRequested, this,
+            &MainWindow::queueFromPage);
     setCentralWidget(m_workspace);
 
     m_PreviewPanel = new PreviewPanel();
@@ -585,8 +592,7 @@ void MainWindow::createShell() {
                 createNewHdr(QStringList());
                 break;
             case TopBar::Export:
-                m_topBar->setMode(TopBar::Develop);
-                m_Ui->fileSaveAsAction->trigger();
+                showExportWorkspace();
                 break;
         }
     });
@@ -1312,20 +1318,7 @@ void MainWindow::on_fileSaveAsAction_triggered() {
 
         if (l_v == nullptr) return;
 
-        // source photos (first-last), the operator as shown in the panel
-        // and the preset, e.g. "IMG_1-IMG_3_Natural contrast (Mantiuk
-        // 2006)_Vivid.jpg", instead of every parameter value
-        QStringList parts;
-        parts << QFileInfo(getCurrentHDRName()).completeBaseName();
-        if (TonemappingOptions *opts = l_v->getTonemappingOptions()) {
-            if (!opts->operatorLabel.isEmpty()) parts << opts->operatorLabel;
-            if (!opts->presetName.isEmpty()) parts << opts->presetName;
-        }
-        if (parts.size() == 1) parts << l_v->getFileNamePostFix();
-        QString proposedName = parts.join(QLatin1Char('_'));
-        proposedName.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")),
-                             QStringLiteral("-"));
-        QString proposedFileName = proposedName + ".jpg";
+        QString proposedFileName = proposedResultName(l_v) + ".jpg";
 
         // QString outputFilename = getLdrFileNameFromSaveDialog(ldr_name + "_"
         // +
@@ -1407,6 +1400,123 @@ void MainWindow::on_fileSaveAsAction_triggered() {
             Q_ARG(TonemappingOptions *, l_v->getTonemappingOptions()),
             Q_ARG(pfs::Params, p));
     }
+}
+
+QString MainWindow::proposedResultName(LdrViewer *l_v) {
+    // source photos (first-last), the operator as shown in the panel and the
+    // preset, e.g. "IMG_1-IMG_3_Natural contrast (Mantiuk 2006)_Vivid",
+    // instead of every parameter value
+    QStringList parts;
+    parts << QFileInfo(getCurrentHDRName()).completeBaseName();
+    if (TonemappingOptions *opts = l_v->getTonemappingOptions()) {
+        if (!opts->operatorLabel.isEmpty()) parts << opts->operatorLabel;
+        if (!opts->presetName.isEmpty()) parts << opts->presetName;
+    }
+    if (parts.size() == 1) parts << l_v->getFileNamePostFix();
+    QString proposedName = parts.join(QLatin1Char('_'));
+    proposedName.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")),
+                         QStringLiteral("-"));
+    return proposedName;
+}
+
+void MainWindow::showExportWorkspace() {
+    if (m_tabwidget->count() == 0) return;
+    // the picture to save: the one looked at, else the newest result
+    LdrViewer *result = qobject_cast<LdrViewer *>(m_tabwidget->currentWidget());
+    for (int i = m_tabwidget->count() - 1; !result && i >= 0; --i)
+        result = qobject_cast<LdrViewer *>(m_tabwidget->widget(i));
+    m_exportResult = result;
+    GenericViewer *hdr = tm_status.curr_tm_frame;
+    if (!hdr || !hdr->isHDR()) {
+        hdr = nullptr;
+        for (int i = 0; !hdr && i < m_tabwidget->count(); ++i) {
+            GenericViewer *v =
+                qobject_cast<GenericViewer *>(m_tabwidget->widget(i));
+            if (v && v->isHDR()) hdr = v;
+        }
+    }
+    const QSize preview(1600, 1200);
+    QPixmap resultPixmap, hdrPixmap;
+    QString resultCaption, resultName, hdrCaption, hdrName;
+    if (result) {
+        resultPixmap = result->thumbnail(preview);
+        QString look;
+        if (TonemappingOptions *opts = result->getTonemappingOptions())
+            look = opts->presetName.isEmpty() ? opts->operatorLabel
+                                              : opts->presetName;
+        resultCaption = tr("%1 · %2 × %3 px")
+                            .arg(look.isEmpty() ? tr("Result") : look)
+                            .arg(result->getWidth())
+                            .arg(result->getHeight());
+        resultName = proposedResultName(result);
+    }
+    if (hdr) {
+        hdrPixmap = hdr->thumbnail(preview);
+        hdrCaption = tr("HDR · %1 × %2 px")
+                         .arg(hdr->getWidth())
+                         .arg(hdr->getHeight());
+        hdrName = QFileInfo(hdr->getFileName()).completeBaseName();
+        if (!m_HdrCaption.isEmpty())
+            hdrName += QStringLiteral("-") + m_HdrCaption;
+        hdrName.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")),
+                        QStringLiteral("-"));
+    }
+    m_exportPage->setSources(resultPixmap, resultCaption, resultName,
+                             hdrPixmap, hdrCaption, hdrName);
+    m_workspace->setCurrentWidget(m_exportPage);
+    m_topBar->setMode(TopBar::Export);
+}
+
+void MainWindow::exportFromPage() {
+    if (m_exportPage->exportsWebPage()) {
+        m_Ui->actionExportToHTML->trigger();
+        return;
+    }
+    const QString path = m_exportPage->filePath();
+    if (QFileInfo::exists(path) &&
+        QMessageBox::question(
+            this, tr("Export"),
+            tr("%1 is already there. Replace it?")
+                .arg(QFileInfo(path).fileName())) != QMessageBox::Yes)
+        return;
+    QDir().mkpath(m_exportPage->folder());
+    pfs::Params params = m_exportPage->params();
+    if (m_exportPage->exportsHdr()) {
+        GenericViewer *hdr = tm_status.curr_tm_frame;
+        for (int i = 0; (!hdr || !hdr->isHDR()) && i < m_tabwidget->count(); ++i)
+            hdr = qobject_cast<GenericViewer *>(m_tabwidget->widget(i));
+        if (!hdr || !hdr->isHDR()) return;
+        QMetaObject::invokeMethod(m_IOWorker, "write_hdr_frame",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(GenericViewer *, hdr),
+                                  Q_ARG(QString, path),
+                                  Q_ARG(pfs::Params, params));
+        return;
+    }
+    LdrViewer *l_v = m_exportResult;
+    if (!l_v) return;
+    std::string format;
+    params.get("format", format);
+    if ((format == "ultrahdr" || format == "avif_hdr" || format == "jxl_hdr") &&
+        tm_status.curr_tm_frame)
+        params.set("hdr_frame", tm_status.curr_tm_frame->getFrameShared());
+    const QString inputfname = m_inputFilesName.isEmpty()
+                                   ? QStringLiteral("FromHdrFile")
+                                   : m_inputFilesName.first();
+    QMetaObject::invokeMethod(
+        m_IOWorker, "write_ldr_frame", Qt::QueuedConnection,
+        Q_ARG(GenericViewer *, l_v), Q_ARG(QString, path),
+        Q_ARG(QString, inputfname), Q_ARG(QVector<float>, m_inputExpoTimes),
+        Q_ARG(TonemappingOptions *, l_v->getTonemappingOptions()),
+        Q_ARG(pfs::Params, params));
+}
+
+void MainWindow::queueFromPage() {
+    LdrViewer *l_v = m_exportResult;
+    TonemappingOptions *opts = l_v ? l_v->getTonemappingOptions() : nullptr;
+    if (!opts) return;
+    addExportJob(*opts, m_exportPage->params(), m_exportPage->folder(),
+                 m_exportPage->fileName());
 }
 
 void MainWindow::save_hdr_success(GenericViewer *saved_hdr,
@@ -1500,6 +1610,8 @@ void MainWindow::updateActions(int w) {
     m_lastTabCount = tabs;
     m_topBar->setModeEnabled(TopBar::Develop, hasImage);
     m_topBar->setModeEnabled(TopBar::Export, hasImage);
+    if (!hasImage && m_workspace->currentWidget() == m_exportPage)
+        showWorkspace(false);
 
     m_Ui->fileSaveAsAction->setEnabled(hasImage);
     m_Ui->actionRemove_Tab->setEnabled(hasImage);
@@ -2481,11 +2593,13 @@ void MainWindow::setupQueue() {
             [this](int id) { m_QueueWorker->cancelExportJob(id); });
     connect(m_exportQueue, &ExportQueueDialog::retryRequested, this,
             &MainWindow::queueExportJob);
-    connect(m_tonemapPanel, &TonemappingPanel::showExportQueue, this, [this]() {
-        m_exportQueue->show();
-        m_exportQueue->raise();
-        m_exportQueue->activateWindow();
-    });
+    // the queue lives under the picture in the Export workspace
+    m_exportQueue->setWindowFlags(Qt::Widget);
+    for (const char *name : {"QueueIntro", "QueueClose"})
+        if (QWidget *w = m_exportQueue->findChild<QWidget *>(name)) w->hide();
+    m_exportPage->setQueue(m_exportQueue);
+    connect(m_tonemapPanel, &TonemappingPanel::showExportQueue, this,
+            &MainWindow::showExportWorkspace);
 
     // start thread waiting for signals (I/O requests)
     m_QueueThread->start();
@@ -2586,25 +2700,37 @@ void MainWindow::tonemapImage(TonemappingOptions *opts) {
 }
 
 void MainWindow::exportImage(TonemappingOptions *opts) {
+    addExportJob(*opts,
+                 pfsadditions::FormatHelper::getParamsFromSettings(
+                     KEY_FILEFORMAT_QUEUE, false),
+                 LuminanceOptions().getExportDir());
+    delete opts;
+}
+
+void MainWindow::addExportJob(const TonemappingOptions &options,
+                              const pfs::Params &params, const QString &dir,
+                              const QString &fileName) {
     HdrViewer *hdr_viewer = qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
     if (!hdr_viewer) return;
 
     ExportJobPtr job = std::make_shared<ExportJob>();
     job->id = m_nextExportJob++;
     job->hdr = hdr_viewer->getFrameShared();
-    job->options = *opts;
-    delete opts;
-    job->params = pfsadditions::FormatHelper::getParamsFromSettings(
-        KEY_FILEFORMAT_QUEUE, false);
+    job->options = options;
+    job->params = params;
     job->hdrName = QFileInfo(getCurrentHDRName()).baseName();
     if (!m_inputFilesName.isEmpty()) job->inputFileName = m_outputFileNamePrefix;
-    job->exportDir = LuminanceOptions().getExportDir();
+    job->exportDir = dir;
+    job->fileName = fileName;
     job->expoTimes = m_inputExpoTimes;
     job->method = m_interpolationMethod;
     m_exportJobs.insert(job->id, job);
 
     std::string format;
     job->params.get("format", format);
+    QString extension;
+    if (format.empty() && job->params.get("fileextension", extension))
+        format = extension.toStdString();
     QString look = job->options.presetName.isEmpty()
                        ? job->options.operatorLabel
                        : job->options.presetName;

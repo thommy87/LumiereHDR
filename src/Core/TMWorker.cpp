@@ -159,7 +159,9 @@ void TMWorker::runExportJob(ExportJobPtr job) {
         params.set("hdr_frame", job->hdr);
 
     QDir dir(job->exportDir);
-    const QString firstPart = job->hdrName + "_" + options.getPostfix();
+    const QString firstPart = job->fileName.isEmpty()
+                                  ? job->hdrName + "_" + options.getPostfix()
+                                  : job->fileName;
     QString extension;
     if (!params.get("fileextension", extension))
         extension = QStringLiteral("tiff");
