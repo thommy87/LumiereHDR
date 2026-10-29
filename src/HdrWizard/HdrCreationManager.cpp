@@ -76,12 +76,12 @@ using namespace utils;
 using namespace libhdr::fusion;
 
 const FusionOperatorConfig predef_confs[6] = {
-    {WEIGHT_TRIANGULAR, RESPONSE_LINEAR, DEBEVEC, QString(), QString()},
-    {WEIGHT_TRIANGULAR, RESPONSE_GAMMA, DEBEVEC, QString(), QString()},
-    {WEIGHT_PLATEAU, RESPONSE_LINEAR, DEBEVEC, QString(), QString()},
-    {WEIGHT_PLATEAU, RESPONSE_GAMMA, DEBEVEC, QString(), QString()},
-    {WEIGHT_GAUSSIAN, RESPONSE_LINEAR, DEBEVEC, QString(), QString()},
-    {WEIGHT_GAUSSIAN, RESPONSE_GAMMA, DEBEVEC, QString(), QString()},
+    {WEIGHT_TRIANGULAR, RESPONSE_LINEAR, DEBEVEC, {}, {}},
+    {WEIGHT_TRIANGULAR, RESPONSE_GAMMA, DEBEVEC, {}, {}},
+    {WEIGHT_PLATEAU, RESPONSE_LINEAR, DEBEVEC, {}, {}},
+    {WEIGHT_PLATEAU, RESPONSE_GAMMA, DEBEVEC, {}, {}},
+    {WEIGHT_GAUSSIAN, RESPONSE_LINEAR, DEBEVEC, {}, {}},
+    {WEIGHT_GAUSSIAN, RESPONSE_GAMMA, DEBEVEC, {}, {}},
 };
 
 // --- NEW CODE ---
