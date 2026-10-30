@@ -32,6 +32,7 @@ const int kMaxSide = 1000;
 HistogramPanel::HistogramPanel(QWidget *parent) : QWidget(parent) {
     m_histogram = new HistogramLDR(this);
     m_histogram->setColorHistogram(true);
+    m_histogram->setFrame(false);
     m_histogram->setFixedHeight(120);
     m_histogram->setToolTip(
         tr("Brightness distribution of the shown image, from black on the "

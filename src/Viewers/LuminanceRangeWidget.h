@@ -38,6 +38,7 @@ class LuminanceRangeWidget : public QFrame {
     ~LuminanceRangeWidget();
 
     QSize sizeHint() const;
+    QSize minimumSizeHint() const;
 
    protected:
     void paintEvent(QPaintEvent *);

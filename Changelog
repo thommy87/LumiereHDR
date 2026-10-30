@@ -1,3 +1,12 @@
+Changes LumièreHDR 3.0.5
+NEW: the histogram on the right is calmer: brightness as a soft grey
+     area, red, green and blue as fine muted lines, smooth curves instead
+     of steps, no black frame. A small corner mark shows clipped
+     highlights or shadows. Colours follow the light or dark design
+NEW: the range above the HDR image is redrawn: a smooth curve, the chosen
+     range as a lightly tinted band with two round handles, equally fine
+     ticks and small grey numbers, sharp on high-resolution screens
+
 Changes LumièreHDR 3.0.4
 NEW: Merge HDR, first page: after the list and the preview come, on the
      left, Anti-ghosting and then Alignment with "Automatic" or "Manual";
