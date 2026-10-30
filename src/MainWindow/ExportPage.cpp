@@ -16,6 +16,9 @@
 
 #include "ExportPage.h"
 
+#include <algorithm>
+#include <functional>
+
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
@@ -24,6 +27,7 @@
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -165,7 +169,7 @@ ExportPage::ExportPage(QWidget *parent) : QWidget(parent) {
     qualityLayout->addWidget(m_qualityValue);
     panelLayout->addWidget(m_qualityRow);
 
-    m_glow = new QCheckBox(tr("Glow on HDR screens"));
+    m_glow = new QCheckBox(tr("Include screen HDR"));
     m_glow->setToolTip(
         tr("Keeps the highlights of the HDR in the file: they glow on HDR "
            "screens (TV, monitor, Android, Chrome); on normal screens it "
@@ -174,6 +178,21 @@ ExportPage::ExportPage(QWidget *parent) : QWidget(parent) {
     connect(m_glow, &QCheckBox::toggled, this,
             [](bool on) { LuminanceOptions().setValue(KEY_GLOW, on); });
     panelLayout->addWidget(m_glow);
+    // JPEG as Ultra HDR: the same file, plus glow on HDR screens
+    m_ultraHdr = new QCheckBox(tr("Ultra HDR JPEG"));
+    m_ultraHdr->setToolTip(
+        tr("A normal JPEG that also glows on HDR screens (Android, Chrome, "
+           "HDR monitors); everywhere else it looks as usual."));
+    m_ultraHdr->setChecked(
+        LuminanceOptions().value(QStringLiteral("ExportPage/UltraHdr"), false)
+            .toBool());
+    connect(m_ultraHdr, &QCheckBox::toggled, this, [](bool on) {
+        LuminanceOptions().setValue(QStringLiteral("ExportPage/UltraHdr"), on);
+    });
+    panelLayout->addWidget(m_ultraHdr);
+#ifndef HAVE_LIBUHDR
+    m_ultraHdr->hide();
+#endif
 
     m_tiffRow = new QWidget;
     QHBoxLayout *tiffLayout = new QHBoxLayout(m_tiffRow);
@@ -182,6 +201,34 @@ ExportPage::ExportPage(QWidget *parent) : QWidget(parent) {
     tiffLayout->addWidget(new QLabel(tr("Depth")));
     tiffLayout->addWidget(m_tiffMode, 1);
     panelLayout->addWidget(m_tiffRow);
+
+    // the size of the saved picture; Develop works on a smaller copy
+    m_sizeRow = new QWidget;
+    QHBoxLayout *sizeLayout = new QHBoxLayout(m_sizeRow);
+    sizeLayout->setContentsMargins(0, 6, 0, 0);
+    m_size = new QComboBox;
+    m_size->setToolTip(
+        tr("Width and height of the saved picture. Other sizes than the one "
+           "shown are made again from the HDR."));
+    connect(m_size, QOverload<int>::of(&QComboBox::activated), this,
+            [this](int index) {
+                if (m_size->itemData(index).toInt() >= 0) return;
+                // "Other width...": asks, then adds it to the list
+                bool ok = false;
+                const int width = QInputDialog::getInt(
+                    this, tr("Other width"),
+                    tr("Width of the saved picture in pixels:"),
+                    m_widths.value(0, 1000), 16, 100000, 1, &ok);
+                if (ok && !m_widths.contains(width)) {
+                    m_widths.append(width);
+                    std::sort(m_widths.begin(), m_widths.end(),
+                              std::greater<int>());
+                }
+                fillSizes(ok ? width : m_widths.value(0));
+            });
+    sizeLayout->addWidget(new QLabel(tr("Size")));
+    sizeLayout->addWidget(m_size, 1);
+    panelLayout->addWidget(m_sizeRow);
 
     panelLayout->addSpacing(10);
     panelLayout->addWidget(sectionLabel(tr("Where")));
@@ -271,10 +318,6 @@ QList<ExportPage::Format> ExportPage::formats(bool hdr) const {
     if (!hdr) {
         add("jpg", tr("JPEG"), tr("Opens everywhere"), QStringLiteral("jpg"),
             true);
-#ifdef HAVE_LIBUHDR
-        add("ultrahdr", tr("Ultra HDR"), tr("JPEG that glows on HDR screens"),
-            QStringLiteral("jpg"), true);
-#endif
         add("avif", tr("AVIF"), tr("Small, HDR possible"),
             QStringLiteral("avif"), true);
         add("jxl", tr("JPEG XL"), tr("Small, HDR possible"),
@@ -317,11 +360,16 @@ void ExportPage::buildTiles() {
         button->deleteLater();
     }
     m_formats = formats(hdr);
-    const QString wanted =
+    QString wanted =
         LuminanceOptions()
             .value(hdr ? KEY_HDR_FORMAT : KEY_RESULT_FORMAT,
                    hdr ? QStringLiteral("exr") : QStringLiteral("jpg"))
             .toString();
+    // Ultra HDR was a tile of its own: now JPEG with the box ticked
+    if (wanted == QLatin1String("ultrahdr")) {
+        wanted = QStringLiteral("jpg");
+        m_ultraHdr->setChecked(true);
+    }
     int checked = 0;
     for (int i = 0; i < m_formats.size(); ++i) {
         const Format &format = m_formats.at(i);
@@ -367,6 +415,9 @@ void ExportPage::formatChanged() {
     m_qualityRow->setVisible(format->quality);
     m_glow->setVisible(!hdr && (format->id == QLatin1String("avif") ||
                                 format->id == QLatin1String("jxl")));
+#ifdef HAVE_LIBUHDR
+    m_ultraHdr->setVisible(!hdr && format->id == QLatin1String("jpg"));
+#endif
     const bool tiff = format->id == QLatin1String("tiff");
     m_tiffRow->setVisible(tiff);
     if (tiff) {
@@ -391,7 +442,53 @@ void ExportPage::formatChanged() {
     const bool web = format->id == QLatin1String("html");
     m_extension->setText(QStringLiteral(".") + format->extension);
     m_queueButton->setVisible(!hdr);
+    m_sizeRow->setVisible(!hdr && !web && !m_widths.isEmpty());
     m_exportButton->setText(web ? tr("Export...") : tr("Export"));
+}
+
+void ExportPage::setSizes(int fullWidth, int fullHeight) {
+    if (fullWidth <= 0 || fullHeight <= 0) {
+        m_widths.clear();
+        fillSizes(0);
+        return;
+    }
+    const bool sameHdr = !m_widths.isEmpty() && m_widths.first() == fullWidth &&
+                         qFuzzyCompare(m_ratio, float(fullHeight) / fullWidth);
+    const int keep = sameHdr ? resultWidth() : fullWidth;
+    m_ratio = float(fullHeight) / fullWidth;
+    if (!sameHdr) {
+        // the full width, then halves and three quarters down to 256 px
+        m_widths = {fullWidth};
+        for (int x = fullWidth / 2; x >= 256; x /= 2) {
+            if (3 * x / 2 < fullWidth) m_widths.append(3 * x / 2);
+            m_widths.append(x);
+        }
+        std::sort(m_widths.begin(), m_widths.end(), std::greater<int>());
+        m_widths.erase(std::unique(m_widths.begin(), m_widths.end()),
+                       m_widths.end());
+    }
+    fillSizes(keep);
+}
+
+void ExportPage::fillSizes(int selected) {
+    const QSignalBlocker block(m_size);
+    m_size->clear();
+    for (int width : std::as_const(m_widths)) {
+        const QString size = QStringLiteral("%1 × %2").arg(width).arg(
+            qRound(width * m_ratio));
+        m_size->addItem(width == m_widths.first()
+                            ? tr("%1 (full size)").arg(size)
+                            : size,
+                        width);
+    }
+    if (!m_widths.isEmpty()) m_size->addItem(tr("Other width..."), -1);
+    const int index = m_size->findData(selected);
+    m_size->setCurrentIndex(index >= 0 ? index : 0);
+}
+
+int ExportPage::resultWidth() const {
+    const int width = m_size->currentData().toInt();
+    return width > 0 ? width : 0;
 }
 
 void ExportPage::setSources(const QPixmap &result, const QString &resultCaption,
@@ -461,6 +558,10 @@ pfs::Params ExportPage::params() const {
     if (!exportsHdr() && m_glow->isChecked() &&
         (writer == "avif" || writer == "jxl"))
         writer += "_hdr";
+#ifdef HAVE_LIBUHDR
+    if (!exportsHdr() && writer == "jpg" && m_ultraHdr->isChecked())
+        writer = "ultrahdr";
+#endif
     // Qt writes BMP and PPM itself, by the file name
     if (writer != "bmp" && writer != "ppm") params.set("format", writer);
     params.set("fileextension", format->extension);

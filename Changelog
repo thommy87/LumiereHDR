@@ -1,3 +1,11 @@
+Changes LumièreHDR 3.0.2
+NEW: the size of the saved picture is chosen on the Export page ("Size",
+     full size first, or any other width); Develop no longer asks for it
+     and keeps working on its quick copy. Other sizes than the one shown
+     are made again from the HDR in the queue
+NEW: JPEG has an "Ultra HDR JPEG" box instead of a tile of its own;
+     AVIF and JPEG XL have "Include screen HDR"
+
 Changes LumièreHDR 3.0.1
 FIX: the light scheme (also "Windows 11, light") is a clear white and
      light grey everywhere: Merge HDR, the settings of the look, Basics,
