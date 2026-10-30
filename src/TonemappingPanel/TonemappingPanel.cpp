@@ -33,6 +33,9 @@
 #include <QCheckBox>
 #include <QSlider>
 #include <QGridLayout>
+#include <QHBoxLayout>
+#include <QSpacerItem>
+#include <QVBoxLayout>
 #include <QAbstractButton>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
@@ -419,6 +422,46 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
                                     on);
     });
     m_Ui->horizontalLayout_38->addWidget(m_liveCheck);
+    // the row under the settings in two lines, so the column can be narrow
+    {
+        QHBoxLayout *second = new QHBoxLayout;
+        second->setSpacing(m_Ui->horizontalLayout_38->spacing());
+        for (QWidget *w : {static_cast<QWidget *>(m_Ui->autoLevelsCheckBox),
+                           static_cast<QWidget *>(m_Ui->toolButtonThreshold),
+                           static_cast<QWidget *>(m_liveCheck)}) {
+            m_Ui->horizontalLayout_38->removeWidget(w);
+            second->addWidget(w);
+        }
+        second->addStretch(1);
+        m_Ui->horizontalLayout_38->addStretch(1);
+        QVBoxLayout *rows = new QVBoxLayout;
+        rows->setSpacing(6);
+        m_Ui->gridLayout_13->removeItem(m_Ui->horizontalLayout_38);
+        rows->addLayout(m_Ui->horizontalLayout_38);
+        rows->addLayout(second);
+        m_Ui->gridLayout_13->addLayout(rows, 3, 0);
+    }
+    // the settings of each operator sit right at the edge of the box
+    for (int i = 0; i < m_Ui->stackedWidget_operators->count(); ++i) {
+        QList<QLayout *> layouts =
+            m_Ui->stackedWidget_operators->widget(i)->findChildren<QLayout *>();
+        for (QLayout *layout : std::as_const(layouts))
+            layout->setContentsMargins(0, 0, 0, 0);
+    }
+    // empty space in the settings may shrink: it must not hold the column
+    // wide
+    {
+        QList<QLayout *> layouts = findChildren<QLayout *>();
+        for (QLayout *layout : std::as_const(layouts))
+            for (int i = 0; i < layout->count(); ++i)
+                if (QSpacerItem *spacer = layout->itemAt(i)->spacerItem())
+                    if (spacer->expandingDirections() & Qt::Horizontal) {
+                        const QSize hint = spacer->sizeHint();
+                        spacer->changeSize(
+                            0, hint.height(), QSizePolicy::Expanding,
+                            spacer->sizePolicy().verticalPolicy());
+                    }
+    }
 
     // the export queue: what "Fast export" is making, cancel, try again
     QToolButton *queueList = new QToolButton(this);

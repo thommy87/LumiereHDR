@@ -652,7 +652,17 @@ void MainWindow::createShell() {
     addAction(m_beforeAfterAct);
     tools->addAction(m_beforeAfterAct);
     tools->addAction(m_compareAct);
-    m_filmStrip->addButton(m_compareAct);
+#ifdef Q_OS_WIN
+    m_hdrPreviewAct = new QAction(tr("HDR preview (HDR screens)..."), this);
+    m_hdrPreviewAct->setToolTip(
+        tr("HDR preview: shows the picture with real HDR brightness on an HDR "
+           "screen, such as an HDR TV or monitor with \"Use HDR\" switched "
+           "on in Windows"));
+    connect(m_hdrPreviewAct, &QAction::triggered, this,
+            &MainWindow::showHdrPreview);
+    m_Ui->menuView->addAction(m_hdrPreviewAct);
+    tools->addAction(m_hdrPreviewAct);
+#endif
     m_lineIcons = {{edits.value(0), QStringLiteral("undo")},
                    {edits.value(1), QStringLiteral("redo")},
                    {m_Ui->fitToWindowAct, QStringLiteral("fit")},
@@ -670,6 +680,7 @@ void MainWindow::createShell() {
                    {m_Ui->actionResizeHDR, QStringLiteral("resize")},
                    {m_compareAct, QStringLiteral("compare")},
                    {m_beforeAfterAct, QStringLiteral("split")},
+                   {m_hdrPreviewAct, QStringLiteral("hdr")},
                    {m_Ui->fileNewAction, QStringLiteral("layers")},
                    {m_Ui->fileOpenAction, QStringLiteral("folder")},
                    {m_Ui->fileSaveAsAction, QStringLiteral("download")},
@@ -693,6 +704,37 @@ void MainWindow::createShell() {
     }
     refreshLineIcons();
     showWorkspace(false);
+}
+
+void MainWindow::showHdrPreview() {
+#ifdef Q_OS_WIN
+    GenericViewer *shown =
+        qobject_cast<GenericViewer *>(m_tabwidget->currentWidget());
+    if (!shown) return;
+    if (shown->isHDR()) {
+        // the HDR with real HDR brightness, on an HDR screen
+        (new HdrDisplayWindow(shown->getFrameShared(), this))->show();
+        return;
+    }
+    // the edit as an HDR screen shows its Ultra HDR file
+    HdrViewer *hdr = qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
+    if (!hdr || !shown->getFrame()) return;
+    const pfs::Frame &result = *shown->getFrame();
+    const std::vector<float> nits =
+        pfs::io::hdr::resultToNits2020(result, *hdr->getFrame());
+    auto picture = std::make_shared<pfs::Frame>(result.getWidth(),
+                                                result.getHeight());
+    pfs::Channel *r, *g, *b;
+    picture->createXYZChannels(r, g, b);
+    for (size_t i = 0; i < r->size(); ++i) {
+        float c[3] = {nits[i * 3], nits[i * 3 + 1], nits[i * 3 + 2]};
+        pfs::io::hdr::rec2020To709(c[0], c[1], c[2]);
+        (*r)(i) = std::max(c[0], 0.f);
+        (*g)(i) = std::max(c[1], 0.f);
+        (*b)(i) = std::max(c[2], 0.f);
+    }
+    (new HdrDisplayWindow(picture, this, true))->show();
+#endif
 }
 
 void MainWindow::updateBeforeAfter() {
@@ -773,13 +815,13 @@ QWidget *MainWindow::createLooksPanel() {
     ownLayout->setSpacing(8);
     QLabel *ownLabel = new QLabel(tr("MY LOOKS"));
     ownLabel->setObjectName(QStringLiteral("SectionLabel"));
-    QPushButton *save = new QPushButton(LumiereIcons::icon(QStringLiteral("plus")),
+    QPushButton *save = new QPushButton(LumiereIcons::icon(QStringLiteral("save")),
                                         tr("Save current look"));
     save->setObjectName(QStringLiteral("QuietButton"));
     connect(save, &QPushButton::clicked, m_tonemapPanel,
             &TonemappingPanel::saveCurrentLook);
     m_lineIconButtons << qMakePair(static_cast<QAbstractButton *>(save),
-                                   QStringLiteral("plus"));
+                                   QStringLiteral("save"));
     QLabel *files = new QLabel(
         tr("As a file: <a href=\"load\">load</a> · <a href=\"save\">save</a> "
            "· <a href=\"folder\">open folder</a>"));
@@ -1647,6 +1689,9 @@ void MainWindow::updateActions(int w) {
     m_Ui->removeSelectionAction->setEnabled(hasCropping);
 
     m_Ui->actionLock->setEnabled(hasImage && curr_num_ldr_open >= 1);
+    if (m_hdrPreviewAct)
+        m_hdrPreviewAct->setEnabled(isHdr ||
+                                    (isLdr && tm_status.curr_tm_frame));
     m_Ui->actionShow_Image_Full_Screen->setEnabled(hasImage);
 
     // the full name of every image, as the tab text may be cut short
@@ -2839,37 +2884,6 @@ void MainWindow::addLdrFrame(pfs::Frame *frame,
         num_ldr_generated++;
 
         n = new LdrViewer(frame, tm_options, this, true);
-#ifdef Q_OS_WIN
-        {
-            // the edit as an HDR screen shows its Ultra HDR file
-            QAction *preview =
-                n->toolBar()->addAction(tr("HDR preview (HDR screens)..."));
-            preview->setToolTip(
-                tr("Shows this result with glowing highlights, as an Ultra HDR "
-                   "file looks on an HDR screen such as an HDR TV"));
-            GenericViewer *viewer = n;
-            connect(preview, &QAction::triggered, this, [this, viewer]() {
-                HdrViewer *hdr =
-                    qobject_cast<HdrViewer *>(tm_status.curr_tm_frame);
-                if (!hdr || !viewer->getFrame()) return;
-                const pfs::Frame &result = *viewer->getFrame();
-                const std::vector<float> nits =
-                    pfs::io::hdr::resultToNits2020(result, *hdr->getFrame());
-                auto picture = std::make_shared<pfs::Frame>(result.getWidth(),
-                                                            result.getHeight());
-                pfs::Channel *r, *g, *b;
-                picture->createXYZChannels(r, g, b);
-                for (size_t i = 0; i < r->size(); ++i) {
-                    float c[3] = {nits[i * 3], nits[i * 3 + 1], nits[i * 3 + 2]};
-                    pfs::io::hdr::rec2020To709(c[0], c[1], c[2]);
-                    (*r)(i) = std::max(c[0], 0.f);
-                    (*g)(i) = std::max(c[1], 0.f);
-                    (*b)(i) = std::max(c[2], 0.f);
-                }
-                (new HdrDisplayWindow(picture, this, true))->show();
-            });
-        }
-#endif
 
         watchViewer(n);
         connect(n, &GenericViewer::changed, this, &MainWindow::syncViewers);

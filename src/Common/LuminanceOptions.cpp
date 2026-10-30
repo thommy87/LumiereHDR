@@ -309,7 +309,29 @@ QPalette darkPalette() {
 }
 
 QPalette lightPalette(const QStyle *style) {
+    // our own light colours instead of the style's standard palette: the
+    // native Windows styles hand out a warm grey that clashed with the white
+    // panels of the new pages
     QPalette p = style ? style->standardPalette() : QPalette();
+    const QColor window(255, 255, 255), base(255, 255, 255),
+        alternate(246, 247, 249), button(246, 247, 249), text(22, 24, 28),
+        disabled(125, 125, 125);
+    p.setColor(QPalette::Window, window);
+    p.setColor(QPalette::WindowText, text);
+    p.setColor(QPalette::Base, base);
+    p.setColor(QPalette::AlternateBase, alternate);
+    p.setColor(QPalette::ToolTipBase, base);
+    p.setColor(QPalette::ToolTipText, text);
+    p.setColor(QPalette::PlaceholderText, QColor(110, 116, 126));
+    p.setColor(QPalette::Text, text);
+    p.setColor(QPalette::Button, button);
+    p.setColor(QPalette::ButtonText, text);
+    p.setColor(QPalette::Light, QColor(255, 255, 255));
+    p.setColor(QPalette::Midlight, QColor(238, 240, 243));
+    p.setColor(QPalette::Mid, QColor(213, 217, 223));
+    // around the image: a calm light grey, like the page ground
+    p.setColor(QPalette::Dark, QColor(228, 231, 235));
+    p.setColor(QPalette::Shadow, QColor(160, 166, 175));
     p.setColor(QPalette::Highlight, kAccent);
     p.setColor(QPalette::HighlightedText, Qt::white);
     p.setColor(QPalette::Link, kAccent.darker(120));
@@ -317,7 +339,7 @@ QPalette lightPalette(const QStyle *style) {
     // reads, yet stays clearly lighter than the black of enabled text
     for (QPalette::ColorRole role :
          {QPalette::WindowText, QPalette::Text, QPalette::ButtonText}) {
-        p.setColor(QPalette::Disabled, role, QColor(125, 125, 125));
+        p.setColor(QPalette::Disabled, role, disabled);
     }
     return p;
 }
@@ -412,6 +434,8 @@ QPushButton#QuietButton:hover { color: @accentText; }
 #Inspector QToolBox::tab { background: transparent; border: none;
   border-top: 1px solid @line2; color: @text; font-weight: 600; }
 #Inspector QToolBox::tab:selected { color: @text; }
+#Inspector QToolBox QScrollArea, #Inspector QToolBox QScrollArea > QWidget,
+#Inspector QToolBox QScrollArea > QWidget > QWidget { background: transparent; }
 #Inspector QGroupBox { border: none; border-top: 1px solid @line2;
   margin-top: 22px; padding-top: 6px; font-weight: 600; }
 #Inspector QGroupBox::title { subcontrol-origin: margin; left: 6px;

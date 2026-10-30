@@ -3,8 +3,8 @@
     <name>AboutLuminance</name>
     <message>
         <location filename="../src/UI/about.ui" line="14"/>
-        <source>About Luminance HDR</source>
-        <translation>Über Luminance HDR</translation>
+        <source>About LumièreHDR</source>
+        <translation>Über Lumière HDR</translation>
     </message>
     <message>
         <location filename="../src/UI/about.ui" line="61"/>
@@ -3126,8 +3126,8 @@ p, li { white-space: pre-wrap; }
     <name>HelpBrowser</name>
     <message>
         <location filename="../src/HelpBrowser/HelpBrowser.ui" line="14"/>
-        <source>Luminance HDR Help</source>
-        <translation>Hilfe zu Luminance HDR</translation>
+        <source>LumièreHDR Help</source>
+        <translation>Hilfe zu Lumière HDR</translation>
     </message>
     <message>
         <location filename="../src/HelpBrowser/HelpBrowser.ui" line="38"/>
@@ -3606,7 +3606,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Looks</source>
-        <translation>Looks</translation>
+        <translation>Bildstimmungen</translation>
     </message>
     <message>
         <source>History</source>
@@ -3614,11 +3614,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>MY LOOKS</source>
-        <translation>MEINE LOOKS</translation>
+        <translation>EIGENE STIMMUNGEN</translation>
     </message>
     <message>
         <source>Save current look</source>
-        <translation>Aktuellen Look speichern</translation>
+        <translation>Stimmung speichern</translation>
     </message>
     <message>
         <source>As a file: &lt;a href="load"&gt;load&lt;/a&gt; · &lt;a href="save"&gt;save&lt;/a&gt; · &lt;a href="folder"&gt;open folder&lt;/a&gt;</source>
@@ -3929,8 +3929,8 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="290"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="293"/>
-        <source>Quit Luminance HDR</source>
-        <translation>Beendet Luminance HDR</translation>
+        <source>Quit LumièreHDR</source>
+        <translation>Beendet Lumière HDR</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="296"/>
@@ -4065,8 +4065,8 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/MainWindow/MainWindow.ui" line="437"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="440"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="443"/>
-        <source>Open user manual for Luminance HDR</source>
-        <translation>Nutzerhandbuch für Luminance HDR öffnen</translation>
+        <source>Open user manual for LumièreHDR</source>
+        <translation>Nutzerhandbuch für Lumière HDR öffnen</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="446"/>
@@ -4292,19 +4292,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="729"/>
-        <source>About &amp;Luminance HDR</source>
-        <translation>Über &amp;Luminance HDR</translation>
+        <source>About &amp;LumièreHDR</source>
+        <translation>Über &amp;Lumière HDR</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="732"/>
-        <source>Show information about Luminance HDR</source>
-        <translation>Informationen über Luminance HDR anzeigen</translation>
+        <source>Show information about LumièreHDR</source>
+        <translation>Informationen über Lumière HDR anzeigen</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="735"/>
         <location filename="../src/MainWindow/MainWindow.ui" line="738"/>
-        <source>Show information about Luminance HDR, its authors and contributors</source>
-        <translation>Informationen über Luminance HDR, dessen Autoren und Mitwirkende anzeigen</translation>
+        <source>Show information about LumièreHDR, its authors and contributors</source>
+        <translation>Informationen über Lumière HDR, dessen Autoren und Mitwirkende anzeigen</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="741"/>
@@ -4658,13 +4658,13 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="1213"/>
-        <source>&amp;Luminance HDR Web Site</source>
-        <translation>&amp;Luminance HDR-Webseite</translation>
+        <source>&amp;LumièreHDR Web Site</source>
+        <translation>&amp;Lumière HDR-Webseite</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="1216"/>
-        <source>Luminance HDR Web Site</source>
-        <translation>Luminance HDR-Webseite</translation>
+        <source>LumièreHDR Web Site</source>
+        <translation>Lumière HDR-Webseite</translation>
     </message>
     <message>
         <location filename="../src/MainWindow/MainWindow.ui" line="1219"/>
@@ -4783,6 +4783,10 @@ Do you want to continue?</source>
     <message>
         <source>%1 is already there. Replace it?</source>
         <translation>%1 gibt es schon. Ersetzen?</translation>
+    </message>
+    <message>
+        <source>HDR preview: shows the picture with real HDR brightness on an HDR screen, such as an HDR TV or monitor with &quot;Use HDR&quot; switched on in Windows</source>
+        <translation>HDR-Vorschau: zeigt das Bild mit echter HDR-Helligkeit auf einem HDR-Bildschirm, etwa einem HDR-Fernseher oder -Monitor mit eingeschaltetem „HDR verwenden“ in Windows</translation>
     </message>
 </context>
 <context>
@@ -6193,8 +6197,8 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
     </message>
     <message>
         <location filename="../src/UI/SupportedCamerasDialog.ui" line="107"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#0078dc;&quot;&gt;Luminance HDR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#0078dc;&quot;&gt;Luminance HDR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#0078dc;&quot;&gt;LumièreHDR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#0078dc;&quot;&gt;Lumière HDR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../src/UI/SupportedCamerasDialog.ui" line="137"/>
@@ -6390,7 +6394,7 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
     </message>
     <message>
         <source>Apply a ready-made look or one of your saved presets</source>
-        <translation>Einen fertigen Look oder eines deiner gespeicherten Presets anwenden</translation>
+        <translation>Eine fertige Bildstimmung oder eine deiner gespeicherten anwenden</translation>
     </message>
     <message>
         <source>%1 (%2)</source>
@@ -6442,7 +6446,7 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
     </message>
     <message>
         <source>Classic film-like look. Quick and dependable.</source>
-        <translation>Klassischer Film-Look. Schnell und zuverlässig.</translation>
+        <translation>Klassische Filmstimmung. Schnell und zuverlässig.</translation>
     </message>
     <message>
         <source>Simple and natural</source>
@@ -6490,7 +6494,7 @@ To change this go to Tools-&gt;Preferences-&gt;Raw Conversion-&gt;Quality</sourc
     </message>
     <message>
         <source>Keeps the look consistent from image to image; suits series and time-lapses.</source>
-        <translation>Hält den Look von Bild zu Bild gleich; gut für Serien und Zeitraffer.</translation>
+        <translation>Hält die Stimmung von Bild zu Bild gleich; gut für Serien und Zeitraffer.</translation>
     </message>
     <message>
         <source>Retina model</source>
@@ -7312,6 +7316,38 @@ Error: %1</source>
         <source>Remind me later</source>
         <translation>Später erinnern</translation>
     </message>
+    <message>
+        <source>Merge bracketed photos into HDR images and develop them into finished pictures.</source>
+        <translation>Belichtungsreihen zu HDR-Bildern zusammenführen und zu fertigen Bildern entwickeln.</translation>
+    </message>
+    <message>
+        <source>Thanks to the former Luminance HDR team</source>
+        <translation>Dank an das bisherige Luminance-HDR-Team</translation>
+    </message>
+    <message>
+        <source>Lumière HDR continues Luminance HDR. Many thanks to everyone who developed, translated and packaged it over the years.</source>
+        <translation>Lumière HDR führt Luminance HDR fort. Vielen Dank an alle, die es über die Jahre entwickelt, übersetzt und verpackt haben.</translation>
+    </message>
+    <message>
+        <source>Thanks to the teams of the libraries</source>
+        <translation>Dank an die Teams der Bibliotheken</translation>
+    </message>
+    <message>
+        <source>Lumière HDR is built on the work of these projects:</source>
+        <translation>Lumière HDR baut auf der Arbeit dieser Projekte auf:</translation>
+    </message>
+    <message>
+        <source>Thanks to the community</source>
+        <translation>Dank an die Community</translation>
+    </message>
+    <message>
+        <source>Everyone who reports bugs, tests and shares ideas.</source>
+        <translation>An alle, die Fehler melden, testen und Ideen teilen.</translation>
+    </message>
+    <message>
+        <source>Lumière HDR is based on Luminance HDR and is free software under the GNU General Public License, version 2 or later. The copyright notices of the original authors are kept in the source code.</source>
+        <translation>Lumière HDR basiert auf Luminance HDR und ist freie Software unter der GNU General Public License, Version 2 oder später. Die Urheberrechtshinweise der ursprünglichen Autoren bleiben im Quellcode erhalten.</translation>
+    </message>
 </context>
 <context>
     <name>UpdateChecker</name>
@@ -7475,7 +7511,7 @@ Error: %1</source>
     </message>
     <message>
         <source>Look</source>
-        <translation>Stil</translation>
+        <translation>Stimmung</translation>
     </message>
     <message>
         <source>Format</source>
@@ -7607,7 +7643,7 @@ Error: %1</source>
     </message>
     <message>
         <source>Looks on HDRs</source>
-        <translation>Looks auf HDRs</translation>
+        <translation>Stimmungen auf HDRs</translation>
     </message>
     <message>
         <source>Batch HDR</source>
@@ -7616,8 +7652,8 @@ Error: %1</source>
     <message numerus="yes">
         <source>%n HDR image(s) created. Give them a look now?</source>
         <translation>
-            <numerusform>%n HDR-Bild erstellt. Gleich einen Look anwenden?</numerusform>
-            <numerusform>%n HDR-Bilder erstellt. Gleich Looks anwenden?</numerusform>
+            <numerusform>%n HDR-Bild erstellt. Gleich eine Bildstimmung anwenden?</numerusform>
+            <numerusform>%n HDR-Bilder erstellt. Gleich Bildstimmungen anwenden?</numerusform>
         </translation>
     </message>
 </context>
@@ -7842,6 +7878,10 @@ Error: %1</source>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
+    <message>
+        <source>Right-click a picture or press Del to close it</source>
+        <translation>Rechtsklick auf ein Bild oder Entf drücken, um es zu schließen</translation>
+    </message>
 </context>
 <context>
     <name>HomePage</name>
@@ -7875,7 +7915,7 @@ Error: %1</source>
     </message>
     <message>
         <source>Whole folders: find brackets, make HDRs, apply looks</source>
-        <translation>Ganze Ordner: Reihen finden, HDRs erstellen, Looks anwenden</translation>
+        <translation>Ganze Ordner: Reihen finden, HDRs erstellen, Bildstimmungen anwenden</translation>
     </message>
     <message>
         <source>Or simply drop photos or HDR files here</source>
@@ -7914,7 +7954,7 @@ Error: %1</source>
     </message>
     <message>
         <source>Give the HDR image its look: style, light, colours</source>
-        <translation>Dem HDR-Bild seinen Look geben: Stil, Licht, Farben</translation>
+        <translation>Dem HDR-Bild seine Stimmung geben: Stil, Licht, Farben</translation>
     </message>
     <message>
         <source>Save the result as JPEG, TIFF, Ultra HDR and more</source>
