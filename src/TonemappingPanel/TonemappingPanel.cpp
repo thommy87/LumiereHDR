@@ -392,6 +392,13 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
             m_postwarmthSlider);
         m_Ui->processingToolBox->setItemText(0, tr("Basics"));
         m_Ui->label_10->setText(tr("Sat&uration"));
+        // the gamma and saturation fields look like the rows below them;
+        // centred without buttons, the Windows 11 style left them empty
+        for (QDoubleSpinBox *box :
+             {m_Ui->pregammadsb, m_Ui->postsaturationdsb, m_Ui->postgammadsb}) {
+            box->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
+            box->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        }
     }
 
     m_operatorHelp = new QLabel(this);

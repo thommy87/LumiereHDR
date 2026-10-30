@@ -1,3 +1,8 @@
+Changes LumièreHDR 3.0.6
+FIX: Develop, Basics: the fields of Pre-gamma, Saturation and Post-gamma
+     stayed empty on Windows 11; they now look like the rows below them,
+     with arrows to step the value
+
 Changes LumièreHDR 3.0.5
 NEW: the histogram on the right is calmer: brightness as a soft grey
      area, red, green and blue as fine muted lines, smooth curves instead
