@@ -29,6 +29,7 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
+#include <QTemporaryFile>
 #include <QTimer>
 #include <QCheckBox>
 #include <QSlider>
@@ -441,6 +442,12 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
         rows->addLayout(second);
         m_Ui->gridLayout_13->addLayout(rows, 3, 0);
     }
+    // the size of the saved picture is chosen on the Export page; Develop
+    // keeps working on its quick copy of up to 2048 px
+    for (QWidget *w : {static_cast<QWidget *>(m_Ui->label),
+                       static_cast<QWidget *>(m_Ui->sizeComboBox),
+                       static_cast<QWidget *>(m_Ui->addCustomSizeButton)})
+        w->hide();
     // the settings of each operator sit right at the edge of the box
     for (int i = 0; i < m_Ui->stackedWidget_operators->count(); ++i) {
         QList<QLayout *> layouts =
@@ -508,6 +515,8 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
     m_Ui->gridLayout_25->removeItem(m_Ui->horizontalSpacer_6);
     delete m_Ui->horizontalSpacer_6;
     m_Ui->gridLayout_25->addWidget(presetButton, 0, 0);
+    // presets, files and the database are on the left with the looks
+    m_Ui->groupSaveLoadTMOsetting->hide();
 }
 
 void TonemappingPanel::setExportQueueSize(int size) {
@@ -1073,6 +1082,7 @@ void TonemappingPanel::on_applyButton_clicked() {
     m_lastRunWasLive = false;
     fillToneMappingOptions(false);
     setupUndo();
+    recordStep();
 
     emit startTonemapping(m_toneMappingOptions);
 }
@@ -1477,6 +1487,9 @@ void TonemappingPanel::fillPresetMenu() {
 void TonemappingPanel::applyPreset(const QString &fileName,
                                    const QString &name) {
     if (fileName == uneditedPreset()) {
+        if (!m_lastSnapshot.isEmpty())
+            emit lookStepped(name, m_lastSnapshot, QString(), name);
+        m_lastSnapshot.clear();
         m_currentPreset = name;
         m_presetLabel->setText(tr("Preset: %1").arg(name));
         emit currentPresetChanged(name);
@@ -1512,17 +1525,109 @@ void TonemappingPanel::runLivePreview() {
     if (!m_Ui->applyButton->isEnabled()) return;
     fillToneMappingOptions(false);
     setupUndo();
+    recordStep();
     // a live result replaces the one shown instead of opening a new tab
     m_lastRunWasLive = true;
     emit startTonemapping(m_toneMappingOptions);
 }
 
 void TonemappingPanel::markCustomSettings() {
-    if (!m_applyingPreset) scheduleLivePreview();
+    if (!m_applyingPreset && !m_restoring) {
+        m_lastChange = describeChange(sender());
+        scheduleLivePreview();
+    }
     if (m_applyingPreset || m_currentPreset.isEmpty()) return;
     m_currentPreset.clear();
     m_presetLabel->setText(tr("Preset: own settings"));
     emit currentPresetChanged(QString());
+}
+
+QString TonemappingPanel::settingsSnapshot() {
+    QTemporaryFile file;
+    if (!file.open()) return QString();
+    file.close();
+    fromGui2Txt(file.fileName());
+    QFile written(file.fileName());
+    if (!written.open(QIODevice::ReadOnly | QIODevice::Text)) return QString();
+    return QString::fromUtf8(written.readAll());
+}
+
+void TonemappingPanel::restoreSnapshot(const QString &snapshot,
+                                       const QString &preset) {
+    m_liveTimer->stop();
+    if (snapshot.isEmpty()) {
+        // before the first step: the HDR as it came
+        m_lastSnapshot.clear();
+        emit uneditedRequested();
+        return;
+    }
+    QTemporaryFile file;
+    if (!file.open()) return;
+    file.write(snapshot.toUtf8());
+    file.close();
+    m_restoring = true;
+    m_applyingPreset = true;
+    tmoSettingsFilename = file.fileName();
+    fromTxt2Gui();
+    m_applyingPreset = false;
+    m_currentPreset = preset;
+    m_presetLabel->setText(preset.isEmpty() ? tr("Preset: own settings")
+                                            : tr("Preset: %1").arg(preset));
+    emit currentPresetChanged(preset);
+    m_lastSnapshot = snapshot;
+    m_liveTimer->stop();
+    if (m_liveCheck && m_liveCheck->isChecked())
+        runLivePreview();
+    else
+        tonemap();
+    m_restoring = false;
+}
+
+void TonemappingPanel::resetHistory() {
+    m_lastSnapshot.clear();
+    m_lastChange.clear();
+}
+
+void TonemappingPanel::recordStep() {
+    if (m_restoring) return;
+    const QString snapshot = settingsSnapshot();
+    if (snapshot.isEmpty() || snapshot == m_lastSnapshot) return;
+    QString label = m_currentPreset;
+    if (label.isEmpty()) label = m_lastChange;
+    if (label.isEmpty()) label = m_Ui->cmbOperators->currentText();
+    emit lookStepped(label, m_lastSnapshot, snapshot, m_currentPreset);
+    m_lastSnapshot = snapshot;
+    m_lastChange.clear();
+}
+
+QString TonemappingPanel::describeChange(QObject *changed) const {
+    QWidget *widget = qobject_cast<QWidget *>(changed);
+    if (!widget) return QString();
+    if (widget == m_Ui->stackedWidget_operators)
+        return m_Ui->cmbOperators->currentText();
+    QString text;
+    if (QAbstractButton *button = qobject_cast<QAbstractButton *>(widget))
+        text = button->text();
+    // a value: the label at the start of its row
+    if (text.isEmpty() && widget->parentWidget()) {
+        const QList<QGridLayout *> grids =
+            widget->parentWidget()->findChildren<QGridLayout *>();
+        for (QGridLayout *grid : grids) {
+            const int index = grid->indexOf(widget);
+            if (index < 0) continue;
+            int row, column, rowSpan, columnSpan;
+            grid->getItemPosition(index, &row, &column, &rowSpan, &columnSpan);
+            for (int c = 0; c < grid->columnCount() && text.isEmpty(); ++c)
+                if (QLayoutItem *item = grid->itemAtPosition(row, c))
+                    if (QLabel *label = qobject_cast<QLabel *>(item->widget()))
+                        text = label->text();
+            break;
+        }
+    }
+    text.remove(QLatin1Char('&'));
+    text = text.trimmed();
+    if (text.endsWith(QLatin1Char(':'))) text.chop(1);
+    return text;
 }
 
 void TonemappingPanel::savePreset() {

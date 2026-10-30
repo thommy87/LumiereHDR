@@ -4788,6 +4788,10 @@ Do you want to continue?</source>
         <source>HDR preview: shows the picture with real HDR brightness on an HDR screen, such as an HDR TV or monitor with &quot;Use HDR&quot; switched on in Windows</source>
         <translation>HDR-Vorschau: zeigt das Bild mit echter HDR-Helligkeit auf einem HDR-Bildschirm, etwa einem HDR-Fernseher oder -Monitor mit eingeschaltetem „HDR verwenden“ in Windows</translation>
     </message>
+    <message>
+        <source>Database: &lt;a href=&quot;load&quot;&gt;load&lt;/a&gt; · &lt;a href=&quot;save&quot;&gt;save&lt;/a&gt;</source>
+        <translation>Datenbank: &lt;a href=&quot;load&quot;&gt;laden&lt;/a&gt; · &lt;a href=&quot;save&quot;&gt;speichern&lt;/a&gt;</translation>
+    </message>
 </context>
 <context>
     <name>PreferencesDialog</name>
@@ -7862,6 +7866,42 @@ Error: %1</source>
     <message>
         <source>Where to save</source>
         <translation>Wohin speichern</translation>
+    </message>
+    <message>
+        <source>Include screen HDR</source>
+        <translation>inkl. Bildschirm-HDR</translation>
+    </message>
+    <message>
+        <source>Ultra HDR JPEG</source>
+        <translation>Ultra HDR-JPEG</translation>
+    </message>
+    <message>
+        <source>A normal JPEG that also glows on HDR screens (Android, Chrome, HDR monitors); everywhere else it looks as usual.</source>
+        <translation>Ein normales JPEG, das auf HDR-Bildschirmen zusätzlich leuchtet (Android, Chrome, HDR-Monitore); überall sonst sieht es wie gewohnt aus.</translation>
+    </message>
+    <message>
+        <source>Width and height of the saved picture. Other sizes than the one shown are made again from the HDR.</source>
+        <translation>Breite und Höhe des gespeicherten Bildes. Andere Größen als die angezeigte werden neu aus dem HDR berechnet.</translation>
+    </message>
+    <message>
+        <source>Other width</source>
+        <translation>Andere Breite</translation>
+    </message>
+    <message>
+        <source>Width of the saved picture in pixels:</source>
+        <translation>Breite des gespeicherten Bildes in Pixeln:</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation>Größe</translation>
+    </message>
+    <message>
+        <source>%1 (full size)</source>
+        <translation>%1 (volle Größe)</translation>
+    </message>
+    <message>
+        <source>Other width...</source>
+        <translation>Andere Breite …</translation>
     </message>
 </context>
 <context>

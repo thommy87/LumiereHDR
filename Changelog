@@ -1,3 +1,20 @@
+Changes LumièreHDR 3.0.3
+NEW: History records every step of the look: each look picked and each
+     setting changed (more changes of the same setting in a row are one
+     step). Click a step to go back to it, "Original image" shows the HDR
+     as it came; a new picture starts a new history
+NEW: the "Settings" part on the right no longer repeats presets, file and
+     database save / load; the database links moved to the left under
+     "My looks", next to the file links
+
+Changes LumièreHDR 3.0.2
+NEW: the size of the saved picture is chosen on the Export page ("Size",
+     full size first, or any other width); Develop no longer asks for it
+     and keeps working on its quick copy. Other sizes than the one shown
+     are made again from the HDR in the queue
+NEW: JPEG has an "Ultra HDR JPEG" box instead of a tile of its own;
+     AVIF and JPEG XL have "Include screen HDR"
+
 Changes LumièreHDR 3.0.1
 FIX: the light scheme (also "Windows 11, light") is a clear white and
      light grey everywhere: Merge HDR, the settings of the look, Basics,

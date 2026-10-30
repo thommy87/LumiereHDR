@@ -80,6 +80,7 @@ class TopBar;                // #include "UI/TopBar.h"
 class QStackedWidget;
 class PresetStrip;
 class QUndoGroup;
+class QUndoStack;
 class QUndoView;
 class FilmStrip;
 class ExportPage;
@@ -369,6 +370,7 @@ class MainWindow : public QMainWindow {
     QAction *m_compareAct;
     QAction *m_beforeAfterAct = nullptr;
     QAction *m_hdrPreviewAct = nullptr;
+    QUndoStack *m_lookHistory = nullptr;
     //! the Merge HDR workspace while a merge is going on
     HdrWizard *m_mergeWizard = nullptr;
     void showMergeWorkspace();
