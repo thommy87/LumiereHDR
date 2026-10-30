@@ -25,7 +25,9 @@
 #include <QDebug>
 #include <QLinearGradient>
 #include <QPainter>
+#include <QPainterPath>
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 
@@ -236,7 +238,11 @@ float GammaAndLevels::getWhitePointOutput() { return (float)whiteout / 255.f; }
 float GammaAndLevels::getGamma() { return (1.0f / gamma); }
 
 HistogramLDR::HistogramLDR(QWidget *parent)
-    : QWidget(parent), isDrawFrame(true), isDrawColorHist(false) {
+    : QWidget(parent),
+      m_clippedHigh(0.0),
+      m_clippedLow(0.0),
+      isDrawFrame(true),
+      isDrawColorHist(false) {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 }
 
@@ -245,19 +251,51 @@ void HistogramLDR::setData(const QImage *data) {
     for (int i = 0; i < 256; ++i) m_RedHist[i] = 0.0f;
     for (int i = 0; i < 256; ++i) m_GreenHist[i] = 0.0f;
     for (int i = 0; i < 256; ++i) m_BlueHist[i] = 0.0f;
+    m_clippedHigh = m_clippedLow = 0.0;
 
     if (data->isNull()) return;
 
     // Build histogram
     const QRgb *pixels = (const QRgb *)(data->bits());
     const int ELEMS = data->width() * data->height();
+    qint64 high = 0, low = 0;
     for (int i = 0; i < ELEMS; ++i) {
-        m_GreyHist[qGray(pixels[i])] += 1.0f;
+        const QRgb p = pixels[i];
+        m_GreyHist[qGray(p)] += 1.0f;
 
-        m_RedHist[qRed(pixels[i])] += 1.0f;
-        m_GreenHist[qGreen(pixels[i])] += 1.0f;
-        m_BlueHist[qBlue(pixels[i])] += 1.0f;
+        m_RedHist[qRed(p)] += 1.0f;
+        m_GreenHist[qGreen(p)] += 1.0f;
+        m_BlueHist[qBlue(p)] += 1.0f;
+
+        if (qRed(p) == 255 || qGreen(p) == 255 || qBlue(p) == 255) ++high;
+        if (qRed(p) == 0 && qGreen(p) == 0 && qBlue(p) == 0) ++low;
     }
+    if (ELEMS > 0) {
+        m_clippedHigh = double(high) / ELEMS;
+        m_clippedLow = double(low) / ELEMS;
+    }
+
+    // soften the bins a little, so the curves read as curves, not steps
+    auto smooth = [](float *hist) {
+        static const float kernel[5] = {0.054f, 0.244f, 0.403f, 0.244f,
+                                        0.054f};
+        float out[256];
+        for (int i = 0; i < 256; ++i) {
+            float sum = 0.f, weight = 0.f;
+            for (int k = -2; k <= 2; ++k) {
+                const int j = i + k;
+                if (j < 0 || j > 255) continue;
+                sum += hist[j] * kernel[k + 2];
+                weight += kernel[k + 2];
+            }
+            out[i] = sum / weight;
+        }
+        std::copy(out, out + 256, hist);
+    };
+    smooth(m_GreyHist);
+    smooth(m_RedHist);
+    smooth(m_GreenHist);
+    smooth(m_BlueHist);
 
     // find max
     float hist_max = m_GreyHist[0];
@@ -265,100 +303,114 @@ void HistogramLDR::setData(const QImage *data) {
     for (int i = 0; i < 256; ++i) hist_max = qMax(hist_max, m_RedHist[i]);
     for (int i = 0; i < 256; ++i) hist_max = qMax(hist_max, m_GreenHist[i]);
     for (int i = 0; i < 256; ++i) hist_max = qMax(hist_max, m_BlueHist[i]);
+    // a little headroom above the highest peak
+    hist_max *= 1.05f;
 
     // normalize in the range [0...1]
     for (int i = 0; i < 256; ++i) m_GreyHist[i] /= hist_max;
     for (int i = 0; i < 256; ++i) m_RedHist[i] /= hist_max;
     for (int i = 0; i < 256; ++i) m_GreenHist[i] /= hist_max;
     for (int i = 0; i < 256; ++i) m_BlueHist[i] /= hist_max;
-
-    // qDebug() << "hist_max = "<< hist_max << "grey_hist_max = " <<
-    // grey_hist_max;
 }
 
+namespace {
+QColor mixColors(const QColor &a, const QColor &b, qreal t) {
+    return QColor::fromRgbF(a.redF() + (b.redF() - a.redF()) * t,
+                            a.greenF() + (b.greenF() - a.greenF()) * t,
+                            a.blueF() + (b.blueF() - a.blueF()) * t);
+}
+}  // namespace
+
 void HistogramLDR::paintEvent(QPaintEvent *) {
-    const qreal skew = (qreal)width() / 256;
-
     QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
 
-    // painter.setRenderHint(QPainter::Antialiasing, true); // antialiasing
+    // colours follow the light or dark design
+    const QColor back = palette().color(QPalette::Window);
+    const QColor text = palette().color(QPalette::WindowText);
+    const bool dark = back.lightness() < 128;
+    const QColor gridColor = mixColors(back, text, dark ? 0.08 : 0.07);
+    const QColor axisColor = mixColors(back, text, dark ? 0.16 : 0.15);
+    const QColor fillColor = mixColors(back, text, dark ? 0.26 : 0.20);
+    const QColor red = dark ? QColor(0xef, 0x6b, 0x67) : QColor(0xe0, 0x52, 0x4f);
+    const QColor green = dark ? QColor(0x4f, 0xc4, 0x85) : QColor(0x3a, 0xa7, 0x6d);
+    const QColor blue = dark ? QColor(0x5d, 0x9b, 0xf0) : QColor(0x3f, 0x7f, 0xd9);
 
-    QPolygonF pol_grey;
+    const qreal w = width();
+    const qreal h = height() - 1;  // the base line sits below
+
+    // fine guides at the quarters and a base line, no frame
+    painter.setPen(QPen(gridColor, 1.0));
+    for (int i = 1; i < 4; ++i) {
+        const qreal x = qRound(i * w / 4) + 0.5;
+        painter.drawLine(QPointF(x, 0), QPointF(x, h));
+    }
+
+    auto curve = [w, h](const float *hist) {
+        QPainterPath path;
+        for (int i = 0; i < 256; ++i) {
+            const QPointF p(i * w / 255.0, h - qMin(hist[i], 1.0f) * (h - 4));
+            if (i == 0)
+                path.moveTo(p);
+            else
+                path.lineTo(p);
+        }
+        return path;
+    };
+
+    // brightness as a soft area
+    QPainterPath grey = curve(m_GreyHist);
+    QPainterPath area = grey;
+    area.lineTo(w, h);
+    area.lineTo(0, h);
+    area.closeSubpath();
+    painter.setPen(Qt::NoPen);
+    QColor areaColor = fillColor;
+    areaColor.setAlphaF(0.75);
+    painter.setBrush(areaColor);
+    painter.drawPath(area);
+    painter.setBrush(Qt::NoBrush);
 
     if (isDrawColorHist) {
-        // reuse pol_grey to print also red/green/blue components
-        pol_grey.clear();
-        pol_grey << QPointF(0.0, height());
-        for (int i = 0; i < 256; ++i) {
-            pol_grey << QPointF(i * skew, (1.0 - m_RedHist[i]) * height());
-            pol_grey << QPointF((i + 1) * skew,
-                                (1.0 - m_RedHist[i]) * height());
+        // the colour channels as fine, muted lines above it
+        const QPair<const float *, QColor> channels[3] = {
+            {m_RedHist, red}, {m_GreenHist, green}, {m_BlueHist, blue}};
+        for (const auto &channel : channels) {
+            QColor c = channel.second;
+            c.setAlphaF(0.8);
+            painter.setPen(QPen(c, 1.4, Qt::SolidLine, Qt::RoundCap,
+                                Qt::RoundJoin));
+            painter.drawPath(curve(channel.first));
         }
-        // last point, bottom right corner
-        pol_grey << QPointF(width(), height());
-
-        // Draw histogram
-        painter.setBrush(Qt::NoBrush);  //( QColor(255, 0, 0, 160) ); //
-                                        // semi-transparent brush
-        painter.setPen(QPen(QBrush(QColor(255, 0, 0, 255)), 1.0, Qt::SolidLine,
+    } else {
+        painter.setPen(QPen(mixColors(back, text, 0.45), 1.2, Qt::SolidLine,
                             Qt::RoundCap, Qt::RoundJoin));
-        painter.drawConvexPolygon(pol_grey);
-
-        // reuse pol_grey to print also red/green/blue components
-        pol_grey.clear();  // reuse of pol_grey
-        pol_grey << QPointF(0.0, height());
-        for (int i = 0; i < 256; ++i) {
-            pol_grey << QPointF(i * skew, (1.0 - m_GreenHist[i]) * height());
-            pol_grey << QPointF((i + 1) * skew,
-                                (1.0 - m_GreenHist[i]) * height());
-        }
-        // last point, bottom right corner
-        pol_grey << QPointF(width(), height());
-
-        // Draw histogram
-        painter.setBrush(Qt::NoBrush);  //( QColor(0, 255, 0, 160) ); //
-                                        // semi-transparent brush
-        painter.setPen(QPen(QBrush(QColor(0, 255, 0, 255)), 1.0, Qt::SolidLine,
-                            Qt::RoundCap, Qt::RoundJoin));
-        painter.drawConvexPolygon(pol_grey);
-
-        pol_grey.clear();  // reuse of pol_grey
-        pol_grey << QPointF(0.0, height());
-        for (int i = 0; i < 256; ++i) {
-            pol_grey << QPointF(i * skew, (1.0 - m_BlueHist[i]) * height());
-            pol_grey << QPointF((i + 1) * skew,
-                                (1.0 - m_BlueHist[i]) * height());
-        }
-        // last point, bottom right corner
-        pol_grey << QPointF(width(), height());
-
-        // Draw histogram
-        painter.setBrush(Qt::NoBrush);  // QColor(0, 0, 255, 160) ); //
-                                        // semi-transparent brush
-        painter.setPen(QPen(QBrush(QColor(0, 0, 255, 255)), 1.0, Qt::SolidLine,
-                            Qt::RoundCap, Qt::RoundJoin));
-        painter.drawConvexPolygon(pol_grey);
+        painter.drawPath(grey);
     }
 
-    // first point, left bottom corner
-    pol_grey.clear();
-    pol_grey << QPointF(0.0, height());
-    for (int i = 0; i < 256; ++i) {
-        pol_grey << QPointF(i * skew, (1.0 - m_GreyHist[i]) * height());
-        pol_grey << QPointF((i + 1) * skew, (1.0 - m_GreyHist[i]) * height());
+    painter.setRenderHint(QPainter::Antialiasing, false);
+    painter.setPen(axisColor);
+    painter.drawLine(0, height() - 1, width(), height() - 1);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    // a small corner mark where many pixels are clipped
+    const double kMark = 0.005;
+    painter.setPen(Qt::NoPen);
+    if (m_clippedHigh > kMark) {
+        painter.setBrush(red);
+        painter.drawPolygon(QPolygonF() << QPointF(w, 0) << QPointF(w - 9, 0)
+                                        << QPointF(w, 9));
     }
-    // last point, bottom right corner
-    pol_grey << QPointF(width(), height());
+    if (m_clippedLow > kMark) {
+        painter.setBrush(blue);
+        painter.drawPolygon(QPolygonF() << QPointF(0, 0) << QPointF(9, 0)
+                                        << QPointF(0, 9));
+    }
 
-    // Draw histogram
-    painter.setBrush(QColor(160, 160, 160, 50));  // semi-transparent brush
-    painter.setPen(QPen(QBrush(QColor(20, 20, 20, 255)), 1.0, Qt::SolidLine,
-                        Qt::RoundCap, Qt::RoundJoin));
-    painter.drawConvexPolygon(pol_grey);
-
-    // Draw frame
     if (isDrawFrame) {
-        painter.setPen(Qt::black);
+        // kept for callers that ask for it, in the design's line colour
+        painter.setRenderHint(QPainter::Antialiasing, false);
+        painter.setPen(axisColor);
         painter.setBrush(Qt::NoBrush);
         painter.drawRect(QRect(0, 0, width() - 1, height() - 1));
     }

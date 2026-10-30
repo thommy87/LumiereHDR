@@ -31,6 +31,7 @@
 
 #include <QCursor>
 #include <QPainter>
+#include <QPainterPath>
 
 #include <math.h>
 #include <stdio.h>
@@ -50,7 +51,7 @@ static const float exposureStep = 0.25f;
 static const float shrinkStep = 0.1f;
 static const float minWindowSize = 0.1f;
 
-static const int dragZoneMargin = 5;  // How many pizels from the range window
+static const int dragZoneMargin = 6;  // How many pizels from the range window
                                       // border should dragging be activated
 
 #define min(x, y) ((x) < (y) ? (x) : (y))
@@ -65,7 +66,8 @@ LuminanceRangeWidget::LuminanceRangeWidget(QWidget *parent)
       histogramImage(nullptr)
 
 {
-    setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    setFrameStyle(QFrame::NoFrame);
+    setMinimumHeight(minimumSizeHint().height());
     setMouseTracking(true);
 
     minValue = -6;
@@ -79,81 +81,144 @@ LuminanceRangeWidget::LuminanceRangeWidget(QWidget *parent)
 
 LuminanceRangeWidget::~LuminanceRangeWidget() { delete histogram; }
 
-QSize LuminanceRangeWidget::sizeHint() const { return QSize(300, 22); }
+QSize LuminanceRangeWidget::sizeHint() const { return QSize(360, 40); }
+
+QSize LuminanceRangeWidget::minimumSizeHint() const { return QSize(200, 40); }
 
 #define getWindowX(x)                                                       \
     ((int)((x - minValue) / (maxValue - minValue) * (float)fRect.width()) + \
      fRect.left())
 
+namespace {
+QColor mixColors(const QColor &a, const QColor &b, qreal t) {
+    return QColor::fromRgbF(a.redF() + (b.redF() - a.redF()) * t,
+                            a.greenF() + (b.greenF() - a.greenF()) * t,
+                            a.blueF() + (b.blueF() - a.blueF()) * t);
+}
+// room under the curve for the scale and its numbers
+const int kScaleHeight = 13;
+}  // namespace
+
 void LuminanceRangeWidget::paintEvent(QPaintEvent * /*pe */) {
     QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing, true);
 
-    QRect fRect = getPaintRect();
-
+    const QRect fRect = getPaintRect();
     if (fRect.width() < 50)  // Does not make sense to paint anything
         return;
-    // p.begin(this);
-    // Paint range window
-    {
-        int x1, x2;
-        x1 = getWindowX(draggedMin());
-        x2 = getWindowX(draggedMax());
-        QColor selectionColor = mouseDragStart == DRAGNOTSTARTED
-                                    ? QColor(0, 100, 255)
-                                    : QColor(0, 150, 255);
-        p.fillRect(x1, fRect.top(), x2 - x1, fRect.height(),
-                   QBrush(selectionColor));
-    }
+    const qreal top = fRect.top();
+    const qreal bottom = fRect.bottom() + 1 - kScaleHeight;  // curve base
 
-    // Paint histogram
+    // colours follow the light or dark design
+    const QColor back = palette().color(QPalette::Window);
+    const QColor text = palette().color(QPalette::WindowText);
+    const bool dark = back.lightness() < 128;
+    const QColor accent = palette().color(QPalette::Highlight);
+    const QColor fill = mixColors(back, text, dark ? 0.26 : 0.20);
+    const QColor axis = mixColors(back, text, dark ? 0.22 : 0.18);
+    const QColor muted = mixColors(back, text, 0.55);
+
+    // the chosen range as a lightly tinted band
+    const qreal x1 = getWindowX(draggedMin());
+    const qreal x2 = getWindowX(draggedMax());
+    QColor band = accent;
+    band.setAlphaF(mouseDragStart == DRAGNOTSTARTED ? (dark ? 0.16 : 0.13)
+                                                    : (dark ? 0.24 : 0.20));
+    p.fillRect(QRectF(x1, top, x2 - x1, bottom - top), band);
+
+    // the brightness distribution as a smooth, soft area
     if (histogramImage != nullptr) {
         if (histogram == nullptr || histogram->getBins() != fRect.width()) {
             delete histogram;
             // Build histogram from at least 5000 pixels
             int accuracy =
                 histogramImage->getRows() * histogramImage->getCols() / 5000;
-            //       int accuracy =1;
             if (accuracy < 1) accuracy = 1;
             histogram = new Histogram(fRect.width(), accuracy);
             histogram->computeLog(histogramImage, minValue, maxValue);
         }
-
-        float maxP = histogram->getMaxP();
-        int i = 0;
-        p.setPen(Qt::green);
-        for (int x = fRect.left(); i < histogram->getBins(); x++, i++) {
-            if (histogram->getP(i) > 0) {
-                int barSize =
-                    (int)((float)fRect.height() * histogram->getP(i) / maxP);
-                p.drawLine(x, fRect.bottom(), x, fRect.bottom() - barSize);
+        const int bins = histogram->getBins();
+        // square root keeps small parts visible next to a tall peak,
+        // a light blur takes the steps out
+        std::vector<float> values(bins);
+        for (int i = 0; i < bins; ++i)
+            values[i] = std::sqrt(qMax(histogram->getP(i), 0.f));
+        std::vector<float> soft(bins);
+        const int radius = 3;
+        float top_value = 0.f;
+        for (int i = 0; i < bins; ++i) {
+            float sum = 0.f, weight = 0.f;
+            for (int k = -radius; k <= radius; ++k) {
+                const int j = i + k;
+                if (j < 0 || j >= bins) continue;
+                const float g = std::exp(-float(k * k) / 4.5f);
+                sum += values[j] * g;
+                weight += g;
             }
+            soft[i] = sum / weight;
+            top_value = qMax(top_value, soft[i]);
+        }
+        if (top_value > 0.f) {
+            QPainterPath area;
+            area.moveTo(fRect.left(), bottom);
+            for (int i = 0; i < bins; ++i)
+                area.lineTo(fRect.left() + i + 0.5,
+                            bottom - soft[i] / top_value * (bottom - top - 2));
+            area.lineTo(fRect.left() + bins, bottom);
+            area.closeSubpath();
+            p.setPen(Qt::NoPen);
+            p.setBrush(fill);
+            p.drawPath(area);
         }
     }
 
-    // Paint scale
-    QFont labelFont(QStringLiteral("SansSerif"), 8);
+    // the range's edges
+    p.setPen(QPen(accent, 1.5));
+    p.drawLine(QPointF(x1, top), QPointF(x1, bottom));
+    p.drawLine(QPointF(x2, top), QPointF(x2, bottom));
+
+    // the scale: equally fine ticks, small grey numbers
+    p.setRenderHint(QPainter::Antialiasing, false);
+    p.setPen(axis);
+    p.drawLine(fRect.left(), int(bottom), fRect.right(), int(bottom));
+    QFont labelFont = font();
+    labelFont.setPixelSize(9);
     p.setFont(labelFont);
-    p.setPen(Qt::black);
-    QRect textBounding = p.boundingRect(
-        fRect, Qt::AlignHCenter | Qt::AlignBottom, QStringLiteral("-8"));
-    for (float x = ceil(minValue); x <= floor(maxValue); x++) {
-        int rx = getWindowX(x);
-        p.drawLine(rx, fRect.top(), rx, textBounding.top());
-        char str[15];
-        snprintf(str, sizeof(str), "%g", x);
-        p.drawText(rx - 20, textBounding.top(), 40, textBounding.height(),
-                   Qt::AlignHCenter | Qt::AlignBottom, str);
+    const qreal unit = fRect.width() / (maxValue - minValue);
+    const int every = unit < 14 ? 2 : 1;
+    for (int v = int(std::ceil(minValue)); v <= int(std::floor(maxValue)); ++v) {
+        const int rx = getWindowX(float(v));
+        const bool major = v % 2 == 0;
+        p.setPen(axis);
+        p.drawLine(rx, int(bottom), rx, int(bottom) + (major ? 4 : 2));
+        if (v % every == 0 && v != int(std::ceil(minValue)) &&
+            v != int(std::floor(maxValue))) {
+            p.setPen(muted);
+            p.drawText(QRectF(rx - 12, bottom + 3, 24, kScaleHeight - 3),
+                       Qt::AlignHCenter | Qt::AlignVCenter,
+                       v > 0 ? QStringLiteral("+%1").arg(v) : QString::number(v));
+        }
     }
+    p.setRenderHint(QPainter::Antialiasing, true);
+
+    // round handles on both edges
+    const qreal mid = (top + bottom) / 2;
+    p.setBrush(palette().color(QPalette::Base));
+    p.setPen(QPen(accent, 2.0));
+    p.drawEllipse(QPointF(x1, mid), 4.5, 4.5);
+    p.drawEllipse(QPointF(x2, mid), 4.5, 4.5);
 
     //   Paint value pointer
     if (showVP) {
-        int x = getWindowX(valuePointer);
+        const int x = getWindowX(valuePointer);
         if (fRect.contains(x, fRect.y())) {
-            p.setPen(Qt::yellow);
-            p.drawLine(x, fRect.top(), x, fRect.bottom());
+            p.setRenderHint(QPainter::Antialiasing, false);
+            p.setPen(QPen(text, 1.0));
+            p.drawLine(x, int(top), x, int(bottom));
         }
     }
 }
+
 float LuminanceRangeWidget::draggedMin() {
     if (mouseDragStart == DRAGNOTSTARTED) return windowMin;
     if (dragMode == DRAG_MIN) {
@@ -209,7 +274,7 @@ void LuminanceRangeWidget::mouseMoveEvent(QMouseEvent *me) {
         }
 
     } else {
-        QRect fRect = rect();
+        QRect fRect = getPaintRect();
         int winBegPos = getWindowX(windowMin);
         int winEndPos = getWindowX(windowMax);
         if (abs(me->x() - winBegPos) < dragZoneMargin) {
@@ -282,12 +347,8 @@ void LuminanceRangeWidget::lowDynamicRange() {
 }
 
 QRect LuminanceRangeWidget::getPaintRect() const {
-    QRect fRect = frameRect();
-    fRect.setLeft(fRect.left() + 1);
-    fRect.setTop(fRect.top() + 1);
-    fRect.setBottom(fRect.bottom() - 1);
-    fRect.setRight(fRect.right() - 1);
-    return fRect;
+    // room at the sides for the round handles
+    return frameRect().adjusted(7, 2, -7, -1);
 }
 
 void LuminanceRangeWidget::showValuePointer(float value) {

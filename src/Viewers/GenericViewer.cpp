@@ -56,7 +56,7 @@ GenericViewer::GenericViewer(pfs::Frame *frame, QWidget *parent, bool ns)
 
     mToolBar = new QToolBar(QLatin1String(""), this);
     mToolBar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    mToolBar->setFixedHeight(40);
+    mToolBar->setFixedHeight(46);
     mToolBar->setAutoFillBackground(true);
 
     mVBL->addWidget(mToolBar);

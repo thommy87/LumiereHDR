@@ -96,6 +96,9 @@ class HistogramLDR : public QWidget {
     float m_RedHist[256];
     float m_GreenHist[256];
     float m_BlueHist[256];
+    // share of pixels at pure white (any channel) and pure black
+    double m_clippedHigh;
+    double m_clippedLow;
 
     bool isDrawFrame;
     bool isDrawColorHist;
