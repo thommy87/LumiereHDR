@@ -1,3 +1,17 @@
+Changes LumièreHDR 3.0.4
+NEW: Merge HDR, first page: after the list and the preview come, on the
+     left, Anti-ghosting and then Alignment with "Automatic" or "Manual";
+     the status on the right
+NEW: "Manual" shows the editing tools (shift, turn, masks) right on the
+     page below, as they were in their own window; "Automatic" greys
+     them out. The "Built-in (shift and rotation)" button that could not
+     be changed is gone; with Hugin installed the method is still a choice
+NEW: the exposure (EV) is set in the list: double-click it or select it
+     and type; the arrow keys step it. The slider under the preview is gone
+NEW: when raw files are loaded, their conversion settings (white balance,
+     demosaicing, highlights, brightness, chromatic aberration) show on
+     the page, with "Load again with these settings"
+
 Changes LumièreHDR 3.0.3
 NEW: History records every step of the look: each look picked and each
      setting changed (more changes of the same setting in a row are one

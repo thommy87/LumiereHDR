@@ -27,7 +27,18 @@
 
 #include <cmath>
 
+#include <QButtonGroup>
+#include <QCheckBox>
 #include <QDebug>
+#include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QScrollArea>
+#include <QStyledItemDelegate>
+#include <QVBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
 #include <QDir>
@@ -82,6 +93,40 @@ static const WeightFunctionType weights_in_gui[] = {
 
 namespace {
 
+//! the exposure column is edited in place: type a value or step it with
+//! the arrow keys
+class EVDelegate : public QStyledItemDelegate {
+   public:
+    EVDelegate(std::function<double(int)> value,
+               std::function<void(int, double)> set, QObject *parent)
+        : QStyledItemDelegate(parent), m_value(value), m_set(set) {}
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &,
+                          const QModelIndex &) const override {
+        QDoubleSpinBox *box = new QDoubleSpinBox(parent);
+        box->setRange(-20.0, 20.0);
+        box->setDecimals(2);
+        box->setSingleStep(1.0 / 3.0);
+        box->setSuffix(QStringLiteral(" EV"));
+        box->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        box->setFrame(false);
+        return box;
+    }
+    void setEditorData(QWidget *editor,
+                       const QModelIndex &index) const override {
+        static_cast<QDoubleSpinBox *>(editor)->setValue(m_value(index.row()));
+    }
+    void setModelData(QWidget *editor, QAbstractItemModel *,
+                      const QModelIndex &index) const override {
+        QDoubleSpinBox *box = static_cast<QDoubleSpinBox *>(editor);
+        box->interpretText();
+        m_set(index.row(), box->value());
+    }
+
+   private:
+    std::function<double(int)> m_value;
+    std::function<void(int, double)> m_set;
+};
+
 static QString buildEVString(float newEV) {
     QString EVdisplay;
     QTextStream ts(&EVdisplay);
@@ -132,6 +177,7 @@ HdrWizard::HdrWizard(QWidget *p, const QStringList &files,
     m_Ui->progressBar->hide();
     m_Ui->textEdit->hide();
     m_Ui->HideLogButton->hide();
+    arrangeFirstPage();
 
     if (!files.isEmpty()) {
         m_Ui->pagestack->setCurrentIndex(0);
@@ -139,6 +185,243 @@ HdrWizard::HdrWizard(QWidget *p, const QStringList &files,
         QMetaObject::invokeMethod(this, "loadInputFiles", Qt::QueuedConnection,
                                   Q_ARG(QStringList, files));
     }
+}
+
+void HdrWizard::arrangeFirstPage() {
+    // the page scrolls, as the editing tools need room below the list
+    QWidget *page = m_Ui->groupBox;
+    int row = 0, column = 0, rowSpan = 1, columnSpan = 1;
+    const int at = m_Ui->gridLayout_12->indexOf(page);
+    if (at >= 0)
+        m_Ui->gridLayout_12->getItemPosition(at, &row, &column, &rowSpan,
+                                             &columnSpan);
+    m_Ui->gridLayout_12->removeWidget(page);
+    QScrollArea *scroll = new QScrollArea;
+    scroll->setObjectName(QStringLiteral("MergeScroll"));
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setWidgetResizable(true);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->setWidget(page);
+    m_Ui->gridLayout_12->addWidget(scroll, row, column, rowSpan, columnSpan);
+    m_Ui->tableWidget->setMinimumHeight(240);
+    m_Ui->previewFrame->setMinimumHeight(240);
+
+    // the exposure is set in the list itself; no slider under the preview
+    m_Ui->EVgroupBox->hide();
+    m_Ui->tableWidget->setItemDelegateForColumn(
+        1, new EVDelegate(
+               [this](int r) -> double {
+                   if (r < 0 || r >= int(m_hdrCreationManager->availableInputFiles()))
+                       return 0.0;
+                   const HdrCreationItem &item = m_hdrCreationManager->getFile(r);
+                   return item.hasEV()
+                              ? item.getEV() - m_hdrCreationManager->getEVOffset()
+                              : 0.0;
+               },
+               [this](int r, double ev) {
+                   if (r < 0 || r >= m_Ui->tableWidget->rowCount()) return;
+                   if (m_Ui->tableWidget->currentRow() != r)
+                       m_Ui->tableWidget->setCurrentCell(r, 1);
+                   const bool blocked = m_Ui->ImageEVdsb->blockSignals(true);
+                   m_Ui->ImageEVdsb->setValue(ev);
+                   m_Ui->ImageEVdsb->blockSignals(blocked);
+                   updateEVSpinBox(ev);
+               },
+               this));
+    m_Ui->tableWidget->setEditTriggers(QAbstractItemView::DoubleClicked |
+                                       QAbstractItemView::SelectedClicked |
+                                       QAbstractItemView::EditKeyPressed |
+                                       QAbstractItemView::AnyKeyPressed);
+    m_Ui->tableWidget->setToolTip(
+        tr("Double-click an exposure, or select it and type, to change it; "
+           "the arrow keys step it while editing."));
+
+    // left: ghosts, then alignment; right: what to do next
+    m_Ui->horizontalLayout_4->removeWidget(m_Ui->alignGroupBox);
+    m_Ui->horizontalLayout_4->removeWidget(m_Ui->agGroupBox);
+    m_Ui->verticalLayout_3->removeWidget(m_Ui->confirmloadlabel);
+    QVBoxLayout *left = new QVBoxLayout;
+    left->setSpacing(10);
+    left->addWidget(m_Ui->agGroupBox);
+    left->addWidget(m_Ui->alignGroupBox);
+    m_Ui->agGroupBox->setTitle(tr("Anti-ghosting"));
+    m_Ui->alignGroupBox->setTitle(tr("Alignment"));
+
+    // RAW: the conversion settings, once a raw file is loaded
+    m_rawBox = new QGroupBox(tr("RAW conversion"));
+    QGridLayout *raw = new QGridLayout(m_rawBox);
+    auto prefs = [](const char *text) {
+        return QCoreApplication::translate("PreferencesDialog", text);
+    };
+    QComboBox *wb = new QComboBox;
+    wb->setObjectName(QStringLiteral("rawWhiteBalance"));
+    wb->addItems({prefs("Predefined D65"), prefs("Camera"), prefs("Auto"),
+                  prefs("Manual")});
+    wb->setCurrentIndex(luminance_options.getRawWhiteBalanceMethod());
+    QComboBox *quality = new QComboBox;
+    quality->setObjectName(QStringLiteral("rawQuality"));
+    quality->addItems({QStringLiteral("Bilinear"), QStringLiteral("VNG"),
+                       QStringLiteral("PPG"), QStringLiteral("AHD"),
+                       QStringLiteral("VNG4"), QStringLiteral("HPHD"),
+                       QStringLiteral("IGV"), QStringLiteral("LMMSE"),
+                       QStringLiteral("DCB"), QStringLiteral("RCD"),
+                       QStringLiteral("AMAZE")});
+    quality->setCurrentIndex(luminance_options.getRawUserQuality());
+    QComboBox *highlights = new QComboBox;
+    highlights->setObjectName(QStringLiteral("rawHighlights"));
+    highlights->addItems({prefs("Solid White"), prefs("Do not transform"),
+                          prefs("Blend"), prefs("Reconstruct")});
+    highlights->setCurrentIndex(luminance_options.getRawHighlightsMode());
+    QCheckBox *bright = new QCheckBox(prefs("Auto Brightness"));
+    bright->setObjectName(QStringLiteral("rawAutoBrightness"));
+    bright->setChecked(luminance_options.isRawAutoBrightness());
+    QCheckBox *aberration =
+        new QCheckBox(prefs("Enable Chromatic Aberration correction"));
+    aberration->setObjectName(QStringLiteral("rawChroma"));
+    aberration->setChecked(luminance_options.isRawUseChromaAber());
+    raw->addWidget(new QLabel(tr("White balance")), 0, 0);
+    raw->addWidget(wb, 0, 1);
+    raw->addWidget(new QLabel(tr("Demosaicing")), 1, 0);
+    raw->addWidget(quality, 1, 1);
+    raw->addWidget(new QLabel(tr("Highlights")), 2, 0);
+    raw->addWidget(highlights, 2, 1);
+    raw->addWidget(bright, 3, 0, 1, 2);
+    raw->addWidget(aberration, 4, 0, 1, 2);
+    QPushButton *reload = new QPushButton(tr("Load again with these settings"));
+    reload->setToolTip(
+        tr("Raw files are converted when they are loaded: this loads them "
+           "again with the settings above. They are also kept for later."));
+    connect(reload, &QPushButton::clicked, this,
+            &HdrWizard::reloadWithRawSettings);
+    raw->addWidget(reload, 5, 0, 1, 2, Qt::AlignLeft);
+    raw->setColumnStretch(1, 1);
+    m_rawBox->hide();
+    left->addWidget(m_rawBox);
+    left->addStretch(1);
+    m_Ui->horizontalLayout_4->addLayout(left, 1);
+    m_Ui->horizontalLayout_4->addWidget(m_Ui->confirmloadlabel, 1,
+                                        Qt::AlignVCenter);
+
+    // alignment: automatic, or by hand with the editing tools below
+    m_alignAuto = new QRadioButton(tr("&Automatic"));
+    m_alignManual = new QRadioButton(tr("&Manual"));
+    m_alignAuto->setToolTip(
+        tr("Aligns the photos by itself before they are merged"));
+    m_alignManual->setToolTip(
+        tr("Shift, turn and mask the photos yourself with the editing tools "
+           "below"));
+    QButtonGroup *mode = new QButtonGroup(this);
+    mode->addButton(m_alignAuto);
+    mode->addButton(m_alignManual);
+    QHBoxLayout *modes = new QHBoxLayout;
+    modes->addWidget(m_alignAuto);
+    modes->addWidget(m_alignManual);
+    modes->addStretch(1);
+    m_Ui->gridLayout_3->removeItem(m_Ui->gridLayout_1);
+    m_Ui->gridLayout_3->addLayout(modes, 0, 0);
+    m_Ui->gridLayout_3->addLayout(m_Ui->gridLayout_1, 1, 0);
+    m_Ui->alignCheckBox->hide();
+    m_Ui->checkBoxEditingTools->hide();
+    // the method is a choice only when Hugin's tool is there as well
+    if (m_Ui->ais_radioButton->isHidden()) m_Ui->mtb_radioButton->hide();
+    m_alignAuto->setChecked(true);
+    connect(m_alignAuto, &QRadioButton::toggled, this,
+            &HdrWizard::alignModeChanged);
+
+    // the editing tools, as they were in their own window
+    m_toolsBox = new QGroupBox(tr("Editing tools"));
+    m_toolsBox->setObjectName(QStringLiteral("EditingToolsBox"));
+    QVBoxLayout *tools = new QVBoxLayout(m_toolsBox);
+    m_toolsHint = new QLabel(
+        tr("Load at least two photos and choose \"Manual\" alignment to "
+           "shift, turn and mask them here."));
+    m_toolsHint->setWordWrap(true);
+    m_toolsHint->setEnabled(false);  // secondary text colour
+    tools->addWidget(m_toolsHint);
+    m_Ui->verticalLayout_7->addWidget(m_toolsBox);
+    alignModeChanged();
+}
+
+void HdrWizard::alignModeChanged() {
+    const bool manual = m_alignManual->isChecked();
+    m_Ui->alignCheckBox->setChecked(!manual &&
+                                    m_Ui->tableWidget->rowCount() > 1);
+    m_Ui->checkBoxEditingTools->setChecked(manual);
+    m_Ui->mtb_radioButton->setEnabled(!manual);
+    m_Ui->ais_radioButton->setEnabled(!manual);
+    m_Ui->autoCropCheckBox->setEnabled(!manual &&
+                                       m_Ui->ais_radioButton->isChecked());
+    m_toolsBox->setEnabled(manual);
+    if (manual && !m_editingTools) rebuildEditingTools();
+}
+
+void HdrWizard::dropEditingTools() {
+    if (m_editingTools) delete m_editingTools.data();
+    m_toolsHint->show();
+    m_toolsBox->setMinimumHeight(0);
+}
+
+void HdrWizard::rebuildEditingTools() {
+    dropEditingTools();
+    if (m_hdrCreationManager->availableInputFiles() < 2) return;
+    EditingTools *tools =
+        new EditingTools(m_hdrCreationManager.data(),
+                         m_Ui->autoAG_checkBox->isChecked(), m_toolsBox);
+    tools->setWindowFlags(Qt::Widget);
+    // the page's own Next and Cancel take the place of these
+    for (const char *name : {"Next_Finishbutton", "cancelbutton"})
+        if (QAbstractButton *b =
+                tools->findChild<QAbstractButton *>(QLatin1String(name)))
+            b->hide();
+    connect(tools, &QDialog::accepted, this, [this, tools]() {
+        m_doAutoAntighosting = tools->isAutoAntighostingEnabled();
+        m_doManualAntighosting = tools->isManualAntighostingEnabled();
+        m_agGoodImageIndex = tools->getAgGoodImageIndex();
+        m_Ui->pagestack->setCurrentIndex(1);
+    });
+    // Esc in the tools would close them: start them afresh instead
+    connect(tools, &QDialog::rejected, this, [this]() {
+        QMetaObject::invokeMethod(this, [this]() { rebuildEditingTools(); },
+                                  Qt::QueuedConnection);
+    });
+    m_toolsBox->layout()->addWidget(tools);
+    m_toolsBox->setMinimumHeight(600);
+    m_toolsHint->hide();
+    m_editingTools = tools;
+    tools->show();
+}
+
+void HdrWizard::updateRawBox() {
+    QStringList files;
+    for (const auto &item : *m_hdrCreationManager) files << item.filename();
+    m_rawBox->setVisible(!files.isEmpty() &&
+                         hdrprofiles::standardFor(files) == 0);
+}
+
+void HdrWizard::reloadWithRawSettings() {
+    LuminanceOptions options;
+    options.setRawWhiteBalanceMethod(
+        m_rawBox->findChild<QComboBox *>(QStringLiteral("rawWhiteBalance"))
+            ->currentIndex());
+    options.setRawUserQuality(
+        m_rawBox->findChild<QComboBox *>(QStringLiteral("rawQuality"))
+            ->currentIndex());
+    options.setRawHighlightsMode(
+        m_rawBox->findChild<QComboBox *>(QStringLiteral("rawHighlights"))
+            ->currentIndex());
+    options.setRawAutoBrightness(
+        m_rawBox->findChild<QCheckBox *>(QStringLiteral("rawAutoBrightness"))
+            ->isChecked());
+    options.setRawUseChromaAber(
+        m_rawBox->findChild<QCheckBox *>(QStringLiteral("rawChroma"))
+            ->isChecked());
+    QStringList files;
+    for (const auto &item : *m_hdrCreationManager) files << item.filename();
+    if (files.isEmpty()) return;
+    dropEditingTools();
+    m_hdrCreationManager->clearFiles();
+    updateTableGrid();
+    loadInputFiles(files);
 }
 
 HdrWizard::~HdrWizard() {
@@ -321,9 +604,10 @@ void HdrWizard::updateTableGrid() {
 
         // fill graphical list
         m_Ui->tableWidget->insertRow(counter);
-        m_Ui->tableWidget->setItem(
-            counter, 0,
-            new QTableWidgetItem(QFileInfo(item.filename()).fileName()));
+        QTableWidgetItem *nameItem =
+            new QTableWidgetItem(QFileInfo(item.filename()).fileName());
+        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+        m_Ui->tableWidget->setItem(counter, 0, nameItem);
         if (item.hasEV()) {
             QTableWidgetItem *tableitem =
                 new QTableWidgetItem(buildEVString(normalizedEV));
@@ -378,16 +662,23 @@ void HdrWizard::removeImageButtonClicked() {
 
     Q_ASSERT(index < m_hdrCreationManager->availableInputFiles());
 
+    dropEditingTools();
     m_hdrCreationManager->removeFile(index);
 
     updateTableGrid();
+    alignModeChanged();
+    if (m_alignManual->isChecked()) rebuildEditingTools();
+    updateRawBox();
 }
 
 void HdrWizard::clearListButtonClicked() {
 
+    dropEditingTools();
     m_hdrCreationManager->clearFiles();
 
     updateTableGrid();
+    alignModeChanged();
+    updateRawBox();
 }
 
 void HdrWizard::updateEVSlider(int newValue) {
@@ -476,7 +767,6 @@ void HdrWizard::inputHdrFileSelected(int currentRow) {
                 .qimage()
                 .scaled(m_Ui->previewLabel->size(), Qt::KeepAspectRatio)));
 
-        m_Ui->ImageEVdsb->setFocus();
     }
 }
 
@@ -497,6 +787,8 @@ void HdrWizard::dropEvent(QDropEvent *event) {
 
 void HdrWizard::loadInputFiles(const QStringList &files) {
     if (!files.isEmpty()) {
+        // the tools hold the photos of the list: they go before it changes
+        dropEditingTools();
         // update the luminance_options
         luminance_options.setDefaultPathLdrIn(QFileInfo(files.at(0)).path());
 
@@ -541,11 +833,13 @@ void HdrWizard::loadInputFilesDone() {
 
     m_Ui->alignGroupBox->setEnabled(true);
     m_Ui->agGroupBox->setEnabled(true);
-    if (m_Ui->tableWidget->rowCount() > 1) {
+    if (m_Ui->tableWidget->rowCount() > 1)
         m_Ui->alignCheckBox->setEnabled(true);
-        // hand-held brackets are the rule: align unless switched off
-        m_Ui->alignCheckBox->setChecked(true);
-    }
+    // hand-held brackets are the rule: automatic alignment, unless the
+    // photos are aligned by hand
+    alignModeChanged();
+    if (m_alignManual->isChecked()) rebuildEditingTools();
+    updateRawBox();
 
     QApplication::restoreOverrideCursor();
 }
@@ -728,6 +1022,14 @@ void HdrWizard::NextFinishButtonClicked() {
     int currentpage = m_Ui->pagestack->currentIndex();
     switch (currentpage) {
         case 0: {
+            // by hand: the editing tools finish, then the next page shows
+            if (m_alignManual->isChecked() && m_editingTools) {
+                if (QAbstractButton *next =
+                        m_editingTools->findChild<QAbstractButton *>(
+                            QStringLiteral("Next_Finishbutton")))
+                    next->click();
+                return;
+            }
             // now align, if requested
             if (m_Ui->alignCheckBox->isChecked()) {
                 QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
@@ -873,7 +1175,8 @@ void HdrWizard::currentPageChangedInto(int newindex) {
     m_Ui->NextFinishButton->setText(tr("&Compute HDR"));
     // when at least 2 LDR or MDR inputs perform Manual Alignment
     int num_images = m_hdrCreationManager->getData().size();
-    if (m_Ui->checkBoxEditingTools->isChecked() && num_images >= 2) {
+    if (m_Ui->checkBoxEditingTools->isChecked() && num_images >= 2 &&
+        !m_editingTools) {
         this->setDisabled(true);
         EditingTools *editingtools =
             new EditingTools(m_hdrCreationManager.data(),

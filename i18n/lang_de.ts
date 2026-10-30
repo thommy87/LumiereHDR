@@ -3121,6 +3121,58 @@ p, li { white-space: pre-wrap; }
         <source>Hide Log</source>
         <translation>Protokoll ausblenden</translation>
     </message>
+    <message>
+        <source>Double-click an exposure, or select it and type, to change it; the arrow keys step it while editing.</source>
+        <translation>Belichtung doppelt anklicken oder auswählen und tippen, um sie zu ändern; beim Bearbeiten stellen die Pfeiltasten sie in Schritten ein.</translation>
+    </message>
+    <message>
+        <source>RAW conversion</source>
+        <translation>RAW-Umwandlung</translation>
+    </message>
+    <message>
+        <source>White balance</source>
+        <translation>Weißabgleich</translation>
+    </message>
+    <message>
+        <source>Demosaicing</source>
+        <translation>Interpolation</translation>
+    </message>
+    <message>
+        <source>Highlights</source>
+        <translation>Lichter</translation>
+    </message>
+    <message>
+        <source>Load again with these settings</source>
+        <translation>Mit diesen Einstellungen neu laden</translation>
+    </message>
+    <message>
+        <source>Raw files are converted when they are loaded: this loads them again with the settings above. They are also kept for later.</source>
+        <translation>RAW-Dateien werden beim Laden umgewandelt: Das lädt sie mit den Einstellungen oben neu. Die Einstellungen bleiben auch für später gespeichert.</translation>
+    </message>
+    <message>
+        <source>&amp;Automatic</source>
+        <translation>&amp;Automatisch</translation>
+    </message>
+    <message>
+        <source>&amp;Manual</source>
+        <translation>&amp;Manuell</translation>
+    </message>
+    <message>
+        <source>Aligns the photos by itself before they are merged</source>
+        <translation>Richtet die Fotos vor dem Zusammenführen selbst aus</translation>
+    </message>
+    <message>
+        <source>Shift, turn and mask the photos yourself with the editing tools below</source>
+        <translation>Die Fotos mit den Bearbeitungswerkzeugen unten selbst verschieben, drehen und maskieren</translation>
+    </message>
+    <message>
+        <source>Editing tools</source>
+        <translation>Bearbeitungswerkzeuge</translation>
+    </message>
+    <message>
+        <source>Load at least two photos and choose &quot;Manual&quot; alignment to shift, turn and mask them here.</source>
+        <translation>Mindestens zwei Fotos laden und „Manuell“ ausrichten wählen, um sie hier zu verschieben, zu drehen und zu maskieren.</translation>
+    </message>
 </context>
 <context>
     <name>HelpBrowser</name>
