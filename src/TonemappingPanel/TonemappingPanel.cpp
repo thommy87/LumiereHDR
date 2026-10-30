@@ -441,6 +441,12 @@ TonemappingPanel::TonemappingPanel(int mainWinNumber, PreviewPanel *panel,
         rows->addLayout(second);
         m_Ui->gridLayout_13->addLayout(rows, 3, 0);
     }
+    // the size of the saved picture is chosen on the Export page; Develop
+    // keeps working on its quick copy of up to 2048 px
+    for (QWidget *w : {static_cast<QWidget *>(m_Ui->label),
+                       static_cast<QWidget *>(m_Ui->sizeComboBox),
+                       static_cast<QWidget *>(m_Ui->addCustomSizeButton)})
+        w->hide();
     // the settings of each operator sit right at the edge of the box
     for (int i = 0; i < m_Ui->stackedWidget_operators->count(); ++i) {
         QList<QLayout *> layouts =

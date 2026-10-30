@@ -45,6 +45,10 @@ class ExportPage : public QWidget {
     void setSources(const QPixmap &result, const QString &resultCaption,
                     const QString &resultName, const QPixmap &hdr,
                     const QString &hdrCaption, const QString &hdrName);
+    //! the size of the HDR: the saved picture can have it or be smaller
+    void setSizes(int fullWidth, int fullHeight);
+    //! the chosen width of the saved picture, 0 when there is no choice
+    int resultWidth() const;
     //! the queue list, shown under the picture
     void setQueue(QWidget *queue);
 
@@ -81,6 +85,7 @@ class ExportPage : public QWidget {
     void updatePreview();
     void scalePreview();
     void chooseFolder();
+    void fillSizes(int selected);
     const Format *currentFormat() const;
     QList<Format> formats(bool hdr) const;
 
@@ -97,8 +102,13 @@ class ExportPage : public QWidget {
     QSlider *m_quality;
     QLabel *m_qualityValue;
     QCheckBox *m_glow;
+    QCheckBox *m_ultraHdr;
     QWidget *m_tiffRow;
     QComboBox *m_tiffMode;
+    QWidget *m_sizeRow;
+    QComboBox *m_size;
+    QList<int> m_widths;
+    float m_ratio = 1.f;
     QLabel *m_folder;
     QLineEdit *m_name;
     QLabel *m_extension;

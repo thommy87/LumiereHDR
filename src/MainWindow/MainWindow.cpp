@@ -1504,6 +1504,12 @@ void MainWindow::showExportWorkspace() {
         hdrName.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")),
                         QStringLiteral("-"));
     }
+    {
+        GenericViewer *hdr = tm_status.curr_tm_frame;
+        const pfs::Frame *frame = hdr ? hdr->getFrame() : nullptr;
+        m_exportPage->setSizes(frame ? int(frame->getWidth()) : 0,
+                               frame ? int(frame->getHeight()) : 0);
+    }
     m_exportPage->setSources(resultPixmap, resultCaption, resultName,
                              hdrPixmap, hdrCaption, hdrName);
     m_workspace->setCurrentWidget(m_exportPage);
@@ -1538,6 +1544,14 @@ void MainWindow::exportFromPage() {
     }
     LdrViewer *l_v = m_exportResult;
     if (!l_v) return;
+    // another size than the one shown is made again from the HDR, in the
+    // queue under the picture
+    const int width = m_exportPage->resultWidth();
+    if (width > 0 && l_v->getFrame() &&
+        int(l_v->getFrame()->getWidth()) != width) {
+        queueFromPage();
+        return;
+    }
     std::string format;
     params.get("format", format);
     if ((format == "ultrahdr" || format == "avif_hdr" || format == "jxl_hdr") &&
@@ -1558,7 +1572,15 @@ void MainWindow::queueFromPage() {
     LdrViewer *l_v = m_exportResult;
     TonemappingOptions *opts = l_v ? l_v->getTonemappingOptions() : nullptr;
     if (!opts) return;
-    addExportJob(*opts, m_exportPage->params(), m_exportPage->folder(),
+    TonemappingOptions options = *opts;
+    const pfs::Frame *hdr =
+        tm_status.curr_tm_frame ? tm_status.curr_tm_frame->getFrame() : nullptr;
+    const int width = m_exportPage->resultWidth();
+    if (hdr && width > 0 && !options.tonemapSelection) {
+        options.origxsize = int(hdr->getWidth());
+        options.xsize = width;
+    }
+    addExportJob(options, m_exportPage->params(), m_exportPage->folder(),
                  m_exportPage->fileName());
 }
 
