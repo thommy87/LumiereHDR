@@ -21,6 +21,7 @@
 #include <QCursor>
 #include <QHBoxLayout>
 #include <QListWidget>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QTabWidget>
@@ -57,7 +58,9 @@ FilmStrip::FilmStrip(QTabWidget *tabs, QWidget *parent)
     m_list->setFrameShape(QFrame::NoFrame);
     m_list->setFixedHeight(kThumb.height() + 48);
     m_list->viewport()->installEventFilter(this);
-    m_list->setToolTip(tr("Right-click a picture to close it"));
+    m_list->installEventFilter(this);
+    m_list->setToolTip(
+        tr("Right-click a picture or press Del to close it"));
 
     m_buttons = new QWidget(this);
     QHBoxLayout *buttons = new QHBoxLayout(m_buttons);
@@ -124,6 +127,15 @@ void FilmStrip::refresh() {
 }
 
 bool FilmStrip::eventFilter(QObject *watched, QEvent *event) {
+    if (watched == m_list && event->type() == QEvent::KeyPress) {
+        // Del closes the picture picked in the strip
+        const int key = static_cast<QKeyEvent *>(event)->key();
+        if ((key == Qt::Key_Delete || key == Qt::Key_Backspace) &&
+            m_list->currentRow() >= 0) {
+            emit closeRequested(m_list->currentRow());
+            return true;
+        }
+    }
     if (watched == m_list->viewport()) {
         // close with the middle button or from the context menu
         int row = -1;

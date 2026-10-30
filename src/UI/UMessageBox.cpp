@@ -82,11 +82,47 @@ void UMessageBox::about(QWidget *parent) {
     ui.authorsBox->setOpenExternalLinks(true);
     ui.thanksToBox->setOpenExternalLinks(true);
     ui.GPLbox->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    ui.label_version->setText(ui.label_version->text()
-                                  .append(QStringLiteral(LUMINANCEVERSION))
-                                  .append(" [Build ")
-                                  .append(QString(g_GIT_SHA1).left(6))
-                                  .append("]"));
+    ui.label_version->setText(
+        QStringLiteral("<b style=\"font-size:15pt\">Lumière HDR</b><br>%1 "
+                       "[Build %2]")
+            .arg(QStringLiteral(LUMINANCEVERSION),
+                 QString(g_GIT_SHA1).left(6)));
+
+    // the program, then thanks: to the Luminance HDR team, whose work this
+    // continues, and to the projects whose libraries it is built on
+    ui.label->setText(
+        QStringLiteral("<p><b>Lumière HDR</b></p><p>%1</p>"
+                       "<p><a href=\"https://github.com/thommy87/LumiereHDR\">"
+                       "github.com/thommy87/LumiereHDR</a></p>")
+            .arg(tr("Merge bracketed photos into HDR images and develop them "
+                    "into finished pictures.")));
+    const QStringList libraries = {
+        QStringLiteral("Qt"),        QStringLiteral("LibRaw"),
+        QStringLiteral("Lensfun"),   QStringLiteral("Exiv2"),
+        QStringLiteral("OpenEXR"),   QStringLiteral("LibTIFF"),
+        QStringLiteral("libjpeg"),   QStringLiteral("libpng"),
+        QStringLiteral("libavif"),   QStringLiteral("libjxl"),
+        QStringLiteral("libwebp"),   QStringLiteral("libultrahdr"),
+        QStringLiteral("Little CMS"), QStringLiteral("FFTW"),
+        QStringLiteral("GSL"),       QStringLiteral("Eigen"),
+        QStringLiteral("Boost"),     QStringLiteral("CFITSIO"),
+        QStringLiteral("Hugin (align_image_stack)"),
+        QStringLiteral("pfstools / pfstmo")};
+    ui.thanksToBox->setHtml(
+        QStringLiteral("<h3>%1</h3><p>%2</p><h3>%3</h3><p>%4</p><p>%5</p>"
+                       "<h3>%6</h3><p>%7</p>")
+            .arg(tr("Thanks to the former Luminance HDR team"),
+                 tr("Lumière HDR continues Luminance HDR. Many thanks to "
+                    "everyone who developed, translated and packaged it over "
+                    "the years."),
+                 tr("Thanks to the teams of the libraries"),
+                 tr("Lumière HDR is built on the work of these projects:"),
+                 libraries.join(QStringLiteral(" · ")),
+                 tr("Thanks to the community"),
+                 tr("Everyone who reports bugs, tests and shares ideas.")));
+    // the people are thanked as a team now; their list goes
+    ui.tabWidget->removeTab(ui.tabWidget->indexOf(ui.tab_2));
+    ui.tabWidget->setCurrentIndex(0);
 
     bool license_file_not_found = true;
     QString docDir = QCoreApplication::applicationDirPath();
@@ -104,7 +140,14 @@ void UMessageBox::about(QWidget *parent) {
             if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) break;
             QTextStream ts(&file);
             ui.GPLbox->setAcceptRichText(false);
-            ui.GPLbox->setPlainText(ts.readAll());
+            // the GPL asks to keep the original authors' notices; they stay
+            // in the source code, and this line points to them
+            ui.GPLbox->setPlainText(
+                tr("Lumière HDR is based on Luminance HDR and is free "
+                   "software under the GNU General Public License, version 2 "
+                   "or later. The copyright notices of the original authors "
+                   "are kept in the source code.") +
+                QStringLiteral("\n\n") + ts.readAll());
             license_file_not_found = false;
             break;
         }

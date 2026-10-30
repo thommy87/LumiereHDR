@@ -39,9 +39,6 @@
 #include "Fileformat/pfsoutldrimage.h"
 #include "Viewers/IGraphicsPixmapItem.h"
 #include "Viewers/LuminanceRangeWidget.h"
-#ifdef Q_OS_WIN
-#include "Viewers/HdrDisplayWindow.h"
-#endif
 #include <QAction>
 
 #include "Libpfs/array2d.h"
@@ -106,20 +103,6 @@ void HdrViewer::initUi() {
     mToolBar->addWidget(m_histLabel);
     mToolBar->addWidget(m_lumRange);
     mToolBar->addSeparator();
-#ifdef Q_OS_WIN
-    // the picture with real HDR brightness, on an HDR screen
-    QAction *hdrPreview =
-        mToolBar->addAction(tr("HDR preview (HDR screens)..."));
-    hdrPreview->setToolTip(
-        tr("Shows this HDR with real HDR brightness on an HDR screen, such "
-           "as an HDR TV or monitor with \"Use HDR\" switched on in "
-           "Windows"));
-    connect(hdrPreview, &QAction::triggered, this, [this]() {
-        HdrDisplayWindow *window =
-            new HdrDisplayWindow(getFrameShared(), this->window());
-        window->show();
-    });
-#endif
     connect(m_lumRange, &LuminanceRangeWidget::updateRangeWindow, this,
             &HdrViewer::updateRangeWindow);
     mToolBar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);

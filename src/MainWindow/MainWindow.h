@@ -368,6 +368,7 @@ class MainWindow : public QMainWindow {
     void refreshLineIcons();
     QAction *m_compareAct;
     QAction *m_beforeAfterAct = nullptr;
+    QAction *m_hdrPreviewAct = nullptr;
     //! the Merge HDR workspace while a merge is going on
     HdrWizard *m_mergeWizard = nullptr;
     void showMergeWorkspace();
@@ -387,6 +388,7 @@ class MainWindow : public QMainWindow {
                       const pfs::Params &params, const QString &dir,
                       const QString &fileName = QString());
     void updateBeforeAfter();
+    void showHdrPreview();
     void applyTabStyle();
     bool m_resultSaved = false;  // Export done until the next change
     PresetStrip *m_presetStrip;

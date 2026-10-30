@@ -1,3 +1,20 @@
+Changes LumièreHDR 3.0.1
+FIX: the light scheme (also "Windows 11, light") is a clear white and
+     light grey everywhere: Merge HDR, the settings of the look, Basics,
+     the strip above the picture and About no longer show beige-grey
+NEW: About shows "Lumière HDR", thanks the former Luminance HDR team, the
+     teams of the libraries it is built on and the community; the list of
+     the old authors and their copyrights left the front (the license tab
+     notes that their notices stay in the source code)
+NEW: "HDR preview" for HDR screens is a button with its own icon in the
+     bar above the picture, for the HDR and for a finished look
+NEW: Del closes the picture picked in the film strip; "Compare" is only
+     in the bar above the picture, no longer twice
+NEW: the format tiles of Export grow with their text, in every language
+NEW: German: "Looks" are now "Bildstimmungen"
+NEW: the column on the right can be made about a third narrower
+NEW: "Save current look" has a disk icon
+
 Changes LumièreHDR 3.0.0
 The new LumièreHDR: a complete redesign, one window that leads from the
 photos to the finished picture.

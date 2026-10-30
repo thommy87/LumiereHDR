@@ -25,6 +25,8 @@
     <file alias="minus.svg">ui/icons/minus.svg</file>
     <file alias="trash.svg">ui/icons/trash.svg</file>
     <file alias="compare.svg">ui/icons/compare.svg</file>
+    <file alias="hdr.svg">ui/icons/hdr.svg</file>
+    <file alias="save.svg">ui/icons/save.svg</file>
     <file alias="crop.svg">ui/icons/crop.svg</file>
     <file alias="download.svg">ui/icons/download.svg</file>
     <file alias="export.svg">ui/icons/export.svg</file>

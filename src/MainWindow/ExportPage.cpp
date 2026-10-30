@@ -52,6 +52,34 @@ bool writerAvailable(const char *format) {
 }
 }  // namespace
 
+namespace {
+//! a format tile: as large as its name and description need, in any
+//! language, wrapping the description to the width it gets
+class FormatTile : public QPushButton {
+   public:
+    FormatTile() {
+        QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Minimum);
+        policy.setHeightForWidth(true);
+        setSizePolicy(policy);
+    }
+    QSize sizeHint() const override {
+        return layout() ? layout()->sizeHint().expandedTo(QSize(0, 64))
+                        : QPushButton::sizeHint();
+    }
+    QSize minimumSizeHint() const override {
+        return layout() ? layout()->minimumSize().expandedTo(QSize(0, 64))
+                        : QPushButton::minimumSizeHint();
+    }
+    bool hasHeightForWidth() const override {
+        return layout() && layout()->hasHeightForWidth();
+    }
+    int heightForWidth(int width) const override {
+        return layout() ? qMax(64, layout()->totalHeightForWidth(width))
+                        : QPushButton::heightForWidth(width);
+    }
+};
+}  // namespace
+
 ExportPage::ExportPage(QWidget *parent) : QWidget(parent) {
     setObjectName(QStringLiteral("ExportPage"));
     setAttribute(Qt::WA_StyledBackground);
@@ -108,6 +136,8 @@ ExportPage::ExportPage(QWidget *parent) : QWidget(parent) {
     m_tileLayout = new QGridLayout(m_tiles);
     m_tileLayout->setContentsMargins(0, 0, 0, 0);
     m_tileLayout->setSpacing(8);
+    for (int column = 0; column < 3; ++column)
+        m_tileLayout->setColumnStretch(column, 1);
     m_tileGroup = new QButtonGroup(this);
     m_tileGroup->setExclusive(true);
     connect(m_tileGroup, &QButtonGroup::idClicked, this,
@@ -295,7 +325,7 @@ void ExportPage::buildTiles() {
     int checked = 0;
     for (int i = 0; i < m_formats.size(); ++i) {
         const Format &format = m_formats.at(i);
-        QPushButton *tile = new QPushButton;
+        QPushButton *tile = new FormatTile;
         tile->setObjectName(QStringLiteral("FormatTile"));
         tile->setCheckable(true);
         tile->setCursor(Qt::PointingHandCursor);
@@ -314,7 +344,6 @@ void ExportPage::buildTiles() {
         tileLayout->addWidget(name);
         tileLayout->addWidget(hint);
         tileLayout->addStretch();
-        tile->setMinimumHeight(64);
         m_tileGroup->addButton(tile, i);
         m_tileLayout->addWidget(tile, i / 3, i % 3);
         if (format.id == wanted) checked = i;
