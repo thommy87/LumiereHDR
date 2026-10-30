@@ -26,6 +26,7 @@
 
 #include <QDebug>
 #include <QDialog>
+#include <QPointer>
 #include <QLabel>
 #include <QFuture>
 #include <QFutureWatcher>
@@ -41,6 +42,9 @@
 namespace Ui {
 class HdrWizard;
 }
+class EditingTools;
+class QGroupBox;
+class QRadioButton;
 
 class HdrWizard : public QDialog {
     Q_OBJECT
@@ -73,6 +77,20 @@ class HdrWizard : public QDialog {
     void updateProfileHelp();
     QSqlDatabase m_db;
     QScopedPointer<HdrPreview> m_hdrPreview;
+    // the first page: ghosts, then alignment, automatic or by hand with the
+    // editing tools below; RAW settings when raw files are loaded
+    void arrangeFirstPage();
+    void alignModeChanged();
+    void rebuildEditingTools();
+    void dropEditingTools();
+    void updateRawBox();
+    void reloadWithRawSettings();
+    QRadioButton *m_alignAuto = nullptr;
+    QRadioButton *m_alignManual = nullptr;
+    QGroupBox *m_toolsBox = nullptr;
+    QLabel *m_toolsHint = nullptr;
+    QPointer<EditingTools> m_editingTools;
+    QGroupBox *m_rawBox = nullptr;
     ProgressHelper m_ph;
 
    public:
