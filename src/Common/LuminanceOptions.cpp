@@ -418,6 +418,11 @@ QListWidget#CommandList { background: transparent; border: none;
 #LooksPanel, #Inspector, #OwnLooks, #InspectorScroll { background: @panel; }
 #OwnLooks { border-top: 1px solid @line2; }
 #LooksPanel QScrollArea, #PresetGrid, #HistoryView { background: transparent; }
+#HistoryView { padding: 6px 8px; outline: none; }
+#HistoryView::item { padding: 6px 8px; border-radius: 6px; color: @text2; }
+#HistoryView::item:hover { background: @hover; color: @text; }
+#HistoryView::item:selected { background: @selected; color: @text;
+  font-weight: 600; }
 #Segment { background: @input; border-radius: 8px; }
 QToolButton#SegmentButton { border: none; border-radius: 6px; padding: 5px 8px;
   color: @text2; font-weight: 500; }

@@ -209,6 +209,16 @@ class TonemappingPanel : public QWidget {
     void saveCurrentLook() { savePreset(); }
     void loadLookFile() { on_loadsettingsbutton_clicked(); }
     void saveLookFile() { on_savesettingsbutton_clicked(); }
+    void loadFromDatabase() { loadParameters(); }
+    void saveToDatabase() { saveParameters(); }
+
+    //! all settings as text, for the history
+    QString settingsSnapshot();
+    //! puts settings of the history back and shows them; an empty
+    //! snapshot is the HDR as it came
+    void restoreSnapshot(const QString &snapshot, const QString &preset);
+    //! a new picture: the history starts again from here
+    void resetHistory();
 
    public Q_SLOTS:
     void setEnabled(bool);
@@ -229,6 +239,10 @@ class TonemappingPanel : public QWidget {
     void startTonemapping(TonemappingOptions *);
     //! the "Unedited" preset: take the HDR as the HDR tab shows it
     void uneditedRequested();
+    //! a changed look was shown: what changed, and the settings before
+    //! and after (for the history)
+    void lookStepped(const QString &label, const QString &before,
+                     const QString &after, const QString &preset);
     void startExport(TonemappingOptions *);
     //! show the export queue
     void showExportQueue();
@@ -236,6 +250,13 @@ class TonemappingPanel : public QWidget {
 
    private:
     void onUndoRedo(bool undo);
+    //! tells the history about the settings that are tone mapped now
+    void recordStep();
+    QString describeChange(QObject *changed) const;
+
+    QString m_lastSnapshot;
+    QString m_lastChange;
+    bool m_restoring = false;
 
     QtWaitingSpinner *m_spinner;
     static int sm_counter;

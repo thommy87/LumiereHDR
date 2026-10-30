@@ -4788,6 +4788,10 @@ Do you want to continue?</source>
         <source>HDR preview: shows the picture with real HDR brightness on an HDR screen, such as an HDR TV or monitor with &quot;Use HDR&quot; switched on in Windows</source>
         <translation>HDR-Vorschau: zeigt das Bild mit echter HDR-Helligkeit auf einem HDR-Bildschirm, etwa einem HDR-Fernseher oder -Monitor mit eingeschaltetem „HDR verwenden“ in Windows</translation>
     </message>
+    <message>
+        <source>Database: &lt;a href=&quot;load&quot;&gt;load&lt;/a&gt; · &lt;a href=&quot;save&quot;&gt;save&lt;/a&gt;</source>
+        <translation>Datenbank: &lt;a href=&quot;load&quot;&gt;laden&lt;/a&gt; · &lt;a href=&quot;save&quot;&gt;speichern&lt;/a&gt;</translation>
+    </message>
 </context>
 <context>
     <name>PreferencesDialog</name>

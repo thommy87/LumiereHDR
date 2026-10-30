@@ -61,6 +61,7 @@
 #include <QToolBar>
 #include <QTimer>
 #include <QUndoGroup>
+#include <QUndoStack>
 #include <QUndoView>
 #include <QVBoxLayout>
 #include <QWhatsThis>
@@ -148,6 +149,46 @@
 #include <Resize/ResizeDialog.h>
 #include <TonemappingPanel/TMOProgressIndicator.h>
 #include <TonemappingPanel/TonemappingPanel.h>
+
+namespace {
+//! one step of the look: the settings before and after; the first redo
+//! is the step just shown, later ones put the settings back
+class LookCommand : public QUndoCommand {
+   public:
+    LookCommand(TonemappingPanel *panel, const QString &label,
+                const QString &before, const QString &beforePreset,
+                const QString &after, const QString &afterPreset)
+        : QUndoCommand(label),
+          m_panel(panel),
+          m_before(before),
+          m_beforePreset(beforePreset),
+          m_after(after),
+          m_afterPreset(afterPreset) {}
+    int id() const override { return 0x4c4f4f4b; }
+    bool mergeWith(const QUndoCommand *other) override {
+        // more changes of the same setting in a row are one step
+        const LookCommand *next = static_cast<const LookCommand *>(other);
+        if (next->text() != text() || m_afterPreset.isEmpty() !=
+                                          next->m_afterPreset.isEmpty())
+            return false;
+        m_after = next->m_after;
+        m_afterPreset = next->m_afterPreset;
+        return true;
+    }
+    void undo() override { m_panel->restoreSnapshot(m_before, m_beforePreset); }
+    void redo() override {
+        if (m_shown) m_panel->restoreSnapshot(m_after, m_afterPreset);
+        m_shown = true;
+    }
+    QString afterPreset() const { return m_afterPreset; }
+
+   private:
+    TonemappingPanel *m_panel;
+    QString m_before, m_beforePreset, m_after, m_afterPreset;
+    bool m_shown = false;
+};
+
+}  // namespace
 
 namespace {
 QString getLdrFileNameFromSaveDialog(const QString &suggestedFileName,
@@ -408,6 +449,21 @@ void MainWindow::createCentralWidget() {
         sm_NumMainWindows, m_PreviewPanel);  //(m_centralwidget_splitter);
     connect(m_tonemapPanel, &TonemappingPanel::startTonemapping, this,
             [this](TonemappingOptions *) { m_resultSaved = false; });
+    // every step of the look goes into the history
+    connect(m_tonemapPanel, &TonemappingPanel::lookStepped, this,
+            [this](const QString &label, const QString &before,
+                   const QString &after, const QString &preset) {
+                QString beforePreset;
+                if (m_lookHistory->index() > 0)
+                    if (const LookCommand *last =
+                            dynamic_cast<const LookCommand *>(
+                                m_lookHistory->command(
+                                    m_lookHistory->index() - 1)))
+                        beforePreset = last->afterPreset();
+                m_lookHistory->push(new LookCommand(m_tonemapPanel, label,
+                                                    before, beforePreset,
+                                                    after, preset));
+            });
 
     connect(m_Ui->actionRealtimePreviews, &QAction::toggled, m_tonemapPanel,
             &TonemappingPanel::setRealtimePreviews);
@@ -838,9 +894,21 @@ QWidget *MainWindow::createLooksPanel() {
             QDesktopServices::openUrl(QUrl::fromLocalFile(folder));
         }
     });
+    // the settings database, as the old settings panel had it
+    QLabel *database = new QLabel(
+        tr("Database: <a href=\"load\">load</a> · <a href=\"save\">save</a>"));
+    database->setObjectName(QStringLiteral("HintLabel"));
+    database->setWordWrap(true);
+    connect(database, &QLabel::linkActivated, this, [this](const QString &link) {
+        if (link == QLatin1String("load"))
+            m_tonemapPanel->loadFromDatabase();
+        else
+            m_tonemapPanel->saveToDatabase();
+    });
     ownLayout->addWidget(ownLabel);
     ownLayout->addWidget(save, 0, Qt::AlignLeft);
     ownLayout->addWidget(files);
+    ownLayout->addWidget(database);
 
     QWidget *looks = new QWidget;
     QVBoxLayout *looksLayout = new QVBoxLayout(looks);
@@ -889,7 +957,9 @@ void MainWindow::createToolBar() {
     m_Ui->menuEdit->insertSeparator(first);
 
     // the history and the histogram live in the Develop workspace
-    m_historyView = new QUndoView(m_undoGroup);
+    // every step of the look, to go back to any of them
+    m_lookHistory = new QUndoStack(this);
+    m_historyView = new QUndoView(m_lookHistory);
     m_historyView->setObjectName(QStringLiteral("HistoryView"));
     m_historyView->setEmptyLabel(tr("Original image"));
     m_historyView->setFrameShape(QFrame::NoFrame);
@@ -2201,6 +2271,9 @@ void MainWindow::load_success(pfs::Frame *new_hdr_frame,
 
         tm_status.is_hdr_ready = true;
         tm_status.curr_tm_frame = newhdr;
+        // a new picture starts a new history
+        m_lookHistory->clear();
+        m_tonemapPanel->resetHistory();
 
         m_tabwidget->setCurrentWidget(newhdr);
 
